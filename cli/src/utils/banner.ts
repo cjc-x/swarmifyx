@@ -1,20 +1,12 @@
 import pc from "picocolors";
+import { PUBLIC_PRODUCT_NAME } from "../config/branding.js";
 
-const PAPERCLIP_ART = [
-  "██████╗  █████╗ ██████╗ ███████╗██████╗  ██████╗██╗     ██╗██████╗ ",
-  "██╔══██╗██╔══██╗██╔══██╗██╔════╝██╔══██╗██╔════╝██║     ██║██╔══██╗",
-  "██████╔╝███████║██████╔╝█████╗  ██████╔╝██║     ██║     ██║██████╔╝",
-  "██╔═══╝ ██╔══██║██╔═══╝ ██╔══╝  ██╔══██╗██║     ██║     ██║██╔═══╝ ",
-  "██║     ██║  ██║██║     ███████╗██║  ██║╚██████╗███████╗██║██║     ",
-  "╚═╝     ╚═╝  ╚═╝╚═╝     ╚══════╝╚═╝  ╚═╝ ╚═════╝╚══════╝╚═╝╚═╝     ",
-] as const;
-
-const TAGLINE = "Open-source orchestration for zero-human companies";
+const TAGLINE = "Orchestrate Your Zero-Human Company.";
 
 export function printPaperclipCliBanner(): void {
   const lines = [
     "",
-    ...PAPERCLIP_ART.map((line) => pc.cyan(line)),
+    pc.bold(pc.cyan(`  ${PUBLIC_PRODUCT_NAME}`)),
     pc.blue("  ───────────────────────────────────────────────────────"),
     pc.bold(pc.white(`  ${TAGLINE}`)),
     "",

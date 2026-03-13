@@ -1,10 +1,10 @@
 {
-  "name": "paperclipai",
+  "name": "swarmifyx",
   "version": "0.3.0",
-  "description": "Paperclip CLI — orchestrate AI agent teams to run a business",
+  "description": "SwarmifyX CLI — orchestrate AI agent teams to run a business",
   "type": "module",
   "bin": {
-    "paperclipai": "./dist/index.js"
+    "swarmifyx": "./dist/index.js"
   },
   "keywords": [
     "paperclip",
@@ -16,10 +16,10 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/paperclipai/paperclip.git",
+    "url": "https://github.com/cjc-x/swarmifyx.git",
     "directory": "cli"
   },
-  "homepage": "https://github.com/paperclipai/paperclip",
+  "homepage": "https://github.com/cjc-x/swarmifyx",
   "files": [
     "dist"
   ],
@@ -28,8 +28,8 @@
   },
   "scripts": {
     "dev": "tsx src/index.ts",
-    "build": "node --input-type=module -e \"import esbuild from 'esbuild'; import config from './esbuild.config.mjs'; await esbuild.build(config);\" && chmod +x dist/index.js",
-    "clean": "rm -rf dist",
+    "build": "node ./scripts/build.mjs",
+    "clean": "node ./scripts/clean.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

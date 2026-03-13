@@ -7,6 +7,7 @@ import {
   resolveDefaultBackupDir,
   resolvePaperclipInstanceId,
 } from "../config/home.js";
+import { publicCliCommand } from "../config/branding.js";
 import { readConfig, resolveConfigPath } from "../config/store.js";
 import { printPaperclipCliBanner } from "../utils/banner.js";
 
@@ -48,7 +49,7 @@ function resolveBackupDir(raw: string): string {
 
 export async function dbBackupCommand(opts: DbBackupOptions): Promise<void> {
   printPaperclipCliBanner();
-  p.intro(pc.bgCyan(pc.black(" paperclip db:backup ")));
+  p.intro(pc.bgCyan(pc.black(` ${publicCliCommand("db:backup")} `)));
 
   const configPath = resolveConfigPath(opts.config);
   const config = readConfig(opts.config);

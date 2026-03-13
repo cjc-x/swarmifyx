@@ -20,10 +20,10 @@ export default defineConfig({
       use: { browserName: "chromium" },
     },
   ],
-  // The webServer directive starts `paperclipai run` before tests.
-  // Expects `pnpm paperclipai` to be runnable from repo root.
+  // The webServer directive starts `swarmifyx run` before tests.
+  // Expects `pnpm swarmifyx` to be runnable from repo root.
   webServer: {
-    command: `pnpm paperclipai run --yes`,
+    command: `pnpm swarmifyx run --yes`,
     url: `${BASE_URL}/api/health`,
     reuseExistingServer: !!process.env.CI,
     timeout: 120_000,

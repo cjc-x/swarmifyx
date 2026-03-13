@@ -160,7 +160,7 @@ describe("worktree helpers", () => {
   it("builds isolated config and env paths for a worktree", () => {
     const paths = resolveWorktreeLocalPaths({
       cwd: "/tmp/paperclip-feature",
-      homeDir: "/tmp/paperclip-worktrees",
+      homeDir: "/tmp/swarmifyx-worktrees",
       instanceId: "feature-worktree-support",
     });
     const config = buildWorktreeConfig({
@@ -172,17 +172,17 @@ describe("worktree helpers", () => {
     });
 
     expect(config.database.embeddedPostgresDataDir).toBe(
-      path.resolve("/tmp/paperclip-worktrees", "instances", "feature-worktree-support", "db"),
+      path.resolve("/tmp/swarmifyx-worktrees", "instances", "feature-worktree-support", "db"),
     );
     expect(config.database.embeddedPostgresPort).toBe(54339);
     expect(config.server.port).toBe(3110);
     expect(config.auth.publicBaseUrl).toBe("http://127.0.0.1:3110/");
     expect(config.storage.localDisk.baseDir).toBe(
-      path.resolve("/tmp/paperclip-worktrees", "instances", "feature-worktree-support", "data", "storage"),
+      path.resolve("/tmp/swarmifyx-worktrees", "instances", "feature-worktree-support", "data", "storage"),
     );
 
     const env = buildWorktreeEnvEntries(paths);
-    expect(env.PAPERCLIP_HOME).toBe(path.resolve("/tmp/paperclip-worktrees"));
+    expect(env.PAPERCLIP_HOME).toBe(path.resolve("/tmp/swarmifyx-worktrees"));
     expect(env.PAPERCLIP_INSTANCE_ID).toBe("feature-worktree-support");
     expect(env.PAPERCLIP_IN_WORKTREE).toBe("true");
     expect(formatShellExports(env)).toContain("export PAPERCLIP_INSTANCE_ID='feature-worktree-support'");
@@ -276,7 +276,7 @@ describe("worktree helpers", () => {
       await worktreeInitCommand({
         seed: false,
         fromConfig: path.join(tempRoot, "missing", "config.json"),
-        home: path.join(tempRoot, ".paperclip-worktrees"),
+        home: path.join(tempRoot, ".swarmifyx-worktrees"),
       });
 
       const envPath = path.join(repoRoot, ".paperclip", ".env");
@@ -299,7 +299,7 @@ describe("worktree helpers", () => {
         targetRepoRoot: "/Users/example/paperclip-pr-432",
         workspaceCwd: "/Users/example/paperclip",
       }),
-    ).toBe("/Users/example/paperclip-pr-432");
+    ).toBe(path.resolve("/Users/example/paperclip-pr-432"));
 
     expect(
       rebindWorkspaceCwd({
@@ -307,7 +307,7 @@ describe("worktree helpers", () => {
         targetRepoRoot: "/Users/example/paperclip-pr-432",
         workspaceCwd: "/Users/example/paperclip/packages/db",
       }),
-    ).toBe("/Users/example/paperclip-pr-432/packages/db");
+    ).toBe(path.resolve("/Users/example/paperclip-pr-432/packages/db"));
   });
 
   it("does not rebind paths outside the source repo root", () => {
@@ -360,7 +360,9 @@ describe("worktree helpers", () => {
         copied: true,
       });
       expect(fs.readFileSync(targetHookPath, "utf8")).toBe("#!/usr/bin/env bash\nexit 0\n");
-      expect(fs.statSync(targetHookPath).mode & 0o111).not.toBe(0);
+      if (process.platform !== "win32") {
+        expect(fs.statSync(targetHookPath).mode & 0o111).not.toBe(0);
+      }
       expect(fs.readFileSync(targetTokensPath, "utf8")).toBe("secret-token\n");
     } finally {
       execFileSync("git", ["worktree", "remove", "--force", worktreePath], { cwd: repoRoot, stdio: "ignore" });
@@ -390,7 +392,7 @@ describe("worktree helpers", () => {
 
       await worktreeMakeCommand("paperclip-make-test", {
         seed: false,
-        home: path.join(tempRoot, ".paperclip-worktrees"),
+        home: path.join(tempRoot, ".swarmifyx-worktrees"),
       });
 
       expect(fs.existsSync(path.join(worktreePath, ".git"))).toBe(true);

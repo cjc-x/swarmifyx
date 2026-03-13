@@ -16,7 +16,7 @@ Use these scripts instead of older one-off publish commands:
 
 ## Why the CLI needs special packaging
 
-The CLI package, `paperclipai`, imports code from workspace packages such as:
+The CLI package, `swarmifyx`, imports code from workspace packages such as:
 
 - `@paperclipai/server`
 - `@paperclipai/db`
@@ -25,12 +25,12 @@ The CLI package, `paperclipai`, imports code from workspace packages such as:
 
 Those workspace references use `workspace:*` during development. npm cannot install those references directly for end users, so the release build has to transform the CLI into a publishable standalone package.
 
-## `build-npm.sh`
+## `build:npm`
 
 Run:
 
 ```bash
-./scripts/build-npm.sh
+pnpm build:npm
 ```
 
 This script does six things:
@@ -42,7 +42,7 @@ This script does six things:
 5. Rewrites `cli/package.json` into a publishable npm manifest and stores the dev copy as `cli/package.dev.json`
 6. Copies the repo `README.md` into `cli/README.md` for npm package metadata
 
-`build-npm.sh` is used by the release script so that npm users install a real package rather than unresolved workspace dependencies.
+`pnpm build:npm` is the cross-platform developer entrypoint. The release script still calls the shell helper, which now delegates to the same Node implementation so npm users install a real package rather than unresolved workspace dependencies.
 
 ## Publishable CLI layout
 
@@ -80,8 +80,8 @@ They are published under the npm dist-tag `canary`.
 
 This means:
 
-- `npx paperclipai@canary onboard` can install them explicitly
-- `npx paperclipai onboard` continues to resolve `latest`
+- `npx swarmifyx@canary onboard` can install them explicitly
+- `npx swarmifyx onboard` continues to resolve `latest`
 - the stable changelog can stay at `releases/v1.2.3.md`
 
 ## Stable packaging model
@@ -115,6 +115,7 @@ Recommended CI release setup:
 
 ## Related Files
 
+- [`scripts/build-npm.mjs`](../scripts/build-npm.mjs)
 - [`scripts/build-npm.sh`](../scripts/build-npm.sh)
 - [`scripts/generate-npm-package-json.mjs`](../scripts/generate-npm-package-json.mjs)
 - [`cli/esbuild.config.mjs`](../cli/esbuild.config.mjs)

@@ -5,32 +5,32 @@ summary: Onboard, run, doctor, and configure
 
 Instance setup and diagnostics commands.
 
-## `paperclipai run`
+## `swarmifyx run`
 
 One-command bootstrap and start:
 
 ```sh
-pnpm paperclipai run
+pnpm swarmifyx run
 ```
 
 Does:
 
 1. Auto-onboards if config is missing
-2. Runs `paperclipai doctor` with repair enabled
+2. Runs `swarmifyx doctor` with repair enabled
 3. Starts the server when checks pass
 
 Choose a specific instance:
 
 ```sh
-pnpm paperclipai run --instance dev
+pnpm swarmifyx run --instance dev
 ```
 
-## `paperclipai onboard`
+## `swarmifyx onboard`
 
 Interactive first-time setup:
 
 ```sh
-pnpm paperclipai onboard
+pnpm swarmifyx onboard
 ```
 
 First prompt:
@@ -41,22 +41,22 @@ First prompt:
 Start immediately after onboarding:
 
 ```sh
-pnpm paperclipai onboard --run
+pnpm swarmifyx onboard --run
 ```
 
 Non-interactive defaults + immediate start (opens browser on server listen):
 
 ```sh
-pnpm paperclipai onboard --yes
+pnpm swarmifyx onboard --yes
 ```
 
-## `paperclipai doctor`
+## `swarmifyx doctor`
 
 Health checks with optional auto-repair:
 
 ```sh
-pnpm paperclipai doctor
-pnpm paperclipai doctor --repair
+pnpm swarmifyx doctor
+pnpm swarmifyx doctor --repair
 ```
 
 Validates:
@@ -67,51 +67,51 @@ Validates:
 - Storage configuration
 - Missing key files
 
-## `paperclipai configure`
+## `swarmifyx configure`
 
 Update configuration sections:
 
 ```sh
-pnpm paperclipai configure --section server
-pnpm paperclipai configure --section secrets
-pnpm paperclipai configure --section storage
+pnpm swarmifyx configure --section server
+pnpm swarmifyx configure --section secrets
+pnpm swarmifyx configure --section storage
 ```
 
-## `paperclipai env`
+## `swarmifyx env`
 
 Show resolved environment configuration:
 
 ```sh
-pnpm paperclipai env
+pnpm swarmifyx env
 ```
 
-## `paperclipai allowed-hostname`
+## `swarmifyx allowed-hostname`
 
 Allow a private hostname for authenticated/private mode:
 
 ```sh
-pnpm paperclipai allowed-hostname my-tailscale-host
+pnpm swarmifyx allowed-hostname my-tailscale-host
 ```
 
 ## Local Storage Paths
 
 | Data | Default Path |
 |------|-------------|
-| Config | `~/.paperclip/instances/default/config.json` |
-| Database | `~/.paperclip/instances/default/db` |
-| Logs | `~/.paperclip/instances/default/logs` |
-| Storage | `~/.paperclip/instances/default/data/storage` |
-| Secrets key | `~/.paperclip/instances/default/secrets/master.key` |
+| Config | `~/.swarmifyx/instances/default/config.json` |
+| Database | `~/.swarmifyx/instances/default/db` |
+| Logs | `~/.swarmifyx/instances/default/logs` |
+| Storage | `~/.swarmifyx/instances/default/data/storage` |
+| Secrets key | `~/.swarmifyx/instances/default/secrets/master.key` |
 
 Override with:
 
 ```sh
-PAPERCLIP_HOME=/custom/home PAPERCLIP_INSTANCE_ID=dev pnpm paperclipai run
+PAPERCLIP_HOME=/custom/home PAPERCLIP_INSTANCE_ID=dev pnpm swarmifyx run
 ```
 
 Or pass `--data-dir` directly on any command:
 
 ```sh
-pnpm paperclipai run --data-dir ./tmp/paperclip-dev
-pnpm paperclipai doctor --data-dir ./tmp/paperclip-dev
+pnpm swarmifyx run --data-dir ./tmp/paperclip-dev
+pnpm swarmifyx doctor --data-dir ./tmp/paperclip-dev
 ```

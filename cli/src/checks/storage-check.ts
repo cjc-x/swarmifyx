@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import type { PaperclipConfig } from "../config/schema.js";
+import { publicCliCommand } from "../config/branding.js";
 import type { CheckResult } from "./index.js";
 import { resolveRuntimeLikePath } from "./path-resolver.js";
 
@@ -36,7 +37,7 @@ export function storageCheck(config: PaperclipConfig, configPath?: string): Chec
       status: "fail",
       message: "S3 storage requires non-empty bucket and region",
       canRepair: false,
-      repairHint: "Run `paperclipai configure --section storage`",
+      repairHint: `Run \`${publicCliCommand("configure --section storage")}\``,
     };
   }
 

@@ -29,13 +29,13 @@ No Docker or external database required. Paperclip uses embedded PostgreSQL auto
 For a first-time install:
 
 ```sh
-pnpm paperclipai run
+pnpm swarmifyx run
 ```
 
 This does:
 
 1. Auto-onboards if config is missing
-2. Runs `paperclipai doctor` with repair enabled
+2. Runs `swarmifyx doctor` with repair enabled
 3. Starts the server when checks pass
 
 ## Tailscale/Private Auth Dev Mode
@@ -57,7 +57,7 @@ pnpm dev --authenticated-private
 Allow additional private hostnames:
 
 ```sh
-pnpm paperclipai allowed-hostname dotta-macbook-pro
+pnpm swarmifyx allowed-hostname dotta-macbook-pro
 ```
 
 For full setup and troubleshooting, see [Tailscale Private Access](/deploy/tailscale-private-access).
@@ -77,7 +77,7 @@ curl http://localhost:3100/api/companies
 To wipe local data and start fresh:
 
 ```sh
-rm -rf ~/.paperclip/instances/default/db
+rm -rf ~/.swarmifyx/instances/default/db
 pnpm dev
 ```
 
@@ -85,14 +85,16 @@ pnpm dev
 
 | Data | Path |
 |------|------|
-| Config | `~/.paperclip/instances/default/config.json` |
-| Database | `~/.paperclip/instances/default/db` |
-| Storage | `~/.paperclip/instances/default/data/storage` |
-| Secrets key | `~/.paperclip/instances/default/secrets/master.key` |
-| Logs | `~/.paperclip/instances/default/logs` |
+| Config | `~/.swarmifyx/instances/default/config.json` |
+| Database | `~/.swarmifyx/instances/default/db` |
+| Storage | `~/.swarmifyx/instances/default/data/storage` |
+| Secrets key | `~/.swarmifyx/instances/default/secrets/master.key` |
+| Logs | `~/.swarmifyx/instances/default/logs` |
 
 Override with environment variables:
 
 ```sh
-PAPERCLIP_HOME=/custom/path PAPERCLIP_INSTANCE_ID=dev pnpm paperclipai run
+PAPERCLIP_HOME=/custom/path PAPERCLIP_INSTANCE_ID=dev pnpm swarmifyx run
 ```
+
+Compatibility note: if `~/.swarmifyx` does not exist yet but legacy `~/.paperclip` does, Paperclip will continue using the legacy home until you migrate it or override `PAPERCLIP_HOME`.

@@ -1,5 +1,6 @@
 import pc from "picocolors";
 import type { Command } from "commander";
+import { PUBLIC_PRODUCT_NAME, publicCliCommand } from "../../config/branding.js";
 import { readConfig } from "../../config/store.js";
 import { readContext, resolveProfile, type ClientContextProfile } from "../../client/context.js";
 import { ApiRequestError, PaperclipApiClient } from "../../client/http.js";
@@ -25,11 +26,11 @@ export interface ResolvedClientContext {
 
 export function addCommonClientOptions(command: Command, opts?: { includeCompany?: boolean }): Command {
   command
-    .option("-c, --config <path>", "Path to Paperclip config file")
-    .option("-d, --data-dir <path>", "Paperclip data directory root (isolates state from ~/.paperclip)")
+    .option("-c, --config <path>", `Path to ${PUBLIC_PRODUCT_NAME} config file`)
+    .option("-d, --data-dir <path>", `${PUBLIC_PRODUCT_NAME} data directory root (isolates state from ~/.swarmifyx)`)
     .option("--context <path>", "Path to CLI context file")
     .option("--profile <name>", "CLI context profile name")
-    .option("--api-base <url>", "Base URL for the Paperclip API")
+    .option("--api-base <url>", `Base URL for the ${PUBLIC_PRODUCT_NAME} API`)
     .option("--api-key <token>", "Bearer token for agent-authenticated calls")
     .option("--json", "Output raw JSON");
 
@@ -65,7 +66,8 @@ export function resolveCommandContext(
 
   if (opts?.requireCompany && !companyId) {
     throw new Error(
-      "Company ID is required. Pass --company-id, set PAPERCLIP_COMPANY_ID, or set context profile companyId via `paperclipai context set`.",
+      "Company ID is required. Pass --company-id, set PAPERCLIP_COMPANY_ID, " +
+        `or set context profile companyId via \`${publicCliCommand("context set")}\`.`,
     );
   }
 

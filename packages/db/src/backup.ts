@@ -24,7 +24,9 @@ function expandHomePrefix(value: string): string {
 function resolvePaperclipHomeDir(): string {
   const envHome = process.env.PAPERCLIP_HOME?.trim();
   if (envHome) return path.resolve(expandHomePrefix(envHome));
-  return path.resolve(os.homedir(), ".paperclip");
+  const preferred = path.resolve(os.homedir(), ".swarmifyx");
+  const legacy = path.resolve(os.homedir(), ".paperclip");
+  return !existsSync(preferred) && existsSync(legacy) ? legacy : preferred;
 }
 
 function resolvePaperclipInstanceId(): string {

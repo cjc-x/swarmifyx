@@ -123,7 +123,7 @@ next_canary_version() {
   local stable_version="$1"
   local versions_json
 
-  versions_json="$(npm view paperclipai versions --json 2>/dev/null || echo '[]')"
+  versions_json="$(npm view swarmifyx versions --json 2>/dev/null || echo '[]')"
 
   node - "$stable_version" "$versions_json" <<'NODE'
 const stable = process.argv[2];
@@ -192,7 +192,7 @@ npm_version_exists() {
   local version="$1"
   local resolved
 
-  resolved="$(npm view "paperclipai@${version}" version 2>/dev/null || true)"
+  resolved="$(npm view "swarmifyx@${version}" version 2>/dev/null || true)"
   [ "$resolved" = "$version" ]
 }
 

@@ -8,6 +8,7 @@ coverage/
 .DS_Store
 data/
 .paperclip/
+.swarmifyx/
 .pnpm-store/
 tmp-*
 cli/tmp/
@@ -37,6 +38,7 @@ tmp/
 .vscode/
 .claude/settings.local.json
 .paperclip-local/
+.swarmifyx-local/
 
 # Playwright
 tests/e2e/test-results/

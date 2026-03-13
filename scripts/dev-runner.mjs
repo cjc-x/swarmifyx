@@ -46,6 +46,20 @@ if (tailscaleAuth) {
 
 const pnpmBin = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
 
+function spawnPnpm(args, options = {}) {
+  if (process.platform === "win32") {
+    return spawn(process.env.comspec ?? "cmd.exe", ["/d", "/s", "/c", pnpmBin, ...args], {
+      stdio: options.stdio,
+      env: options.env,
+    });
+  }
+
+  return spawn(pnpmBin, args, {
+    stdio: options.stdio,
+    env: options.env,
+  });
+}
+
 function formatPendingMigrationSummary(migrations) {
   if (migrations.length === 0) return "none";
   return migrations.length > 3
@@ -55,10 +69,9 @@ function formatPendingMigrationSummary(migrations) {
 
 async function runPnpm(args, options = {}) {
   return await new Promise((resolve, reject) => {
-    const child = spawn(pnpmBin, args, {
+    const child = spawnPnpm(args, {
       stdio: options.stdio ?? ["ignore", "pipe", "pipe"],
       env: options.env ?? process.env,
-      shell: process.platform === "win32",
     });
 
     let stdoutBuffer = "";
@@ -137,10 +150,9 @@ async function maybePreflightMigrations() {
 
   if (!shouldApply) return;
 
-  const migrate = spawn(pnpmBin, ["db:migrate"], {
+  const migrate = spawnPnpm(["db:migrate"], {
     stdio: "inherit",
     env,
-    shell: process.platform === "win32",
   });
   const exit = await new Promise((resolve) => {
     migrate.on("exit", (code, signal) => resolve({ code: code ?? 0, signal }));
@@ -161,11 +173,10 @@ if (mode === "watch") {
 }
 
 const serverScript = mode === "watch" ? "dev:watch" : "dev";
-const child = spawn(
-  pnpmBin,
-  ["--filter", "@paperclipai/server", serverScript, ...forwardedArgs],
-  { stdio: "inherit", env, shell: process.platform === "win32" },
-);
+const child = spawnPnpm(["--filter", "@paperclipai/server", serverScript, ...forwardedArgs], {
+  stdio: "inherit",
+  env,
+});
 
 child.on("exit", (code, signal) => {
   if (signal) {

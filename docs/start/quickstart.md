@@ -8,7 +8,7 @@ Get Paperclip running locally in under 5 minutes.
 ## Quick Start (Recommended)
 
 ```sh
-npx paperclipai onboard --yes
+npx swarmifyx onboard --yes
 ```
 
 This walks you through setup, configures your environment, and gets Paperclip running.
@@ -29,7 +29,7 @@ No external database required — Paperclip uses an embedded PostgreSQL instance
 ## One-Command Bootstrap
 
 ```sh
-pnpm paperclipai run
+pnpm swarmifyx run
 ```
 
 This auto-onboards if config is missing, runs health checks with auto-repair, and starts the server.

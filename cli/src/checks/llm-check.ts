@@ -1,4 +1,5 @@
 import type { PaperclipConfig } from "../config/schema.js";
+import { publicCliCommand } from "../config/branding.js";
 import type { CheckResult } from "./index.js";
 
 export async function llmCheck(config: PaperclipConfig): Promise<CheckResult> {
@@ -42,7 +43,7 @@ export async function llmCheck(config: PaperclipConfig): Promise<CheckResult> {
           status: "fail",
           message: "Claude API key is invalid (401)",
           canRepair: false,
-          repairHint: "Run `paperclipai configure --section llm`",
+          repairHint: `Run \`${publicCliCommand("configure --section llm")}\``,
         };
       }
       return {
@@ -63,7 +64,7 @@ export async function llmCheck(config: PaperclipConfig): Promise<CheckResult> {
           status: "fail",
           message: "OpenAI API key is invalid (401)",
           canRepair: false,
-          repairHint: "Run `paperclipai configure --section llm`",
+          repairHint: `Run \`${publicCliCommand("configure --section llm")}\``,
         };
       }
       return {

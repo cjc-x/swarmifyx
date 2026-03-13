@@ -2,6 +2,8 @@
 
 Maintainer runbook for shipping a full Paperclip release across npm, GitHub, and the website-facing changelog surface.
 
+Windows note: everyday `pnpm` developer entrypoints are supported in PowerShell and `cmd.exe`, but the release/smoke helpers in `scripts/*.sh` still expect a POSIX shell such as Git Bash.
+
 The release model is branch-driven:
 
 1. Start a release train on `release/X.Y.Z`
@@ -17,7 +19,7 @@ The release model is branch-driven:
 Every release has four separate surfaces:
 
 1. **Verification** — the exact git SHA passes typecheck, tests, and build
-2. **npm** — `paperclipai` and public workspace packages are published
+2. **npm** — `swarmifyx` and public workspace packages are published
 3. **GitHub** — the stable release gets a git tag and GitHub Release
 4. **Website / announcements** — the stable changelog is published externally and announced
 
@@ -67,13 +69,13 @@ claude --print --output-format stream-json --verbose --dangerously-skip-permissi
 ./scripts/release-preflight.sh canary patch
 ./scripts/release.sh patch --canary --dry-run
 ./scripts/release.sh patch --canary
-PAPERCLIPAI_VERSION=canary ./scripts/docker-onboard-smoke.sh
+SWARMIFYX_VERSION=canary ./scripts/docker-onboard-smoke.sh
 ```
 
 Users install canaries with:
 
 ```bash
-npx paperclipai@canary onboard
+npx swarmifyx@canary onboard
 ```
 
 ### 4. Publish stable
@@ -212,14 +214,14 @@ Concrete example:
 Run the actual install path in Docker:
 
 ```bash
-PAPERCLIPAI_VERSION=canary ./scripts/docker-onboard-smoke.sh
+SWARMIFYX_VERSION=canary ./scripts/docker-onboard-smoke.sh
 ```
 
 Useful isolated variants:
 
 ```bash
-HOST_PORT=3232 DATA_DIR=./data/release-smoke-canary PAPERCLIPAI_VERSION=canary ./scripts/docker-onboard-smoke.sh
-HOST_PORT=3233 DATA_DIR=./data/release-smoke-stable PAPERCLIPAI_VERSION=latest ./scripts/docker-onboard-smoke.sh
+HOST_PORT=3232 DATA_DIR=./data/release-smoke-canary SWARMIFYX_VERSION=canary ./scripts/docker-onboard-smoke.sh
+HOST_PORT=3233 DATA_DIR=./data/release-smoke-stable SWARMIFYX_VERSION=latest ./scripts/docker-onboard-smoke.sh
 ```
 
 If you want to exercise onboarding from the current committed ref instead of npm, use:
@@ -232,7 +234,7 @@ PAPERCLIP_PORT=3234 ./scripts/clean-onboard-ref.sh
 
 Minimum checks:
 
-- `npx paperclipai@canary onboard` installs
+- `npx swarmifyx@canary onboard` installs
 - onboarding completes without crashes
 - the server boots
 - the UI loads
@@ -356,7 +358,7 @@ It does not merge the release branch back to `master` for you.
 
 ### After a stable
 
-- [ ] `npm view paperclipai@latest version` matches the new stable version
+- [ ] `npm view swarmifyx@latest version` matches the new stable version
 - [ ] The git tag exists on GitHub
 - [ ] The GitHub Release exists and uses `releases/vX.Y.Z.md`
 - [ ] `vX.Y.Z` is reachable from `master`

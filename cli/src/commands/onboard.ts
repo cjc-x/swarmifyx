@@ -31,6 +31,7 @@ import {
   resolveDefaultLogsDir,
   resolvePaperclipInstanceId,
 } from "../config/home.js";
+import { publicCliCommand } from "../config/branding.js";
 import { bootstrapCeoInvite } from "./auth-bootstrap-ceo.js";
 import { printPaperclipCliBanner } from "../utils/banner.js";
 
@@ -235,7 +236,7 @@ function canCreateBootstrapInviteImmediately(config: Pick<PaperclipConfig, "data
 
 export async function onboard(opts: OnboardOptions): Promise<void> {
   printPaperclipCliBanner();
-  p.intro(pc.bgCyan(pc.black(" paperclipai onboard ")));
+  p.intro(pc.bgCyan(pc.black(` ${publicCliCommand("onboard")} `)));
   const configPath = resolveConfigPath(opts.config);
   const instance = describeLocalInstancePaths(resolvePaperclipInstanceId());
   p.log.message(
@@ -309,7 +310,11 @@ export async function onboard(opts: OnboardOptions): Promise<void> {
         await db.execute("SELECT 1");
         s.stop("Database connection successful");
       } catch {
-        s.stop(pc.yellow("Could not connect to database — you can fix this later with `paperclipai doctor`"));
+        s.stop(
+          pc.yellow(
+            `Could not connect to database — you can fix this later with \`${publicCliCommand("doctor")}\``,
+          ),
+        );
       }
     }
 
@@ -447,9 +452,9 @@ export async function onboard(opts: OnboardOptions): Promise<void> {
 
   p.note(
     [
-      `Run: ${pc.cyan("paperclipai run")}`,
-      `Reconfigure later: ${pc.cyan("paperclipai configure")}`,
-      `Diagnose setup: ${pc.cyan("paperclipai doctor")}`,
+      `Run: ${pc.cyan(publicCliCommand("run"))}`,
+      `Reconfigure later: ${pc.cyan(publicCliCommand("configure"))}`,
+      `Diagnose setup: ${pc.cyan(publicCliCommand("doctor"))}`,
     ].join("\n"),
     "Next commands",
   );
@@ -462,7 +467,7 @@ export async function onboard(opts: OnboardOptions): Promise<void> {
   let shouldRunNow = opts.run === true || opts.yes === true;
   if (!shouldRunNow && !opts.invokedByRun && process.stdin.isTTY && process.stdout.isTTY) {
     const answer = await p.confirm({
-      message: "Start Paperclip now?",
+      message: "Start SwarmifyX now?",
       initialValue: true,
     });
     if (!p.isCancel(answer)) {
@@ -481,8 +486,8 @@ export async function onboard(opts: OnboardOptions): Promise<void> {
     p.log.info(
       [
         "Bootstrap CEO invite will be created after the server starts.",
-        `Next: ${pc.cyan("paperclipai run")}`,
-        `Then: ${pc.cyan("paperclipai auth bootstrap-ceo")}`,
+        `Next: ${pc.cyan(publicCliCommand("run"))}`,
+        `Then: ${pc.cyan(publicCliCommand("auth bootstrap-ceo"))}`,
       ].join("\n"),
     );
   }

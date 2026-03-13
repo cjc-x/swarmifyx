@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
@@ -7,7 +8,9 @@ const INSTANCE_ID_RE = /^[a-zA-Z0-9_-]+$/;
 export function resolvePaperclipHomeDir(): string {
   const envHome = process.env.PAPERCLIP_HOME?.trim();
   if (envHome) return path.resolve(expandHomePrefix(envHome));
-  return path.resolve(os.homedir(), ".paperclip");
+  const preferred = path.resolve(os.homedir(), ".swarmifyx");
+  const legacy = path.resolve(os.homedir(), ".paperclip");
+  return !existsSync(preferred) && existsSync(legacy) ? legacy : preferred;
 }
 
 export function resolvePaperclipInstanceId(override?: string): string {
