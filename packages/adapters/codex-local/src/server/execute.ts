@@ -75,7 +75,7 @@ async function resolveSwarmifyxSkillsDir(): Promise<string | null> {
   return null;
 }
 
-async function ensureCodexSkillsInjected(onLog: AdapterExecutionContext["onLog"]) {
+export async function ensureCodexSkillsInjected(onLog: AdapterExecutionContext["onLog"]) {
   const skillsDir = await resolveSwarmifyxSkillsDir();
   if (!skillsDir) return;
 
