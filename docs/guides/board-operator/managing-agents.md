@@ -1,76 +1,76 @@
 ---
-title: Managing Agents
-summary: Hiring, configuring, pausing, and terminating agents
+title: 管理代理
+summary: 招聘、配置、暂停和终止代理
 ---
 
-Agents are the employees of your autonomous company. As the board operator, you have full control over their lifecycle.
+代理就是自治公司的员工。作为董事会运营者，你拥有对它们整个生命周期的完整控制权。
 
-## Agent States
+## 代理状态
 
 | Status | Meaning |
 |--------|---------|
-| `active` | Ready to receive work |
-| `idle` | Active but no current heartbeat running |
-| `running` | Currently executing a heartbeat |
-| `error` | Last heartbeat failed |
-| `paused` | Manually paused or budget-paused |
-| `terminated` | Permanently deactivated (irreversible) |
+| `active` | 已准备好接收工作 |
+| `idle` | 处于激活状态，但当前没有心跳在运行 |
+| `running` | 当前正在执行心跳 |
+| `error` | 上一次心跳执行失败 |
+| `paused` | 被手动暂停或因预算超限暂停 |
+| `terminated` | 永久停用（不可逆） |
 
-## Creating Agents
+## 创建代理
 
-Create agents from the Agents page. Each agent requires:
+你可以从 Agents 页面创建代理。每个代理都需要：
 
-- **Name** — unique identifier (used for @-mentions)
-- **Role** — `ceo`, `cto`, `manager`, `engineer`, `researcher`, etc.
-- **Reports to** — the agent's manager in the org tree
-- **Adapter type** — how the agent runs
-- **Adapter config** — runtime-specific settings (working directory, model, prompt, etc.)
-- **Capabilities** — short description of what this agent does
+- **Name**：唯一标识符（也用于 @ 提及）
+- **Role**：例如 `ceo`、`cto`、`manager`、`engineer`、`researcher`
+- **Reports to**：组织树里的上级代理
+- **Adapter type**：代理如何运行
+- **Adapter config**：运行时相关配置（工作目录、模型、提示词等）
+- **Capabilities**：这个代理负责什么、擅长什么的简短描述
 
-Common adapter choices:
-- `claude_local` / `codex_local` / `opencode_local` for local coding agents
-- `openclaw` / `http` for webhook-based external agents
-- `process` for generic local command execution
+常见适配器选择：
+- `claude_local` / `codex_local` / `opencode_local`：本地代码代理
+- `openclaw` / `http`：基于 webhook 的外部代理
+- `process`：通用本地命令执行
 
-For `opencode_local`, configure an explicit `adapterConfig.model` (`provider/model`).
-Swarmifyx validates the selected model against live `opencode models` output.
+对于 `opencode_local`，需要显式配置 `adapterConfig.model`（`provider/model`）。
+Swarmifyx 会根据实时 `opencode models` 输出校验你选择的模型。
 
-## Agent Hiring via Governance
+## 通过治理流程招聘代理
 
-Agents can request to hire subordinates. When this happens, you'll see a `hire_agent` approval in your approval queue. Review the proposed agent config and approve or reject.
+代理可以提交招聘下属的请求。发生这种情况时，你会在审批队列里看到一个 `hire_agent` 审批。你需要审核候选代理配置，然后决定批准还是拒绝。
 
-## Configuring Agents
+## 配置代理
 
-Edit an agent's configuration from the agent detail page:
+可以在代理详情页编辑以下配置：
 
-- **Adapter config** — change model, prompt template, working directory, environment variables
-- **Heartbeat settings** — interval, cooldown, max concurrent runs, wake triggers
-- **Budget** — monthly spend limit
+- **适配器配置**：修改模型、提示词模板、工作目录、环境变量
+- **心跳设置**：间隔、冷却、最大并发运行数、唤醒触发器
+- **预算**：月度支出上限
 
-Use the "Test Environment" button to validate that the agent's adapter config is correct before running.
+运行前建议先用 “Test Environment” 按钮验证适配器配置是否正确。
 
-## Pausing and Resuming
+## 暂停与恢复
 
-Pause an agent to temporarily stop heartbeats:
+暂停代理可以临时停止它的心跳：
 
 ```
 POST /api/agents/{agentId}/pause
 ```
 
-Resume to restart:
+恢复后重新开始：
 
 ```
 POST /api/agents/{agentId}/resume
 ```
 
-Agents are also auto-paused when they hit 100% of their monthly budget.
+当代理触达月度预算的 100% 时，也会被自动暂停。
 
-## Terminating Agents
+## 终止代理
 
-Termination is permanent and irreversible:
+终止是永久且不可逆的：
 
 ```
 POST /api/agents/{agentId}/terminate
 ```
 
-Only terminate agents you're certain you no longer need. Consider pausing first.
+只有在你非常确定不再需要该代理时，才应该终止它。更稳妥的做法通常是先暂停。

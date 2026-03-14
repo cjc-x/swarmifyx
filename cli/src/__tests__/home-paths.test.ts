@@ -29,16 +29,6 @@ describe("home path resolution", () => {
     expect(paths.configPath).toBe(path.resolve(fakeHome, ".swarmifyx", "instances", "default", "config.json"));
   });
 
-  it("throws a migration error when only the legacy ~/.swarmifyx home exists", () => {
-    delete process.env.SWARMIFYX_HOME;
-    delete process.env.SWARMIFYX_INSTANCE_ID;
-    const fakeHome = fs.mkdtempSync(path.join(os.tmpdir(), "swarmifyx-home-"));
-    fs.mkdirSync(path.join(fakeHome, ".swarmifyx"), { recursive: true });
-    vi.spyOn(os, "homedir").mockReturnValue(fakeHome);
-
-    expect(() => resolveSwarmifyxHomeDir()).toThrow(/Legacy Swarmifyx home detected/);
-  });
-
   it("supports SWARMIFYX_HOME and explicit instance ids", () => {
     process.env.SWARMIFYX_HOME = "~/swarmifyx-home";
 

@@ -50,4 +50,16 @@ describe("assignee selection helpers", () => {
     expect(formatAssigneeUserLabel("local-board", "someone-else")).toBe("Board");
     expect(formatAssigneeUserLabel("user-abcdef", "someone-else")).toBe("user-");
   });
+
+  it("supports localized assignee labels", () => {
+    const [option] = currentUserAssigneeOption("local-board", { me: "我", board: "董事会" });
+
+    expect(option).toEqual({
+      id: "user:local-board",
+      label: "我",
+      searchText: "我 董事会 me board human local-board",
+    });
+    expect(formatAssigneeUserLabel("user-1", "user-1", { me: "我", board: "董事会" })).toBe("我");
+    expect(formatAssigneeUserLabel("local-board", "someone-else", { me: "我", board: "董事会" })).toBe("董事会");
+  });
 });

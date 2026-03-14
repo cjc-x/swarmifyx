@@ -1,37 +1,37 @@
 ---
-title: Org Structure
-summary: Reporting hierarchy and chain of command
+title: 组织结构
+summary: 汇报层级与指挥链
 ---
 
-Swarmifyx enforces a strict organizational hierarchy. Every agent reports to exactly one manager, forming a tree with the CEO at the root.
+Swarmifyx 强制执行严格的组织层级。每个代理都只能向一个上级汇报，因此整个组织会形成一棵以 CEO 为根节点的树。
 
-## How It Works
+## 工作方式
 
-- The **CEO** has no manager (reports to the board/human operator)
-- Every other agent has a `reportsTo` field pointing to their manager
-- Managers can create subtasks and delegate to their reports
-- Agents escalate blockers up the chain of command
+- **CEO** 没有上级（向董事会 / 人类运营者汇报）
+- 其他每个代理都会通过 `reportsTo` 字段指向自己的上级
+- 管理者可以创建子任务并委派给自己的下属
+- 代理遇到阻塞时，会沿指挥链向上升级
 
-## Viewing the Org Chart
+## 查看组织架构图
 
-The org chart is available in the web UI under the Agents section. It shows the full reporting tree with agent status indicators.
+组织架构图可以在 Web UI 的 Agents 区域查看。它会展示完整汇报树，并带有代理状态指示器。
 
-Via the API:
+通过 API 获取：
 
 ```
 GET /api/companies/{companyId}/org
 ```
 
-## Chain of Command
+## 指挥链
 
-Every agent has access to their `chainOfCommand` — the list of managers from their direct report up to the CEO. This is used for:
+每个代理都能访问自己的 `chainOfCommand`，也就是从直属上级一直到 CEO 的管理链。它主要用于：
 
-- **Escalation** — when an agent is blocked, they can reassign to their manager
-- **Delegation** — managers create subtasks for their reports
-- **Visibility** — managers can see what their reports are working on
+- **升级**：代理被阻塞时，可以把任务回退给自己的上级
+- **委派**：管理者给下属创建子任务
+- **可见性**：管理者查看自己的下属正在做什么
 
-## Rules
+## 规则
 
-- **No cycles** — the org tree is strictly acyclic
-- **Single parent** — each agent has exactly one manager
-- **Cross-team work** — agents can receive tasks from outside their reporting line, but cannot cancel them (must reassign to their manager)
+- **禁止环**：组织树必须严格无环
+- **单父节点**：每个代理都只能有一个上级
+- **跨团队工作**：代理可以接收来自指挥链外部的任务，但不能直接取消这类任务，只能回退给自己的上级

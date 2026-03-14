@@ -1,25 +1,25 @@
 ---
-title: Setup Commands
-summary: Onboard, run, doctor, and configure
+title: 初始化命令
+summary: onboard、run、doctor 和 configure
 ---
 
-Instance setup and diagnostics commands.
+用于实例初始化和诊断的命令。
 
 ## `swarmifyx run`
 
-One-command bootstrap and start:
+单命令引导并启动：
 
 ```sh
 pnpm swarmifyx run
 ```
 
-Does:
+它会：
 
-1. Auto-onboards if config is missing
-2. Runs `swarmifyx doctor` with repair enabled
-3. Starts the server when checks pass
+1. 在缺少配置时自动完成引导
+2. 运行启用修复能力的 `swarmifyx doctor`
+3. 在检查通过后启动服务
 
-Choose a specific instance:
+指定某个实例：
 
 ```sh
 pnpm swarmifyx run --instance dev
@@ -27,24 +27,24 @@ pnpm swarmifyx run --instance dev
 
 ## `swarmifyx onboard`
 
-Interactive first-time setup:
+首次交互式初始化：
 
 ```sh
 pnpm swarmifyx onboard
 ```
 
-First prompt:
+第一步会让你选择：
 
-1. `Quickstart` (recommended): local defaults (embedded database, no LLM provider, local disk storage, default secrets)
-2. `Advanced setup`: full interactive configuration
+1. `Quickstart`（推荐）：使用本地默认配置（内嵌数据库、无 LLM provider、本地磁盘存储、默认 secrets）
+2. `Advanced setup`：完整的交互式配置流程
 
-Start immediately after onboarding:
+引导结束后立刻启动：
 
 ```sh
 pnpm swarmifyx onboard --run
 ```
 
-Non-interactive defaults + immediate start (opens browser on server listen):
+使用非交互默认值并立即启动（服务监听后会打开浏览器）：
 
 ```sh
 pnpm swarmifyx onboard --yes
@@ -52,24 +52,24 @@ pnpm swarmifyx onboard --yes
 
 ## `swarmifyx doctor`
 
-Health checks with optional auto-repair:
+带可选自动修复的健康检查：
 
 ```sh
 pnpm swarmifyx doctor
 pnpm swarmifyx doctor --repair
 ```
 
-Validates:
+检查内容包括：
 
-- Server configuration
-- Database connectivity
-- Secrets adapter configuration
-- Storage configuration
-- Missing key files
+- 服务端配置
+- 数据库连通性
+- secrets 适配器配置
+- 存储配置
+- 缺失的 key 文件
 
 ## `swarmifyx configure`
 
-Update configuration sections:
+更新配置分区：
 
 ```sh
 pnpm swarmifyx configure --section server
@@ -79,7 +79,7 @@ pnpm swarmifyx configure --section storage
 
 ## `swarmifyx env`
 
-Show resolved environment configuration:
+显示解析后的环境配置：
 
 ```sh
 pnpm swarmifyx env
@@ -87,29 +87,29 @@ pnpm swarmifyx env
 
 ## `swarmifyx allowed-hostname`
 
-Allow a private hostname for authenticated/private mode:
+为 authenticated/private 模式放行私有主机名：
 
 ```sh
 pnpm swarmifyx allowed-hostname my-tailscale-host
 ```
 
-## Local Storage Paths
+## 本地存储路径
 
 | Data | Default Path |
 |------|-------------|
-| Config | `~/.swarmifyx/instances/default/config.json` |
-| Database | `~/.swarmifyx/instances/default/db` |
-| Logs | `~/.swarmifyx/instances/default/logs` |
-| Storage | `~/.swarmifyx/instances/default/data/storage` |
+| 配置 | `~/.swarmifyx/instances/default/config.json` |
+| 数据库 | `~/.swarmifyx/instances/default/db` |
+| 日志 | `~/.swarmifyx/instances/default/logs` |
+| 存储 | `~/.swarmifyx/instances/default/data/storage` |
 | Secrets key | `~/.swarmifyx/instances/default/secrets/master.key` |
 
-Override with:
+可以通过下面的方式覆盖：
 
 ```sh
 SWARMIFYX_HOME=/custom/home SWARMIFYX_INSTANCE_ID=dev pnpm swarmifyx run
 ```
 
-Or pass `--data-dir` directly on any command:
+也可以直接在任意命令上加 `--data-dir`：
 
 ```sh
 pnpm swarmifyx run --data-dir ./tmp/swarmifyx-dev

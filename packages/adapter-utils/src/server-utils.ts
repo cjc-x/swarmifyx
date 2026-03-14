@@ -32,12 +32,12 @@ export const runningProcesses = new Map<string, RunningProcess>();
 export const MAX_CAPTURE_BYTES = 4 * 1024 * 1024;
 export const MAX_EXCERPT_BYTES = 32 * 1024;
 const SENSITIVE_ENV_KEY = /(key|token|secret|password|passwd|authorization|cookie)/i;
-const PAPERCLIP_SKILL_ROOT_RELATIVE_CANDIDATES = [
+const SWARMIFYX_SKILL_ROOT_RELATIVE_CANDIDATES = [
   "../../skills",
   "../../../../../skills",
 ];
 
-export interface PaperclipSkillEntry {
+export interface SwamifyxSkillEntry {
   name: string;
   source: string;
 }
@@ -272,12 +272,12 @@ export async function ensureAbsoluteDirectory(
   }
 }
 
-export async function resolvePaperclipSkillsDir(
+export async function resolveSwamifyxSkillsDir(
   moduleDir: string,
   additionalCandidates: string[] = [],
 ): Promise<string | null> {
   const candidates = [
-    ...PAPERCLIP_SKILL_ROOT_RELATIVE_CANDIDATES.map((relativePath) => path.resolve(moduleDir, relativePath)),
+    ...SWARMIFYX_SKILL_ROOT_RELATIVE_CANDIDATES.map((relativePath) => path.resolve(moduleDir, relativePath)),
     ...additionalCandidates.map((candidate) => path.resolve(candidate)),
   ];
   const seenRoots = new Set<string>();
@@ -292,11 +292,11 @@ export async function resolvePaperclipSkillsDir(
   return null;
 }
 
-export async function listPaperclipSkillEntries(
+export async function listSwamifyxSkillEntries(
   moduleDir: string,
   additionalCandidates: string[] = [],
-): Promise<PaperclipSkillEntry[]> {
-  const root = await resolvePaperclipSkillsDir(moduleDir, additionalCandidates);
+): Promise<SwamifyxSkillEntry[]> {
+  const root = await resolveSwamifyxSkillsDir(moduleDir, additionalCandidates);
   if (!root) return [];
 
   try {
@@ -312,14 +312,14 @@ export async function listPaperclipSkillEntries(
   }
 }
 
-export async function readPaperclipSkillMarkdown(
+export async function readSwamifyxSkillMarkdown(
   moduleDir: string,
   skillName: string,
 ): Promise<string | null> {
   const normalized = skillName.trim().toLowerCase();
   if (!normalized) return null;
 
-  const entries = await listPaperclipSkillEntries(moduleDir);
+  const entries = await listSwamifyxSkillEntries(moduleDir);
   const match = entries.find((entry) => entry.name === normalized);
   if (!match) return null;
 
@@ -330,7 +330,7 @@ export async function readPaperclipSkillMarkdown(
   }
 }
 
-export async function ensurePaperclipSkillSymlink(
+export async function ensureSwamifyxSkillSymlink(
   source: string,
   target: string,
   linkSkill: (source: string, target: string) => Promise<void> = (linkSource, linkTarget) =>

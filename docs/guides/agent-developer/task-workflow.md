@@ -1,58 +1,58 @@
 ---
-title: Task Workflow
-summary: Checkout, work, update, and delegate patterns
+title: 任务工作流
+summary: Checkout、执行、更新与委派模式
 ---
 
-This guide covers the standard patterns for how agents work on tasks.
+这篇指南介绍代理处理任务时应遵循的标准模式。
 
-## Checkout Pattern
+## Checkout 模式
 
-Before doing any work on a task, checkout is required:
+在开始任何任务工作前，都必须先 checkout：
 
 ```
 POST /api/issues/{issueId}/checkout
 { "agentId": "{yourId}", "expectedStatuses": ["todo", "backlog", "blocked"] }
 ```
 
-This is an atomic operation. If two agents race to checkout the same task, exactly one succeeds and the other gets `409 Conflict`.
+这是一个原子操作。如果两个代理同时争抢同一个任务，必定只有一个成功，另一个会收到 `409 Conflict`。
 
-**Rules:**
-- Always checkout before working
-- Never retry a 409 — pick a different task
-- If you already own the task, checkout succeeds idempotently
+**规则：**
+- 开始工作前总是先 checkout
+- 不要重试 409，改做别的任务
+- 如果任务本来就由你占有，checkout 会以幂等方式成功
 
-## Work-and-Update Pattern
+## 执行并更新模式
 
-While working, keep the task updated:
+工作过程中要持续更新任务状态：
 
 ```
 PATCH /api/issues/{issueId}
 { "comment": "JWT signing done. Still need token refresh. Continuing next heartbeat." }
 ```
 
-When finished:
+完成后：
 
 ```
 PATCH /api/issues/{issueId}
 { "status": "done", "comment": "Implemented JWT signing and token refresh. All tests passing." }
 ```
 
-Always include the `X-Swarmifyx-Run-Id` header on state changes.
+进行状态变更时始终带上 `X-Swarmifyx-Run-Id` 请求头。
 
-## Blocked Pattern
+## 阻塞模式
 
-If you can't make progress:
+如果你无法继续推进：
 
 ```
 PATCH /api/issues/{issueId}
 { "status": "blocked", "comment": "Need DBA review for migration PR #38. Reassigning to @EngineeringLead." }
 ```
 
-Never sit silently on blocked work. Comment the blocker, update the status, and escalate.
+不要对阻塞的工作保持沉默。请写明阻塞原因、更新状态，并把问题升级出去。
 
-## Delegation Pattern
+## 委派模式
 
-Managers break down work into subtasks:
+管理者会把工作拆解为子任务：
 
 ```
 POST /api/companies/{companyId}/issues
@@ -66,19 +66,19 @@ POST /api/companies/{companyId}/issues
 }
 ```
 
-Always set `parentId` to maintain the task hierarchy. Set `goalId` when applicable.
+始终设置 `parentId` 来维持任务层级；适用时也要设置 `goalId`。
 
-## Release Pattern
+## Release 模式
 
-If you need to give up a task (e.g. you realize it should go to someone else):
+如果你需要放弃某个任务（例如意识到它更适合别人来做）：
 
 ```
 POST /api/issues/{issueId}/release
 ```
 
-This releases your ownership. Leave a comment explaining why.
+这会释放你的任务占有权。记得留一条评论解释原因。
 
-## Worked Example: IC Heartbeat
+## 完整示例：IC 的一次心跳
 
 ```
 GET /api/agents/me

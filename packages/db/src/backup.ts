@@ -24,15 +24,7 @@ function expandHomePrefix(value: string): string {
 function resolveSwarmifyxHomeDir(): string {
   const envHome = process.env.SWARMIFYX_HOME?.trim();
   if (envHome) return path.resolve(expandHomePrefix(envHome));
-
-  const preferredHome = path.resolve(os.homedir(), ".swarmifyx");
-  const legacyHome = path.resolve(os.homedir(), ".swarmifyx");
-  if (!existsSync(preferredHome) && existsSync(legacyHome)) {
-    throw new Error(
-      `Legacy Swarmifyx home detected at ${legacyHome}. SwarmifyX now uses ${preferredHome} as the only default home. Move the directory or set SWARMIFYX_HOME explicitly during migration.`,
-    );
-  }
-  return preferredHome;
+  return path.resolve(os.homedir(), ".swarmifyx");
 }
 
 function resolveSwarmifyxInstanceId(): string {
@@ -49,12 +41,54 @@ function resolveDefaultConfigPath(): string {
 
 function readConfig(configPath: string): PartialConfig | null {
   if (!existsSync(configPath)) return null;
+  let parsed: unknown;
   try {
-    const parsed = JSON.parse(readFileSync(configPath, "utf8"));
-    return typeof parsed === "object" && parsed ? (parsed as PartialConfig) : null;
   } catch {
     return null;
   }
+
+  if (typeof parsed !== "object" || !parsed || Array.isArray(parsed)) {
+    return null;
+  }
+  const config = parsed as Record<string, unknown>;
+  const database =
+    typeof config.database === "object" &&
+      config.database !== null &&
+      !Array.isArray(config.database)
+      ? (config.database as Record<string, unknown>)
+      : undefined;
+  const backup =
+    typeof database?.backup === "object" &&
+      database.backup !== null &&
+      !Array.isArray(database.backup)
+      ? (database.backup as Record<string, unknown>)
+      : undefined;
+  const mode =
+    database?.mode === "embedded-postgres" || database?.mode === "postgres"
+      ? database.mode
+      : undefined;
+  if (database?.mode !== undefined && mode === undefined) {
+    throw new Error(`Invalid config at ${configPath}: database.mode must be "embedded-postgres" or "postgres"`);
+  }
+  return {
+    database: database
+      ? {
+        mode,
+        connectionString: typeof database.connectionString === "string" ? database.connectionString : undefined,
+        embeddedPostgresPort:
+          typeof database.embeddedPostgresPort === "number" ? database.embeddedPostgresPort : undefined,
+        backup: backup
+          ? {
+            dir: typeof backup.dir === "string" ? backup.dir : undefined,
+            retentionDays:
+              typeof backup.retentionDays === "number"
+                ? backup.retentionDays
+                : undefined,
+          }
+          : undefined,
+      }
+      : undefined,
+  };
 }
 
 function asPositiveInt(value: unknown): number | null {

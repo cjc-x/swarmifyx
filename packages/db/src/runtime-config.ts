@@ -6,8 +6,8 @@ const DEFAULT_INSTANCE_ID = "default";
 const CONFIG_BASENAME = "config.json";
 const ENV_BASENAME = ".env";
 const INSTANCE_ID_RE = /^[a-zA-Z0-9_-]+$/;
+const DEFAULT_HOME_BASENAME = ".swarmifyx";
 const REPO_CONFIG_DIRNAME = ".swarmifyx";
-const LEGACY_REPO_CONFIG_DIRNAME = ".swarmifyx";
 
 type PartialConfig = {
   database?: {
@@ -15,8 +15,6 @@ type PartialConfig = {
     connectionString?: string;
     embeddedPostgresDataDir?: string;
     embeddedPostgresPort?: number;
-    pgliteDataDir?: string;
-    pglitePort?: number;
   };
 };
 
@@ -46,15 +44,7 @@ function expandHomePrefix(value: string): string {
 function resolveSwarmifyxHomeDir(): string {
   const envHome = process.env.SWARMIFYX_HOME?.trim();
   if (envHome) return path.resolve(expandHomePrefix(envHome));
-
-  const preferredHome = path.resolve(os.homedir(), REPO_CONFIG_DIRNAME);
-  const legacyHome = path.resolve(os.homedir(), LEGACY_REPO_CONFIG_DIRNAME);
-  if (!existsSync(preferredHome) && existsSync(legacyHome)) {
-    throw new Error(
-      `Legacy Swarmifyx home detected at ${legacyHome}. SwarmifyX now uses ${preferredHome} as the only default home. Move the directory or set SWARMIFYX_HOME explicitly during migration.`,
-    );
-  }
-  return preferredHome;
+  return path.resolve(os.homedir(), DEFAULT_HOME_BASENAME);
 }
 
 function resolveSwarmifyxInstanceId(): string {
@@ -82,30 +72,12 @@ function resolveHomeAwarePath(value: string): string {
   return path.resolve(expandHomePrefix(value));
 }
 
-function resolveLegacyRepoLocalSentinel(dir: string): string | null {
-  const legacyConfigPath = path.resolve(dir, LEGACY_REPO_CONFIG_DIRNAME, CONFIG_BASENAME);
-  if (existsSync(legacyConfigPath)) return legacyConfigPath;
-
-  const legacyEnvPath = path.resolve(dir, LEGACY_REPO_CONFIG_DIRNAME, ENV_BASENAME);
-  if (existsSync(legacyEnvPath)) return legacyEnvPath;
-
-  return null;
-}
-
 function findConfigFileFromAncestors(startDir: string): string | null {
   let currentDir = path.resolve(startDir);
 
   while (true) {
     const candidate = path.resolve(currentDir, REPO_CONFIG_DIRNAME, CONFIG_BASENAME);
     if (existsSync(candidate)) return candidate;
-
-    const legacySentinel = resolveLegacyRepoLocalSentinel(currentDir);
-    if (legacySentinel) {
-      const targetDir = path.resolve(currentDir, REPO_CONFIG_DIRNAME);
-      throw new Error(
-        `Legacy repo-local Swarmifyx files detected at ${legacySentinel}. SwarmifyX only auto-loads ${targetDir}. Move the repo-local files into ${targetDir} before rerunning this command.`,
-      );
-    }
 
     const nextDir = path.resolve(currentDir, "..");
     if (nextDir === currentDir) return null;
@@ -160,38 +132,6 @@ function readEnvEntries(envPath: string): Record<string, string> {
   return parseEnvFile(readFileSync(envPath, "utf8"));
 }
 
-function migrateLegacyConfig(raw: unknown): PartialConfig | null {
-  if (typeof raw !== "object" || raw === null || Array.isArray(raw)) return null;
-
-  const config = { ...(raw as Record<string, unknown>) };
-  const databaseRaw = config.database;
-  if (typeof databaseRaw !== "object" || databaseRaw === null || Array.isArray(databaseRaw)) {
-    return config;
-  }
-
-  const database = { ...(databaseRaw as Record<string, unknown>) };
-  if (database.mode === "pglite") {
-    database.mode = "embedded-postgres";
-
-    if (
-      typeof database.embeddedPostgresDataDir !== "string" &&
-      typeof database.pgliteDataDir === "string"
-    ) {
-      database.embeddedPostgresDataDir = database.pgliteDataDir;
-    }
-    if (
-      typeof database.embeddedPostgresPort !== "number" &&
-      typeof database.pglitePort === "number" &&
-      Number.isFinite(database.pglitePort)
-    ) {
-      database.embeddedPostgresPort = database.pglitePort;
-    }
-  }
-
-  config.database = database;
-  return config as PartialConfig;
-}
-
 function asPositiveInt(value: unknown): number | null {
   if (typeof value !== "number" || !Number.isFinite(value)) return null;
   const rounded = Math.trunc(value);
@@ -210,22 +150,31 @@ function readConfig(configPath: string): PartialConfig | null {
     );
   }
 
-  const migrated = migrateLegacyConfig(parsed);
-  if (migrated === null || typeof migrated !== "object" || Array.isArray(migrated)) {
+  if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
     throw new Error(`Invalid config at ${configPath}: expected a JSON object`);
   }
 
+  const rawConfig = parsed as Record<string, unknown>;
   const database =
-    typeof migrated.database === "object" &&
-      migrated.database !== null &&
-      !Array.isArray(migrated.database)
-      ? migrated.database
+    typeof rawConfig.database === "object" &&
+      rawConfig.database !== null &&
+      !Array.isArray(rawConfig.database)
+      ? (rawConfig.database as Record<string, unknown>)
       : undefined;
+  const mode =
+    database?.mode === "embedded-postgres" || database?.mode === "postgres"
+      ? database.mode
+      : undefined;
+  if (database?.mode !== undefined && mode === undefined) {
+    throw new Error(
+      `Invalid config at ${configPath}: database.mode must be "embedded-postgres" or "postgres"`,
+    );
+  }
 
   return {
     database: database
       ? {
-        mode: database.mode === "postgres" ? "postgres" : "embedded-postgres",
+        mode,
         connectionString:
           typeof database.connectionString === "string" ? database.connectionString : undefined,
         embeddedPostgresDataDir:
@@ -233,8 +182,6 @@ function readConfig(configPath: string): PartialConfig | null {
             ? database.embeddedPostgresDataDir
             : undefined,
         embeddedPostgresPort: asPositiveInt(database.embeddedPostgresPort) ?? undefined,
-        pgliteDataDir: typeof database.pgliteDataDir === "string" ? database.pgliteDataDir : undefined,
-        pglitePort: asPositiveInt(database.pglitePort) ?? undefined,
       }
       : undefined,
   };

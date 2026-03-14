@@ -1,72 +1,72 @@
 ---
-title: Secrets Management
-summary: Master key, encryption, and strict mode
+title: Secrets 管理
+summary: 主密钥、加密与严格模式
 ---
 
-Swarmifyx encrypts secrets at rest using a local master key. Agent environment variables that contain sensitive values (API keys, tokens) are stored as encrypted secret references.
+Swarmifyx 会使用本地主密钥对落盘的 secrets 进行加密。代理环境变量里的敏感值（API key、token 等）会以加密 secret 引用的形式存储。
 
-## Default Provider: `local_encrypted`
+## 默认 Provider：`local_encrypted`
 
-Secrets are encrypted with a local master key stored at:
+secrets 会使用本地主密钥加密，密钥默认保存在：
 
 ```
 ~/.swarmifyx/instances/default/secrets/master.key
 ```
 
-This key is auto-created during onboarding. The key never leaves your machine.
+这个密钥会在 onboarding 时自动创建，并且不会离开你的机器。
 
-## Configuration
+## 配置
 
-### CLI Setup
+### CLI 配置
 
-Onboarding writes default secrets config:
+onboarding 会写入默认的 secrets 配置：
 
 ```sh
 pnpm swarmifyx onboard
 ```
 
-Update secrets settings:
+更新 secrets 配置：
 
 ```sh
 pnpm swarmifyx configure --section secrets
 ```
 
-Validate secrets config:
+校验 secrets 配置：
 
 ```sh
 pnpm swarmifyx doctor
 ```
 
-### Environment Overrides
+### 环境变量覆盖
 
 | Variable | Description |
 |----------|-------------|
-| `SWARMIFYX_SECRETS_MASTER_KEY` | 32-byte key as base64, hex, or raw string |
-| `SWARMIFYX_SECRETS_MASTER_KEY_FILE` | Custom key file path |
-| `SWARMIFYX_SECRETS_STRICT_MODE` | Set to `true` to enforce secret refs |
+| `SWARMIFYX_SECRETS_MASTER_KEY` | 32 字节密钥，支持 base64、hex 或原始字符串 |
+| `SWARMIFYX_SECRETS_MASTER_KEY_FILE` | 自定义 key 文件路径 |
+| `SWARMIFYX_SECRETS_STRICT_MODE` | 设为 `true` 时强制使用 secret ref |
 
-## Strict Mode
+## 严格模式
 
-When strict mode is enabled, sensitive env keys (matching `*_API_KEY`, `*_TOKEN`, `*_SECRET`) must use secret references instead of inline plain values.
+启用严格模式后，所有匹配 `*_API_KEY`、`*_TOKEN`、`*_SECRET` 的敏感环境变量都必须使用 secret 引用，而不能继续以内联明文形式出现。
 
 ```sh
 SWARMIFYX_SECRETS_STRICT_MODE=true
 ```
 
-Recommended for any deployment beyond local trusted.
+建议所有超过本地可信环境的部署都开启它。
 
-## Migrating Inline Secrets
+## 迁移内联 Secrets
 
-If you have existing agents with inline API keys in their config, migrate them to encrypted secret refs:
+如果你的现有代理配置里仍然内联保存着 API key，可以把它们迁移成加密 secret ref：
 
 ```sh
 pnpm secrets:migrate-inline-env         # dry run
 pnpm secrets:migrate-inline-env --apply # apply migration
 ```
 
-## Secret References in Agent Config
+## 代理配置中的 Secret 引用
 
-Agent environment variables use secret references:
+代理环境变量可以像这样引用 secret：
 
 ```json
 {
@@ -80,4 +80,4 @@ Agent environment variables use secret references:
 }
 ```
 
-The server resolves and decrypts these at runtime, injecting the real value into the agent process environment.
+服务端会在运行时解析并解密这些引用，然后把真实值注入到代理进程环境中。

@@ -16,7 +16,7 @@ const BOARD_ROUTE_ROOTS = new Set([
   "design-guide",
 ]);
 
-const GLOBAL_ROUTE_ROOTS = new Set(["auth", "invite", "board-claim", "docs", "instance"]);
+const GLOBAL_ROUTE_ROOTS = new Set(["auth", "invite", "board-claim", "docs", "instance", "onboarding"]);
 
 type RouteCompany = Pick<Company, "id" | "issuePrefix" | "status">;
 
@@ -101,7 +101,7 @@ function findRoutableCompany(
     ? companies.find((company) => company.id === selectedCompanyId && company.status !== "archived") ?? null
     : null;
 
-  return selectedCompany ?? companies.find((company) => company.status !== "archived") ?? companies[0] ?? null;
+  return selectedCompany ?? companies.find((company) => company.status !== "archived") ?? null;
 }
 
 export function resolveCompanyRouteSync(params: {
@@ -137,8 +137,11 @@ export function resolveCompanyRouteSync(params: {
 
   if (matchedCompany.status === "archived") {
     const fallback = findRoutableCompany(companies, selectedCompanyId);
-    if (!fallback || fallback.id === matchedCompany.id) {
-      return { kind: "none" };
+    if (!fallback) {
+      return {
+        kind: "redirect",
+        to: "/onboarding",
+      };
     }
 
     const suffix = pathname.replace(/^\/[^/]+/, "");

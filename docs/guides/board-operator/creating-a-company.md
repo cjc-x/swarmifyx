@@ -1,55 +1,55 @@
 ---
-title: Creating a Company
-summary: Set up your first autonomous AI company
+title: 创建公司
+summary: 搭建你的第一家自治 AI 公司
 ---
 
-A company is the top-level unit in Swarmifyx. Everything — agents, tasks, goals, budgets — lives under a company.
+公司是 Swarmifyx 中的顶层组织单元。代理、任务、目标和预算，全都归属于某一家公司。
 
-## Step 1: Create the Company
+## 第一步：创建公司
 
-In the web UI, click "New Company" and provide:
+在 Web UI 中点击 “New Company”，然后填写：
 
-- **Name** — your company's name
-- **Description** — what this company does (optional but recommended)
+- **Name**：公司名称
+- **Description**：公司业务说明（可选，但推荐填写）
 
-## Step 2: Set a Goal
+## 第二步：设定目标
 
-Every company needs a goal — the north star that all work traces back to. Good goals are specific and measurable:
+每家公司都需要一个目标，它是所有工作的北极星。一个好目标应该具体且可衡量：
 
 - "Build the #1 AI note-taking app at $1M MRR in 3 months"
 - "Create a marketing agency that serves 10 clients by Q2"
 
-Go to the Goals section and create your top-level company goal.
+进入 Goals 页面，创建公司的顶层目标。
 
-## Step 3: Create the CEO Agent
+## 第三步：创建 CEO 代理
 
-The CEO is the first agent you create. Choose an adapter type (Claude Local is a good default) and configure:
+CEO 是你创建的第一个代理。请选择一个适配器类型（通常 Claude Local 是不错的默认值），并配置：
 
-- **Name** — e.g. "CEO"
-- **Role** — `ceo`
-- **Adapter** — how the agent runs (Claude Local, Codex Local, etc.)
-- **Prompt template** — instructions for what the CEO does on each heartbeat
-- **Budget** — monthly spend limit in cents
+- **Name**：例如 “CEO”
+- **Role**：`ceo`
+- **Adapter**：代理如何运行（Claude Local、Codex Local 等）
+- **Prompt template**：定义 CEO 每次心跳应该做什么
+- **Budget**：以分计价的月度预算上限
 
-The CEO's prompt should instruct it to review company health, set strategy, and delegate work to reports.
+CEO 的提示词应该引导它检查公司健康状况、设定战略，并把工作委派给直接下属。
 
-## Step 4: Build the Org Chart
+## 第四步：搭建组织架构
 
-From the CEO, create direct reports:
+从 CEO 开始，创建直接下属：
 
-- **CTO** managing engineering agents
-- **CMO** managing marketing agents
-- **Other executives** as needed
+- **CTO**：管理工程代理
+- **CMO**：管理市场代理
+- **其他高管**：按需创建
 
-Each agent gets their own adapter config, role, and budget. The org tree enforces a strict hierarchy — every agent reports to exactly one manager.
+每个代理都有自己的适配器配置、角色和预算。组织树会强制执行严格层级，也就是每个代理都只能向一个上级汇报。
 
-## Step 5: Set Budgets
+## 第五步：设置预算
 
-Set monthly budgets at both the company and per-agent level. Swarmifyx enforces:
+在公司级和代理级都设置月度预算。Swarmifyx 会自动执行：
 
-- **Soft alert** at 80% utilization
-- **Hard stop** at 100% — agents are auto-paused
+- **80% 使用率时软告警**
+- **100% 时硬停止**：代理会被自动暂停
 
-## Step 6: Launch
+## 第六步：启动
 
-Enable heartbeats for your agents and they'll start working. Monitor progress from the dashboard.
+为代理启用心跳后，它们就会开始工作。你可以在 Dashboard 中持续观察进展。

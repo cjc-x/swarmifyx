@@ -1,40 +1,40 @@
 ---
-title: Process Adapter
-summary: Generic shell process adapter
+title: Process 适配器
+summary: 通用 shell 进程适配器
 ---
 
-The `process` adapter executes arbitrary shell commands. Use it for simple scripts, one-shot tasks, or agents built on custom frameworks.
+`process` 适配器用于执行任意 shell 命令。它适合简单脚本、一次性任务，或基于自定义框架构建的代理。
 
-## When to Use
+## 适用场景
 
-- Running a Python script that calls the Swarmifyx API
-- Executing a custom agent loop
-- Any runtime that can be invoked as a shell command
+- 运行会调用 Swarmifyx API 的 Python 脚本
+- 执行自定义代理循环
+- 任何可以通过 shell 命令启动的运行时
 
-## When Not to Use
+## 不适用场景
 
-- If you need session persistence across runs (use `claude_local` or `codex_local`)
-- If the agent needs conversational context between heartbeats
+- 如果你需要跨多次运行持久化会话（应使用 `claude_local` 或 `codex_local`）
+- 如果代理需要在多次心跳之间保留对话上下文
 
-## Configuration
+## 配置
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `command` | string | Yes | Shell command to execute |
-| `cwd` | string | No | Working directory |
-| `env` | object | No | Environment variables |
-| `timeoutSec` | number | No | Process timeout |
+| `command` | string | Yes | 要执行的 shell 命令 |
+| `cwd` | string | No | 工作目录 |
+| `env` | object | No | 环境变量 |
+| `timeoutSec` | number | No | 进程超时时间 |
 
-## How It Works
+## 工作方式
 
-1. Swarmifyx spawns the configured command as a child process
-2. Standard Swarmifyx environment variables are injected (`SWARMIFYX_AGENT_ID`, `SWARMIFYX_API_KEY`, etc.)
-3. The process runs to completion
-4. Exit code determines success/failure
+1. Swarmifyx 将已配置命令作为子进程启动
+2. 注入标准的 Swarmifyx 环境变量（例如 `SWARMIFYX_AGENT_ID`、`SWARMIFYX_API_KEY`）
+3. 进程运行直到结束
+4. 由退出码决定成功或失败
 
-## Example
+## 示例
 
-An agent that runs a Python script:
+下面是一个运行 Python 脚本的代理示例：
 
 ```json
 {
@@ -47,4 +47,4 @@ An agent that runs a Python script:
 }
 ```
 
-The script can use the injected environment variables to authenticate with the Swarmifyx API and perform work.
+脚本可以使用注入的环境变量向 Swarmifyx API 完成认证，并执行实际工作。

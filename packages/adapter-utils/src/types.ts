@@ -12,7 +12,7 @@ export interface AdapterAgent {
 
 export interface AdapterRuntime {
   /**
-   * Legacy single session id view. Prefer `sessionParams` + `sessionDisplayId`.
+   * Optional single-session convenience field. Prefer `sessionParams` + `sessionDisplayId`.
    */
   sessionId: string | null;
   sessionParams: Record<string, unknown> | null;
@@ -62,7 +62,7 @@ export interface AdapterExecutionResult {
   errorMeta?: Record<string, unknown>;
   usage?: UsageSummary;
   /**
-   * Legacy single session id output. Prefer `sessionParams` + `sessionDisplayId`.
+   * Optional single-session convenience field. Prefer `sessionParams` + `sessionDisplayId`.
    */
   sessionId?: string | null;
   sessionParams?: Record<string, unknown> | null;

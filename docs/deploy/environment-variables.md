@@ -1,50 +1,50 @@
 ---
-title: Environment Variables
-summary: Full environment variable reference
+title: 环境变量
+summary: 完整环境变量参考
 ---
 
-All environment variables that Swarmifyx uses for server configuration.
+这里汇总了 Swarmifyx 用于服务端配置的所有环境变量。
 
-## Server Configuration
+## 服务端配置
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `PORT` | `3100` | Server port |
-| `HOST` | `127.0.0.1` | Server host binding |
-| `DATABASE_URL` | (embedded) | PostgreSQL connection string |
-| `SWARMIFYX_HOME` | `~/.swarmifyx` | Base directory for all Swarmifyx data |
-| `SWARMIFYX_INSTANCE_ID` | `default` | Instance identifier (for multiple local instances) |
-| `SWARMIFYX_DEPLOYMENT_MODE` | `local_trusted` | Runtime mode override |
+| `PORT` | `3100` | 服务端口 |
+| `HOST` | `127.0.0.1` | 服务绑定地址 |
+| `DATABASE_URL` | （内嵌） | PostgreSQL 连接串 |
+| `SWARMIFYX_HOME` | `~/.swarmifyx` | 所有 Swarmifyx 数据的根目录 |
+| `SWARMIFYX_INSTANCE_ID` | `default` | 实例标识符（适合本地多实例） |
+| `SWARMIFYX_DEPLOYMENT_MODE` | `local_trusted` | 运行模式覆盖值 |
 
 ## Secrets
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `SWARMIFYX_SECRETS_MASTER_KEY` | (from file) | 32-byte encryption key (base64/hex/raw) |
-| `SWARMIFYX_SECRETS_MASTER_KEY_FILE` | `~/.swarmifyx/.../secrets/master.key` | Path to key file |
-| `SWARMIFYX_SECRETS_STRICT_MODE` | `false` | Require secret refs for sensitive env vars |
+| `SWARMIFYX_SECRETS_MASTER_KEY` | （来自文件） | 32 字节加密密钥（base64 / hex / 原始字符串） |
+| `SWARMIFYX_SECRETS_MASTER_KEY_FILE` | `~/.swarmifyx/.../secrets/master.key` | 密钥文件路径 |
+| `SWARMIFYX_SECRETS_STRICT_MODE` | `false` | 是否要求敏感环境变量必须使用 secret ref |
 
-## Agent Runtime (Injected into agent processes)
+## 代理运行时（自动注入到代理进程）
 
-These are set automatically by the server when invoking agents:
-
-| Variable | Description |
-|----------|-------------|
-| `SWARMIFYX_AGENT_ID` | Agent's unique ID |
-| `SWARMIFYX_COMPANY_ID` | Company ID |
-| `SWARMIFYX_API_URL` | Swarmifyx API base URL |
-| `SWARMIFYX_API_KEY` | Short-lived JWT for API auth |
-| `SWARMIFYX_RUN_ID` | Current heartbeat run ID |
-| `SWARMIFYX_TASK_ID` | Issue that triggered this wake |
-| `SWARMIFYX_WAKE_REASON` | Wake trigger reason |
-| `SWARMIFYX_WAKE_COMMENT_ID` | Comment that triggered this wake |
-| `SWARMIFYX_APPROVAL_ID` | Resolved approval ID |
-| `SWARMIFYX_APPROVAL_STATUS` | Approval decision |
-| `SWARMIFYX_LINKED_ISSUE_IDS` | Comma-separated linked issue IDs |
-
-## LLM Provider Keys (for adapters)
+这些变量会在服务端调用代理时自动注入：
 
 | Variable | Description |
 |----------|-------------|
-| `ANTHROPIC_API_KEY` | Anthropic API key (for Claude Local adapter) |
-| `OPENAI_API_KEY` | OpenAI API key (for Codex Local adapter) |
+| `SWARMIFYX_AGENT_ID` | 代理唯一 ID |
+| `SWARMIFYX_COMPANY_ID` | 公司 ID |
+| `SWARMIFYX_API_URL` | Swarmifyx API 基础 URL |
+| `SWARMIFYX_API_KEY` | 用于 API 认证的短期 JWT |
+| `SWARMIFYX_RUN_ID` | 当前心跳运行 ID |
+| `SWARMIFYX_TASK_ID` | 触发本次唤醒的 issue |
+| `SWARMIFYX_WAKE_REASON` | 唤醒原因 |
+| `SWARMIFYX_WAKE_COMMENT_ID` | 触发唤醒的评论 ID |
+| `SWARMIFYX_APPROVAL_ID` | 已解析的审批 ID |
+| `SWARMIFYX_APPROVAL_STATUS` | 审批决策结果 |
+| `SWARMIFYX_LINKED_ISSUE_IDS` | 以逗号分隔的关联 issue ID 列表 |
+
+## LLM Provider Key（供适配器使用）
+
+| Variable | Description |
+|----------|-------------|
+| `ANTHROPIC_API_KEY` | Anthropic API key（供 Claude Local 适配器使用） |
+| `OPENAI_API_KEY` | OpenAI API key（供 Codex Local 适配器使用） |

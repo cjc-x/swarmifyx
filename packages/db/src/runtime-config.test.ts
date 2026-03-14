@@ -64,23 +64,6 @@ describe("resolveDatabaseTarget", () => {
     });
   });
 
-  it("throws a migration error for legacy repo-local .swarmifyx files", () => {
-    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "swarmifyx-db-runtime-"));
-    const projectDir = path.join(tempDir, "repo");
-    fs.mkdirSync(path.join(projectDir, ".swarmifyx"), { recursive: true });
-    process.chdir(projectDir);
-    delete process.env.SWARMIFYX_CONFIG;
-    writeJson(path.join(projectDir, ".swarmifyx", "config.json"), {
-      database: { mode: "embedded-postgres", embeddedPostgresPort: 54329 },
-    });
-    writeText(
-      path.join(projectDir, ".swarmifyx", ".env"),
-      'DATABASE_URL="postgres://legacy-user:legacy-pass@db.example.com:6543/swarmifyx"\n',
-    );
-
-    expect(() => resolveDatabaseTarget()).toThrow(/Legacy repo-local Swarmifyx files detected/);
-  });
-
   it("uses config postgres connection string when configured", () => {
     const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "swarmifyx-db-runtime-"));
     const configPath = path.join(tempDir, "instance", "config.json");
@@ -99,6 +82,19 @@ describe("resolveDatabaseTarget", () => {
       connectionString: "postgres://cfg-user:cfg-pass@db.example.com:5432/swarmifyx",
       source: "config.database.connectionString",
     });
+  });
+
+  it("rejects unsupported database modes in config", () => {
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "swarmifyx-db-runtime-"));
+    const configPath = path.join(tempDir, "instance", "config.json");
+    process.env.SWARMIFYX_CONFIG = configPath;
+    writeJson(configPath, {
+      database: {
+        mode: "pglite",
+      },
+    });
+
+    expect(() => resolveDatabaseTarget()).toThrow(/database\.mode must be "embedded-postgres" or "postgres"/);
   });
 
   it("falls back to embedded postgres settings from config", () => {

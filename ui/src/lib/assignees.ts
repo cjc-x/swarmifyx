@@ -9,6 +9,16 @@ export interface AssigneeOption {
   searchText?: string;
 }
 
+interface AssigneeLabelOverrides {
+  me?: string;
+  board?: string;
+}
+
+const DEFAULT_ASSIGNEE_LABELS: Required<AssigneeLabelOverrides> = {
+  me: "Me",
+  board: "Board",
+};
+
 export function assigneeValueFromSelection(selection: Partial<AssigneeSelection>): string {
   if (selection.assigneeAgentId) return `agent:${selection.assigneeAgentId}`;
   if (selection.assigneeUserId) return `user:${selection.assigneeUserId}`;
@@ -31,21 +41,31 @@ export function parseAssigneeValue(value: string): AssigneeSelection {
   return { assigneeAgentId: value, assigneeUserId: null };
 }
 
-export function currentUserAssigneeOption(currentUserId: string | null | undefined): AssigneeOption[] {
+export function currentUserAssigneeOption(
+  currentUserId: string | null | undefined,
+  labels: AssigneeLabelOverrides = {},
+): AssigneeOption[] {
   if (!currentUserId) return [];
+  const resolvedLabels = { ...DEFAULT_ASSIGNEE_LABELS, ...labels };
+  const localizedMeToken = resolvedLabels.me !== DEFAULT_ASSIGNEE_LABELS.me ? `${resolvedLabels.me} ` : "";
+  const localizedBoardToken = resolvedLabels.board !== DEFAULT_ASSIGNEE_LABELS.board ? `${resolvedLabels.board} ` : "";
   return [{
     id: assigneeValueFromSelection({ assigneeUserId: currentUserId }),
-    label: "Me",
-    searchText: currentUserId === "local-board" ? "me board human local-board" : `me human ${currentUserId}`,
+    label: resolvedLabels.me,
+    searchText: currentUserId === "local-board"
+      ? `${localizedMeToken}${localizedBoardToken}me board human local-board`
+      : `${localizedMeToken}me human ${currentUserId}`,
   }];
 }
 
 export function formatAssigneeUserLabel(
   userId: string | null | undefined,
   currentUserId: string | null | undefined,
+  labels: AssigneeLabelOverrides = {},
 ): string | null {
   if (!userId) return null;
-  if (currentUserId && userId === currentUserId) return "Me";
-  if (userId === "local-board") return "Board";
+  const resolvedLabels = { ...DEFAULT_ASSIGNEE_LABELS, ...labels };
+  if (currentUserId && userId === currentUserId) return resolvedLabels.me;
+  if (userId === "local-board") return resolvedLabels.board;
   return userId.slice(0, 5);
 }

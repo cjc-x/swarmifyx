@@ -1,33 +1,33 @@
 ---
-title: Agents
-summary: Agent lifecycle, configuration, keys, and heartbeat invocation
+title: 代理
+summary: 代理生命周期、配置、密钥与心跳调用
 ---
 
-Manage AI agents (employees) within a company.
+管理公司中的 AI 代理（员工）。
 
-## List Agents
+## 列出代理
 
 ```
 GET /api/companies/{companyId}/agents
 ```
 
-Returns all agents in the company.
+返回该公司中的所有代理。
 
-## Get Agent
+## 获取代理
 
 ```
 GET /api/agents/{agentId}
 ```
 
-Returns agent details including chain of command.
+返回代理详情，包括其指挥链。
 
-## Get Current Agent
+## 获取当前代理
 
 ```
 GET /api/agents/me
 ```
 
-Returns the agent record for the currently authenticated agent.
+返回当前已认证代理对应的代理记录。
 
 **Response:**
 
@@ -50,7 +50,7 @@ Returns the agent record for the currently authenticated agent.
 }
 ```
 
-## Create Agent
+## 创建代理
 
 ```
 POST /api/companies/{companyId}/agents
@@ -65,7 +65,7 @@ POST /api/companies/{companyId}/agents
 }
 ```
 
-## Update Agent
+## 更新代理
 
 ```
 PATCH /api/agents/{agentId}
@@ -75,71 +75,71 @@ PATCH /api/agents/{agentId}
 }
 ```
 
-## Pause Agent
+## 暂停代理
 
 ```
 POST /api/agents/{agentId}/pause
 ```
 
-Temporarily stops heartbeats for the agent.
+临时停止该代理的心跳。
 
-## Resume Agent
+## 恢复代理
 
 ```
 POST /api/agents/{agentId}/resume
 ```
 
-Resumes heartbeats for a paused agent.
+恢复一个已暂停代理的心跳。
 
-## Terminate Agent
+## 终止代理
 
 ```
 POST /api/agents/{agentId}/terminate
 ```
 
-Permanently deactivates the agent. **Irreversible.**
+永久停用该代理。**不可逆。**
 
-## Create API Key
+## 创建 API Key
 
 ```
 POST /api/agents/{agentId}/keys
 ```
 
-Returns a long-lived API key for the agent. Store it securely — the full value is only shown once.
+返回该代理的长期 API key。请妥善保存，因为完整值只会显示一次。
 
-## Invoke Heartbeat
+## 调用心跳
 
 ```
 POST /api/agents/{agentId}/heartbeat/invoke
 ```
 
-Manually triggers a heartbeat for the agent.
+手动触发该代理的一次心跳。
 
-## Org Chart
+## 组织架构图
 
 ```
 GET /api/companies/{companyId}/org
 ```
 
-Returns the full organizational tree for the company.
+返回该公司的完整组织树。
 
-## List Adapter Models
+## 列出适配器模型
 
 ```
 GET /api/companies/{companyId}/adapters/{adapterType}/models
 ```
 
-Returns selectable models for an adapter type.
+返回某个适配器类型可选择的模型列表。
 
-- For `codex_local`, models are merged with OpenAI discovery when available.
-- For `opencode_local`, models are discovered from `opencode models` and returned in `provider/model` format.
-- `opencode_local` does not return static fallback models; if discovery is unavailable, this list can be empty.
+- 对于 `codex_local`，如果 OpenAI 动态发现可用，会把发现结果与内置模型合并返回。
+- 对于 `opencode_local`，模型来自 `opencode models` 的发现结果，并以 `provider/model` 形式返回。
+- `opencode_local` 不提供静态兜底模型；如果发现失败，这个列表可能为空。
 
-## Config Revisions
+## 配置修订
 
 ```
 GET /api/agents/{agentId}/config-revisions
 POST /api/agents/{agentId}/config-revisions/{revisionId}/rollback
 ```
 
-View and roll back agent configuration changes.
+查看代理配置的历史版本，并支持回滚。

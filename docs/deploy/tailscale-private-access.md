@@ -1,42 +1,42 @@
 ---
-title: Tailscale Private Access
-summary: Run Swarmifyx with Tailscale-friendly host binding and connect from other devices
+title: Tailscale 私网访问
+summary: 以适合 Tailscale 的主机绑定方式运行 Swarmifyx，并从其他设备访问
 ---
 
-Use this when you want to access Swarmifyx over Tailscale (or a private LAN/VPN) instead of only `localhost`.
+如果你想通过 Tailscale（或私有 LAN / VPN）访问 Swarmifyx，而不是只在 `localhost` 上使用，就适合看这一页。
 
-## 1. Start Swarmifyx in private authenticated mode
+## 1. 以私网认证模式启动 Swarmifyx
 
 ```sh
 pnpm dev --tailscale-auth
 ```
 
-This configures:
+这个命令会配置：
 
 - `SWARMIFYX_DEPLOYMENT_MODE=authenticated`
 - `SWARMIFYX_DEPLOYMENT_EXPOSURE=private`
 - `SWARMIFYX_AUTH_BASE_URL_MODE=auto`
-- `HOST=0.0.0.0` (bind on all interfaces)
+- `HOST=0.0.0.0`（绑定所有网卡接口）
 
-Equivalent flag:
+等价参数：
 
 ```sh
 pnpm dev --authenticated-private
 ```
 
-## 2. Find your reachable Tailscale address
+## 2. 找到你可访问的 Tailscale 地址
 
-From the machine running Swarmifyx:
+在运行 Swarmifyx 的机器上执行：
 
 ```sh
 tailscale ip -4
 ```
 
-You can also use your Tailscale MagicDNS hostname (for example `my-macbook.tailnet.ts.net`).
+你也可以使用 Tailscale 的 MagicDNS 主机名，例如 `my-macbook.tailnet.ts.net`。
 
-## 3. Open Swarmifyx from another device
+## 3. 从另一台设备打开 Swarmifyx
 
-Use the Tailscale IP or MagicDNS host with the Swarmifyx port:
+把 Tailscale IP 或 MagicDNS 主机名与 Swarmifyx 端口组合使用：
 
 ```txt
 http://<tailscale-host-or-ip>:3100
@@ -48,30 +48,30 @@ Example:
 http://my-macbook.tailnet.ts.net:3100
 ```
 
-## 4. Allow custom private hostnames when needed
+## 4. 按需允许自定义私有主机名
 
-If you access Swarmifyx with a custom private hostname, add it to the allowlist:
+如果你使用自定义私有主机名访问 Swarmifyx，请把它加入 allowlist：
 
 ```sh
 pnpm swarmifyx allowed-hostname my-macbook.tailnet.ts.net
 ```
 
-## 5. Verify the server is reachable
+## 5. 验证服务可达
 
-From a remote Tailscale-connected device:
+在另一台接入同一 Tailscale 网络的设备上执行：
 
 ```sh
 curl http://<tailscale-host-or-ip>:3100/api/health
 ```
 
-Expected result:
+预期结果：
 
 ```json
 {"status":"ok"}
 ```
 
-## Troubleshooting
+## 排障
 
-- Login or redirect errors on a private hostname: add it with `swarmifyx allowed-hostname`.
-- App only works on `localhost`: make sure you started with `--tailscale-auth` (or set `HOST=0.0.0.0` in private mode).
-- Can connect locally but not remotely: verify both devices are on the same Tailscale network and port `3100` is reachable.
+- 私有主机名下出现登录或重定向错误：用 `swarmifyx allowed-hostname` 把它加入允许列表。
+- 应用只能在 `localhost` 访问：确认你是用 `--tailscale-auth` 启动的，或者在 private 模式下显式设置了 `HOST=0.0.0.0`。
+- 本机能访问但远端不行：确认两台设备都在同一个 Tailscale 网络中，并且端口 `3100` 可达。

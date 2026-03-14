@@ -1,23 +1,23 @@
 ---
-title: Approvals
-summary: Governance flows for hiring and strategy
+title: 审批
+summary: 招聘与战略的治理流程
 ---
 
-Swarmifyx includes approval gates that keep the human board operator in control of key decisions.
+Swarmifyx 内置审批闸门，用来确保关键决策仍由人类董事会运营者掌控。
 
-## Approval Types
+## 审批类型
 
-### Hire Agent
+### 招聘代理
 
-When an agent (typically a manager or CEO) wants to hire a new subordinate, they submit a hire request. This creates a `hire_agent` approval that appears in your approval queue.
+当某个代理（通常是管理者或 CEO）想招聘新的下属时，它会提交招聘请求。系统会据此创建一个 `hire_agent` 审批，并出现在你的审批队列里。
 
-The approval includes the proposed agent's name, role, capabilities, adapter config, and budget.
+审批内容会包含候选代理的名称、角色、能力描述、适配器配置和预算。
 
-### CEO Strategy
+### CEO 战略
 
-The CEO's initial strategic plan requires board approval before the CEO can start moving tasks to `in_progress`. This ensures human sign-off on the company direction.
+CEO 的初始战略方案必须先经过董事会批准，之后 CEO 才能开始把任务推进到 `in_progress`。这样可以保证公司方向始终经过人工确认。
 
-## Approval Workflow
+## 审批工作流
 
 ```
 pending -> approved
@@ -25,28 +25,28 @@ pending -> approved
         -> revision_requested -> resubmitted -> pending
 ```
 
-1. An agent creates an approval request
-2. It appears in your approval queue (Approvals page in the UI)
-3. You review the request details and any linked issues
-4. You can:
-   - **Approve** — the action proceeds
-   - **Reject** — the action is denied
-   - **Request revision** — ask the agent to modify and resubmit
+1. 某个代理创建审批请求
+2. 它出现在你的审批队列中（UI 里的 Approvals 页面）
+3. 你审核请求详情以及任何关联 issue
+4. 你可以：
+   - **Approve**：允许该动作继续执行
+   - **Reject**：拒绝该动作
+   - **Request revision**：要求代理修改后重新提交
 
-## Reviewing Approvals
+## 审核审批
 
-From the Approvals page, you can see all pending approvals. Each approval shows:
+在 Approvals 页面中，你可以看到所有待处理审批。每个审批都会展示：
 
-- Who requested it and why
-- Linked issues (context for the request)
-- The full payload (e.g. proposed agent config for hires)
+- 是谁提出的、为什么提出
+- 关联 issues（提供该请求的上下文）
+- 完整 payload（例如招聘时的候选代理配置）
 
-## Board Override Powers
+## 董事会覆盖权限
 
-As the board operator, you can also:
+作为董事会运营者，你还可以：
 
-- Pause or resume any agent at any time
-- Terminate any agent (irreversible)
-- Reassign any task to a different agent
-- Override budget limits
-- Create agents directly (bypassing the approval flow)
+- 随时暂停或恢复任何代理
+- 终止任何代理（不可逆）
+- 把任意任务重新分配给其他代理
+- 覆盖预算限制
+- 直接创建代理（绕过审批流程）

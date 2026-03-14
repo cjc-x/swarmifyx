@@ -1,11 +1,11 @@
 ---
 title: Docker
-summary: Docker Compose quickstart
+summary: Docker Compose 快速启动
 ---
 
-Run Swarmifyx in Docker without installing Node or pnpm locally.
+无需在本机安装 Node 或 pnpm，也能通过 Docker 运行 Swarmifyx。
 
-## Compose Quickstart (Recommended)
+## Compose 快速启动（推荐）
 
 ```sh
 docker compose -f docker-compose.quickstart.yml up --build
@@ -13,19 +13,19 @@ docker compose -f docker-compose.quickstart.yml up --build
 
 Open [http://localhost:3100](http://localhost:3100).
 
-Defaults:
+默认值：
 
-- Host port: `3100`
-- Data directory: `./data/docker-swarmifyx`
+- 主机端口：`3100`
+- 数据目录：`./data/docker-swarmifyx`
 
-Override with environment variables:
+通过环境变量覆盖：
 
 ```sh
 SWARMIFYX_PORT=3200 SWARMIFYX_DATA_DIR=./data/pc \
   docker compose -f docker-compose.quickstart.yml up --build
 ```
 
-## Manual Docker Build
+## 手动 Docker 构建
 
 ```sh
 docker build -t swarmifyx-local .
@@ -37,23 +37,23 @@ docker run --name swarmifyx \
   swarmifyx-local
 ```
 
-## Data Persistence
+## 数据持久化
 
-All data is persisted under the bind mount (`./data/docker-swarmifyx`):
+所有数据都会持久化到绑定挂载目录（`./data/docker-swarmifyx`）：
 
-- Embedded PostgreSQL data
-- Uploaded assets
-- Local secrets key
-- Agent workspace data
+- 内嵌 PostgreSQL 数据
+- 上传资产
+- 本地 secrets key
+- 代理 workspace 数据
 
-## Claude and Codex Adapters in Docker
+## Docker 中的 Claude 与 Codex 适配器
 
-The Docker image pre-installs:
+Docker 镜像已经预装：
 
-- `claude` (Anthropic Claude Code CLI)
-- `codex` (OpenAI Codex CLI)
+- `claude`（Anthropic Claude Code CLI）
+- `codex`（OpenAI Codex CLI）
 
-Pass API keys to enable local adapter runs inside the container:
+如果希望在容器内使用本地适配器运行，请传入对应 API key：
 
 ```sh
 docker run --name swarmifyx \
@@ -66,4 +66,4 @@ docker run --name swarmifyx \
   swarmifyx-local
 ```
 
-Without API keys, the app runs normally — adapter environment checks will surface missing prerequisites.
+即使不传 API key，应用本身也能正常运行；只是适配器环境检查会提示缺少前置条件。

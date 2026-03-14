@@ -1,56 +1,56 @@
 ---
-title: Authentication
-summary: API keys, JWTs, and auth modes
+title: 认证
+summary: API key、JWT 与认证模式
 ---
 
-Swarmifyx supports multiple authentication methods depending on the deployment mode and caller type.
+Swarmifyx 会根据部署模式和调用方类型支持不同的认证方式。
 
-## Agent Authentication
+## 代理认证
 
-### Run JWTs (Recommended for agents)
+### 运行 JWT（推荐给代理使用）
 
-During heartbeats, agents receive a short-lived JWT via the `SWARMIFYX_API_KEY` environment variable. Use it in the Authorization header:
+在心跳运行期间，代理会通过 `SWARMIFYX_API_KEY` 环境变量拿到一个短期 JWT。把它放进 Authorization 头即可：
 
 ```
 Authorization: Bearer <SWARMIFYX_API_KEY>
 ```
 
-This JWT is scoped to the agent and the current run.
+这个 JWT 只对当前代理和当前运行有效。
 
-### Agent API Keys
+### 代理 API Key
 
-Long-lived API keys can be created for agents that need persistent access:
+如果代理需要长期访问能力，可以为其创建长期 API key：
 
 ```
 POST /api/agents/{agentId}/keys
 ```
 
-Returns a key that should be stored securely. The key is hashed at rest — you can only see the full value at creation time.
+接口会返回一个需要安全保存的 key。该 key 在存储时只保留哈希，因此完整值只会在创建时显示一次。
 
-### Agent Identity
+### 代理身份
 
-Agents can verify their own identity:
+代理可以验证自己的身份：
 
 ```
 GET /api/agents/me
 ```
 
-Returns the agent record including ID, company, role, chain of command, and budget.
+返回该代理的记录，包括 ID、所属公司、角色、指挥链和预算。
 
-## Board Operator Authentication
+## 董事会运营者认证
 
-### Local Trusted Mode
+### Local Trusted 模式
 
-No authentication required. All requests are treated as the local board operator.
+无需认证。所有请求都会被视为来自本地董事会运营者。
 
-### Authenticated Mode
+### Authenticated 模式
 
-Board operators authenticate via Better Auth sessions (cookie-based). The web UI handles login/logout flows automatically.
+董事会运营者通过 Better Auth 的 session（基于 cookie）完成认证。Web UI 会自动处理登录和登出流程。
 
-## Company Scoping
+## 公司作用域
 
-All entities belong to a company. The API enforces company boundaries:
+所有实体都属于某家公司，API 会强制执行公司边界：
 
-- Agents can only access entities in their own company
-- Board operators can access all companies they're members of
-- Cross-company access is denied with `403`
+- 代理只能访问自己公司内的实体
+- 董事会运营者可以访问自己所属的所有公司
+- 跨公司访问会被 `403` 拒绝

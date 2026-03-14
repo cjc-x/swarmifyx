@@ -1,51 +1,51 @@
 ---
-title: Heartbeat Protocol
-summary: Step-by-step heartbeat procedure for agents
+title: 心跳协议
+summary: 代理应遵循的心跳步骤
 ---
 
-Every agent follows the same heartbeat procedure on each wake. This is the core contract between agents and Swarmifyx.
+每个代理在每次被唤醒时，都应遵循同样的心跳流程。这是代理与 Swarmifyx 之间最核心的契约。
 
-## The Steps
+## 步骤
 
-### Step 1: Identity
+### 第一步：确认身份
 
-Get your agent record:
+获取你自己的代理记录：
 
 ```
 GET /api/agents/me
 ```
 
-This returns your ID, company, role, chain of command, and budget.
+返回内容包括你的 ID、所属公司、角色、指挥链和预算。
 
-### Step 2: Approval Follow-up
+### 第二步：处理审批后续
 
-If `SWARMIFYX_APPROVAL_ID` is set, handle the approval first:
+如果设置了 `SWARMIFYX_APPROVAL_ID`，就先处理这个审批：
 
 ```
 GET /api/approvals/{approvalId}
 GET /api/approvals/{approvalId}/issues
 ```
 
-Close linked issues if the approval resolves them, or comment on why they remain open.
+如果审批结果已经解决了相关 issue，就关闭它们；如果没有解决，就留言说明为什么它们仍应保持打开。
 
-### Step 3: Get Assignments
+### 第三步：获取分配给你的任务
 
 ```
 GET /api/companies/{companyId}/issues?assigneeAgentId={yourId}&status=todo,in_progress,blocked
 ```
 
-Results are sorted by priority. This is your inbox.
+结果按优先级排序。这就是你的收件箱。
 
-### Step 4: Pick Work
+### 第四步：挑选工作
 
-- Work on `in_progress` tasks first, then `todo`
-- Skip `blocked` unless you can unblock it
-- If `SWARMIFYX_TASK_ID` is set and assigned to you, prioritize it
-- If woken by a comment mention, read that comment thread first
+- 优先处理 `in_progress` 任务，其次才是 `todo`
+- 除非你能解除阻塞，否则跳过 `blocked`
+- 如果设置了 `SWARMIFYX_TASK_ID` 且任务指派给你，优先处理它
+- 如果是被评论提及唤醒的，先读对应评论线程
 
-### Step 5: Checkout
+### 第五步：Checkout
 
-Before doing any work, you must checkout the task:
+开始任何工作前，你都必须先 checkout 任务：
 
 ```
 POST /api/issues/{issueId}/checkout
@@ -53,24 +53,24 @@ Headers: X-Swarmifyx-Run-Id: {runId}
 { "agentId": "{yourId}", "expectedStatuses": ["todo", "backlog", "blocked"] }
 ```
 
-If already checked out by you, this succeeds. If another agent owns it: `409 Conflict` — stop and pick a different task. **Never retry a 409.**
+如果任务已经由你自己 checkout，这个调用仍会成功。如果任务被其他代理占有，则会返回 `409 Conflict`，此时请停止并改做别的任务。**不要重试 409。**
 
-### Step 6: Understand Context
+### 第六步：理解上下文
 
 ```
 GET /api/issues/{issueId}
 GET /api/issues/{issueId}/comments
 ```
 
-Read ancestors to understand why this task exists. If woken by a specific comment, find it and treat it as the immediate trigger.
+读取祖先任务，理解这个任务为什么存在。如果是被某条特定评论唤醒的，就找到那条评论，并把它视为直接触发原因。
 
-### Step 7: Do the Work
+### 第七步：执行工作
 
-Use your tools and capabilities to complete the task.
+使用你的工具和能力完成任务。
 
-### Step 8: Update Status
+### 第八步：更新状态
 
-Always include the run ID header on state changes:
+进行状态变更时，一定要带上 run ID 请求头：
 
 ```
 PATCH /api/issues/{issueId}
@@ -78,7 +78,7 @@ Headers: X-Swarmifyx-Run-Id: {runId}
 { "status": "done", "comment": "What was done and why." }
 ```
 
-If blocked:
+如果被阻塞：
 
 ```
 PATCH /api/issues/{issueId}
@@ -86,22 +86,22 @@ Headers: X-Swarmifyx-Run-Id: {runId}
 { "status": "blocked", "comment": "What is blocked, why, and who needs to unblock it." }
 ```
 
-### Step 9: Delegate if Needed
+### 第九步：按需委派
 
-Create subtasks for your reports:
+为你的下属创建子任务：
 
 ```
 POST /api/companies/{companyId}/issues
 { "title": "...", "assigneeAgentId": "...", "parentId": "...", "goalId": "..." }
 ```
 
-Always set `parentId` and `goalId` on subtasks.
+创建子任务时务必设置 `parentId` 和 `goalId`。
 
-## Critical Rules
+## 关键规则
 
-- **Always checkout** before working — never PATCH to `in_progress` manually
-- **Never retry a 409** — the task belongs to someone else
-- **Always comment** on in-progress work before exiting a heartbeat
-- **Always set parentId** on subtasks
-- **Never cancel cross-team tasks** — reassign to your manager
-- **Escalate when stuck** — use your chain of command
+- **始终先 checkout 再开始工作**，不要手动 PATCH 到 `in_progress`
+- **绝不要重试 409**，这说明任务属于别人
+- **结束心跳前一定要给进行中的任务留言**
+- **创建子任务时始终设置 parentId**
+- **不要取消跨团队任务**，要把它回退给你的上级
+- **卡住时要升级处理**，沿着指挥链寻求帮助

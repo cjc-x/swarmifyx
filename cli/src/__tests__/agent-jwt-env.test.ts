@@ -4,9 +4,9 @@ import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   ensureAgentJwtSecret,
-  mergePaperclipEnvEntries,
+  mergeSwarmifyxEnvEntries,
   readAgentJwtSecretFromEnv,
-  readPaperclipEnvEntries,
+  readSwarmifyxEnvEntries,
   resolveAgentJwtEnvFile,
 } from "../config/env.js";
 import { agentJwtSecretCheck } from "../checks/agent-jwt-secret-check.js";
@@ -65,15 +65,15 @@ describe("agent jwt env helpers", () => {
     const configPath = tempConfigPath();
     const envPath = resolveAgentJwtEnvFile(configPath);
 
-    mergePaperclipEnvEntries(
+    mergeSwarmifyxEnvEntries(
       {
-        PAPERCLIP_WORKTREE_COLOR: "#439edb",
+        SWARMIFYX_WORKTREE_COLOR: "#439edb",
       },
       envPath,
     );
 
     const contents = fs.readFileSync(envPath, "utf-8");
-    expect(contents).toContain('PAPERCLIP_WORKTREE_COLOR="#439edb"');
-    expect(readPaperclipEnvEntries(envPath).PAPERCLIP_WORKTREE_COLOR).toBe("#439edb");
+    expect(contents).toContain('SWARMIFYX_WORKTREE_COLOR="#439edb"');
+    expect(readSwarmifyxEnvEntries(envPath).SWARMIFYX_WORKTREE_COLOR).toBe("#439edb");
   });
 });

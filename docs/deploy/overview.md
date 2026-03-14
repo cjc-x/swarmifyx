@@ -1,54 +1,54 @@
 ---
-title: Deployment Overview
-summary: Deployment modes at a glance
+title: 部署概览
+summary: 快速了解部署模式
 ---
 
-Swarmifyx supports three deployment configurations, from zero-friction local to internet-facing production.
+Swarmifyx 支持三种部署配置，覆盖从零摩擦本地开发到面向公网的生产环境。
 
-## Deployment Modes
+## 部署模式
 
 | Mode | Auth | Best For |
 |------|------|----------|
-| `local_trusted` | No login required | Single-operator local machine |
-| `authenticated` + `private` | Login required | Private network (Tailscale, VPN, LAN) |
-| `authenticated` + `public` | Login required | Internet-facing cloud deployment |
+| `local_trusted` | 不需要登录 | 单人本地机器 |
+| `authenticated` + `private` | 需要登录 | 私有网络（Tailscale、VPN、LAN） |
+| `authenticated` + `public` | 需要登录 | 面向公网的云部署 |
 
-## Quick Comparison
+## 快速对比
 
-### Local Trusted (Default)
+### Local Trusted（默认）
 
-- Loopback-only host binding (localhost)
-- No human login flow
-- Fastest local startup
-- Best for: solo development and experimentation
+- 只绑定回环地址（localhost）
+- 没有人类登录流程
+- 本地启动最快
+- 最适合：个人开发与实验
 
 ### Authenticated + Private
 
-- Login required via Better Auth
-- Binds to all interfaces for network access
-- Auto base URL mode (lower friction)
-- Best for: team access over Tailscale or local network
+- 通过 Better Auth 登录
+- 绑定所有网卡接口，支持网络访问
+- 自动 base URL 模式，摩擦更小
+- 最适合：团队通过 Tailscale 或局域网访问
 
 ### Authenticated + Public
 
-- Login required
-- Explicit public URL required
-- Stricter security checks
-- Best for: cloud hosting, internet-facing deployment
+- 需要登录
+- 必须显式配置公网 URL
+- 安全检查更严格
+- 最适合：云托管和公网部署
 
-## Choosing a Mode
+## 如何选择模式
 
-- **Just trying Swarmifyx?** Use `local_trusted` (the default)
-- **Sharing with a team on private network?** Use `authenticated` + `private`
-- **Deploying to the cloud?** Use `authenticated` + `public`
+- **只是想试试 Swarmifyx？** 用 `local_trusted`（默认）
+- **要在私有网络里和团队共享？** 用 `authenticated` + `private`
+- **要部署到云上？** 用 `authenticated` + `public`
 
-Set the mode during onboarding:
+在 onboarding 阶段设置模式：
 
 ```sh
 pnpm swarmifyx onboard
 ```
 
-Or update it later:
+或者稍后再改：
 
 ```sh
 pnpm swarmifyx configure --section server

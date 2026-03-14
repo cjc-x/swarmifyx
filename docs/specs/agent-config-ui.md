@@ -1,286 +1,338 @@
-# Agent Configuration & Activity UI
+---
+title: 代理配置与活动 UI
+summary: 代理创建、配置、运行历史和组织视图的产品规格
+---
 
-## Context
+# 代理配置与活动 UI
 
-Agents are the employees of a Swarmifyx company. Each agent has an adapter type (`claude_local`, `codex_local`, `process`, `http`) that determines how it runs, a position in the org chart (who it reports to), a heartbeat policy (how/when it wakes up), and a budget. The UI at `/agents` needs to support creating and configuring agents, viewing their org hierarchy, and inspecting what they've been doing -- their run history, live logs, and accumulated costs.
+## 背景
 
-This spec covers three surfaces:
+代理是 Swarmifyx 公司中的“员工”。每个代理都有：
 
-1. **Agent Creation Dialog** -- the "New Agent" flow
-2. **Agent Detail Page** -- configuration, activity, and logs
-3. **Agents List Page** -- improvements to the existing list
+- 一个适配器类型（如 `claude_local`、`codex_local`、`process`、`http`），决定它如何运行
+- 在组织架构中的位置（向谁汇报）
+- 一套心跳策略（何时、如何被唤醒）
+- 预算与运行限制
+
+`/agents` 相关 UI 需要支持：
+
+1. 创建并配置代理
+2. 查看代理在组织中的位置
+3. 检查代理最近做了什么，包括运行历史、实时日志和累计成本
+
+本规格覆盖三个主要界面：
+
+1. **创建代理对话框**
+2. **代理详情页**
+3. **代理列表页**
 
 ---
 
-## 1. Agent Creation Dialog
+## 1. 创建代理对话框
 
-Follows the existing `NewIssueDialog` / `NewProjectDialog` pattern: a `Dialog` component with expand/minimize toggle, company badge breadcrumb, and Cmd+Enter submit.
+遵循现有 `NewIssueDialog` / `NewProjectDialog` 模式：
 
-### Fields
+- 使用 `Dialog` 组件
+- 支持展开 / 最小化切换
+- 顶部展示 company badge breadcrumb
+- 支持 `Cmd+Enter` 提交
 
-**Identity (always visible):**
+## 字段
 
-| Field | Control | Required | Default | Notes |
-|-------|---------|----------|---------|-------|
-| Name | Text input (large, auto-focused) | Yes | -- | e.g. "Alice", "Build Bot" |
-| Title | Text input (subtitle style) | No | -- | e.g. "VP of Engineering" |
-| Role | Chip popover (select) | No | `general` | Values from `AGENT_ROLES`: ceo, cto, cmo, cfo, engineer, designer, pm, qa, devops, researcher, general |
-| Reports To | Chip popover (agent select) | No | -- | Dropdown of existing agents in the company. If this is the first agent, auto-set role to `ceo` and gray out Reports To. Otherwise required unless role is `ceo`. |
-| Capabilities | Text input | No | -- | Free-text description of what this agent can do |
+### 身份信息（始终可见）
 
-**Adapter (collapsible section, default open):**
+| 字段 | 控件 | 必填 | 默认值 | 说明 |
+|---|---|---|---|---|
+| Name | 大号文本输入 | 是 | 无 | 如 “Alice”“Build Bot” |
+| Title | 副标题文本输入 | 否 | 无 | 如 “VP of Engineering” |
+| Role | 芯片式 popover 选择器 | 否 | `general` | 值来自 `AGENT_ROLES` |
+| Reports To | 芯片式代理选择器 | 否 | 无 | 首个代理时自动设为 CEO 并禁用该字段 |
+| Capabilities | 文本输入 | 否 | 无 | 描述代理能做什么 |
 
-| Field | Control | Default | Notes |
-|-------|---------|---------|-------|
-| Adapter Type | Chip popover (select) | `claude_local` | `claude_local`, `codex_local`, `process`, `http` |
-| Test environment | Button | -- | Runs adapter-specific diagnostics and returns pass/warn/fail checks for current unsaved config |
-| CWD | Text input | -- | Working directory for local adapters |
-| Prompt Template | Textarea | -- | Supports `{{ agent.id }}`, `{{ agent.name }}` etc. |
-| Model | Text input | -- | Optional model override |
+### 适配器配置（可折叠，默认展开）
 
-**Adapter-specific fields (shown/hidden based on adapter type):**
+| 字段 | 控件 | 默认值 | 说明 |
+|---|---|---|---|
+| Adapter Type | 芯片式选择器 | `claude_local` | 支持 `claude_local`、`codex_local`、`process`、`http` |
+| Test Environment | 按钮 | 无 | 运行当前未保存配置的适配器诊断 |
+| CWD | 文本输入 | 无 | 本地适配器的工作目录 |
+| Prompt Template | 多行输入框 | 无 | 支持 `{{ agent.id }}`、`{{ agent.name }}` 等变量 |
+| Model | 文本输入 | 无 | 可选模型覆盖 |
 
-*claude_local:*
-| Field | Control | Default |
-|-------|---------|---------|
-| Max Turns Per Run | Number input | 80 |
-| Skip Permissions | Toggle | true |
+### 适配器专属字段
 
-*codex_local:*
-| Field | Control | Default |
-|-------|---------|---------|
-| Search | Toggle | false |
-| Bypass Sandbox | Toggle | true |
+#### `claude_local`
 
-*process:*
-| Field | Control | Default |
-|-------|---------|---------|
-| Command | Text input | -- |
-| Args | Text input (comma-separated) | -- |
+| 字段 | 控件 | 默认值 |
+|---|---|---|
+| Max Turns Per Run | 数字输入 | 80 |
+| Skip Permissions | 开关 | true |
 
-*http:*
-| Field | Control | Default |
-|-------|---------|---------|
-| URL | Text input | -- |
-| Method | Select | POST |
-| Headers | Key-value pairs | -- |
+#### `codex_local`
 
-**Runtime (collapsible section, default collapsed):**
+| 字段 | 控件 | 默认值 |
+|---|---|---|
+| Search | 开关 | false |
+| Bypass Sandbox | 开关 | true |
 
-| Field | Control | Default |
-|-------|---------|---------|
-| Context Mode | Chip popover | `thin` |
-| Monthly Budget (cents) | Number input | 0 |
-| Timeout (sec) | Number input | 900 |
-| Grace Period (sec) | Number input | 15 |
-| Extra Args | Text input | -- |
-| Env Vars | Key-value pair editor | -- |
+#### `process`
 
-**Heartbeat Policy (collapsible section, default collapsed):**
+| 字段 | 控件 | 默认值 |
+|---|---|---|
+| Command | 文本输入 | 无 |
+| Args | 文本输入（逗号分隔） | 无 |
 
-| Field | Control | Default |
-|-------|---------|---------|
-| Enabled | Toggle | true |
-| Interval (sec) | Number input | 300 |
-| Wake on Assignment | Toggle | true |
-| Wake on On-Demand | Toggle | true |
-| Wake on Automation | Toggle | true |
-| Cooldown (sec) | Number input | 10 |
+#### `http`
 
-### Behavior
+| 字段 | 控件 | 默认值 |
+|---|---|---|
+| URL | 文本输入 | 无 |
+| Method | 下拉选择 | `POST` |
+| Headers | 键值对编辑器 | 无 |
 
-- On submit, calls `agentsApi.create(companyId, data)` where `data` packs identity fields at the top level and adapter-specific fields into `adapterConfig` and heartbeat/runtime into `runtimeConfig`.
-- After creation, navigate to the new agent's detail page.
-- If the company has zero agents, pre-fill role as `ceo` and disable Reports To.
-- The adapter config section updates its visible fields when adapter type changes, preserving any shared field values (cwd, promptTemplate, etc.).
+### 运行时配置（可折叠，默认收起）
+
+| 字段 | 控件 | 默认值 |
+|---|---|---|
+| Context Mode | 芯片式选择器 | `thin` |
+| Monthly Budget (cents) | 数字输入 | 0 |
+| Timeout (sec) | 数字输入 | 900 |
+| Grace Period (sec) | 数字输入 | 15 |
+| Extra Args | 文本输入 | 无 |
+| Env Vars | 键值对编辑器 | 无 |
+
+### 心跳策略（可折叠，默认收起）
+
+| 字段 | 控件 | 默认值 |
+|---|---|---|
+| Enabled | 开关 | true |
+| Interval (sec) | 数字输入 | 300 |
+| Wake on Assignment | 开关 | true |
+| Wake on On-Demand | 开关 | true |
+| Wake on Automation | 开关 | true |
+| Cooldown (sec) | 数字输入 | 10 |
+
+## 行为
+
+- 提交时调用 `agentsApi.create(companyId, data)`
+- `data` 顶层存身份字段，适配器相关字段打包进 `adapterConfig`，心跳 / 运行时字段打包进 `runtimeConfig`
+- 创建成功后跳转到新的代理详情页
+- 如果公司里还没有代理，则自动把 `role` 设为 `ceo` 并禁用 `Reports To`
+- 当适配器类型变化时，应动态切换专属字段，但尽量保留共享字段值
 
 ---
 
-## 2. Agent Detail Page
+## 2. 代理详情页
 
-Restructure the existing tabbed layout. Keep the header (name, role, title, status badge, action buttons) and add richer tabs.
+现有详情页保留顶部 header，但整体改造成更丰富的标签页结构。
 
-### Header
+## Header
 
-```
+```txt
 [StatusBadge]  Agent Name                    [Invoke] [Pause/Resume] [...]
                Role / Title
 ```
 
-The `[...]` overflow menu contains: Terminate, Reset Session, Create API Key.
+`[...]` 溢出菜单包含：
 
-### Tabs
+- Terminate
+- Reset Session
+- Create API Key
 
-#### Overview Tab
+## Tabs
 
-Two-column layout: left column is a summary card, right column is the org position.
+### Overview
 
-**Summary card:**
-- Adapter type + model (if set)
-- Heartbeat interval (e.g. "every 5 min") or "Disabled"
-- Last heartbeat time (relative, e.g. "3 min ago")
-- Session status: "Active (session abc123...)" or "No session"
-- Current month spend / budget with progress bar
+两列布局：左侧是摘要卡片，右侧是组织位置卡片。
 
-**Org position card:**
-- Reports to: clickable agent name (links to their detail page)
-- Direct reports: list of agents who report to this agent (clickable)
+**摘要卡片：**
 
-#### Configuration Tab
+- 适配器类型 + 模型（如果有）
+- 心跳间隔（如 “every 5 min”）或 “Disabled”
+- 最近一次心跳时间（相对时间）
+- 会话状态：`Active (session abc123...)` 或 `No session`
+- 本月支出 / 预算进度条
 
-Editable form with the same sections as the creation dialog (Adapter, Runtime, Heartbeat Policy) but pre-populated with current values. Uses inline editing -- click a value to edit, press Enter or blur to save via `agentsApi.update()`.
+**组织位置卡片：**
 
-Sections:
-- **Identity**: name, title, role, reports to, capabilities
-- **Adapter Config**: all adapter-specific fields for the current adapter type
-- **Heartbeat Policy**: enable/disable, interval, wake-on triggers, cooldown
-- **Runtime**: context mode, budget, timeout, grace, env vars, extra args
+- Reports to：可点击代理名，跳转到上级详情页
+- Direct reports：直属下属列表
 
-Each section is a collapsible card. Save happens per-field (PATCH on blur/enter), not a single form submit. Validation errors show inline.
+### Configuration
 
-#### Runs Tab
+使用与创建对话框一致的字段分区，但预填当前值。  
+交互方式采用 **inline editing**：
 
-This is the primary activity/history view. Shows a paginated list of heartbeat runs, most recent first.
+- 点击值后进入编辑状态
+- 按 Enter 或失焦即保存
+- 每个字段单独触发 `agentsApi.update()`
+- 校验错误直接显示在字段附近
 
-**Run list item:**
-```
-[StatusIcon] #run-id-short   source: timer     2 min ago     1.2k tokens   $0.03
-             "Reviewed 3 PRs and filed 2 issues"
-```
+建议分区：
 
-Fields per row:
-- Status icon (green check = succeeded, red X = failed, yellow spinner = running, gray clock = queued, orange timeout = timed_out, slash = cancelled)
-- Run ID (short, first 8 chars)
-- Invocation source chip (timer, assignment, on_demand, automation)
-- Relative timestamp
-- Token usage summary (total input + output)
-- Cost
-- Result summary (first line of result or error)
+- Identity
+- Adapter Config
+- Heartbeat Policy
+- Runtime
 
-**Clicking a run** opens a run detail inline (accordion expand) or a slide-over panel showing:
+### Runs
 
-- Full status timeline (queued -> running -> outcome) with timestamps
-- Session before/after
-- Token breakdown: input, output, cached input
-- Cost breakdown
-- Error message and error code (if failed)
-- Exit code and signal (if applicable)
+这是代理活动与历史的主视图，按时间倒序分页展示 heartbeat runs。
 
-**Log viewer** within the run detail:
-- Streams `heartbeat_run_events` for the run, ordered by `seq`
-- Each event rendered as a log line with timestamp, level (color-coded), and message
-- Events of type `stdout`/`stderr` shown in monospace
-- System events shown with distinct styling
-- For running runs, auto-scrolls and appends live via WebSocket events (`heartbeat.run.event`, `heartbeat.run.log`)
-- "View full log" link fetches from `heartbeatsApi.log(runId)` and shows in a scrollable monospace container
-- Truncation: show last 200 events by default, "Load more" button to fetch earlier events
+**列表项应显示：**
 
-#### Issues Tab
+- 状态图标
+- 短 run ID（前 8 位）
+- 触发来源（timer、assignment、on_demand、automation）
+- 相对时间
+- token 使用摘要
+- 成本
+- 结果摘要（第一行结果或错误）
 
-Keep as-is: list of issues assigned to this agent with status, clickable to navigate to issue detail.
+点击某条运行后，可以展开 accordion 或打开 slide-over，查看：
 
-#### Costs Tab
+- 状态时间线（queued -> running -> outcome）
+- 会话前后变化
+- token 细分（input / output / cached）
+- 成本细分
+- 错误信息 / 错误码
+- 退出码和信号（如果有）
 
-Expand the existing costs tab:
+**日志查看器：**
 
-- **Cumulative totals** from `agent_runtime_state`: total input tokens, total output tokens, total cached tokens, total cost
-- **Monthly budget** progress bar (current month spend vs budget)
-- **Per-run cost table**: date, run ID, tokens in/out/cached, cost -- sortable by date or cost
-- **Chart** (stretch): simple bar chart of daily spend over last 30 days
+- 从 `heartbeat_run_events` 按 `seq` 顺序拉取
+- `stdout` / `stderr` 使用等宽字体展示
+- 系统事件使用不同样式
+- 对运行中的任务通过实时事件（`heartbeat.run.event`、`heartbeat.run.log`）追加更新
+- 默认只显示最后 200 条，可“Load more”
 
-### Properties Panel (Right Sidebar)
+### Issues
 
-The existing `AgentProperties` panel continues to show the quick-glance info. Add:
-- Session ID (truncated, with copy button)
-- Last error (if any, in red)
-- Link to "View Configuration" (scrolls to / switches to Configuration tab)
+保留当前行为：列出分配给该代理的 issues，并支持点击跳转。
 
----
+### Costs
 
-## 3. Agents List Page
+扩展现有成本页，增加：
 
-### Current state
+- 来自 `agent_runtime_state` 的累计总量：input / output / cached tokens、总成本
+- 月度预算进度条
+- 按 run 维度展示的成本表格
+- 可选：最近 30 天的日成本柱状图
 
-Shows a flat list of agents with status badge, name, role, title, and budget bar.
+## Properties Panel（右侧属性栏）
 
-### Improvements
+继续保留现有 `AgentProperties` 面板，并补充：
 
-**Add "New Agent" button** in the header (Plus icon + "New Agent"), opens the creation dialog.
-
-**Add view toggle**: List view (current) and Org Chart view.
-
-**Org Chart view:**
-- Tree layout showing reporting hierarchy
-- Each node shows: agent name, role, status badge
-- CEO at the top, direct reports below, etc.
-- Uses the `agentsApi.org(companyId)` endpoint which already returns `OrgNode[]`
-- Clicking a node navigates to agent detail
-
-**List view improvements:**
-- Add adapter type as a small chip/tag on each row
-- Add "last active" relative timestamp
-- Add running indicator (animated dot) if agent currently has a running heartbeat
-
-**Filtering:**
-- Tab filters: All, Active, Paused, Error (similar to Issues page pattern)
+- Session ID（截断显示，带复制按钮）
+- Last error（如果有，则红色高亮）
+- “View Configuration” 链接（滚动或切换到配置标签页）
 
 ---
 
-## 4. Component Inventory
+## 3. 代理列表页
 
-New components needed:
+## 当前状态
 
-| Component | Purpose |
-|-----------|---------|
-| `NewAgentDialog` | Agent creation form dialog |
-| `AgentConfigForm` | Shared form sections for create + edit (adapter, heartbeat, runtime) |
-| `AdapterConfigFields` | Conditional fields based on adapter type |
-| `HeartbeatPolicyFields` | Heartbeat configuration fields |
-| `EnvVarEditor` | Key-value pair editor for environment variables |
-| `RunListItem` | Single run row in the runs list |
-| `RunDetail` | Expanded run detail with log viewer |
-| `LogViewer` | Streaming log viewer with auto-scroll |
-| `OrgChart` | Tree visualization of agent hierarchy |
-| `AgentSelect` | Reusable agent picker (for Reports To, etc.) |
+当前是扁平列表，展示状态徽章、名称、角色、title 和预算条。
 
-Reused existing components:
-- `StatusBadge`, `EntityRow`, `EmptyState`, `PropertyRow`
-- shadcn: `Dialog`, `Tabs`, `Button`, `Popover`, `Command`, `Separator`, `Toggle`
+## 改进项
+
+### Header
+
+- 增加 **New Agent** 按钮（Plus 图标 + 文案）
+- 点击后打开创建代理对话框
+
+### 视图切换
+
+支持两种视图：
+
+- List View（当前模式）
+- Org Chart View（组织树）
+
+### Org Chart View
+
+- 用树状结构展示汇报关系
+- 每个节点显示：代理名称、角色、状态徽章
+- CEO 位于顶部
+- 数据来源使用现有 `agentsApi.org(companyId)`，返回 `OrgNode[]`
+- 点击节点跳转到代理详情页
+
+### List View 增强
+
+- 每行增加 adapter type chip
+- 增加 “last active” 相对时间
+- 若代理当前有运行中的 heartbeat，则显示动画中的 running indicator
+
+### 过滤
+
+支持与 Issues 页类似的 tab filter：
+
+- All
+- Active
+- Paused
+- Error
+
+---
+
+## 4. 组件清单
+
+新增组件建议：
+
+| 组件 | 作用 |
+|---|---|
+| `NewAgentDialog` | 创建代理表单对话框 |
+| `AgentConfigForm` | 创建 + 编辑共用的表单区块 |
+| `AdapterConfigFields` | 按适配器类型切换显示字段 |
+| `HeartbeatPolicyFields` | 心跳策略字段 |
+| `EnvVarEditor` | 环境变量键值对编辑器 |
+| `RunListItem` | 运行历史列表项 |
+| `RunDetail` | 展开的运行详情与日志查看器 |
+| `LogViewer` | 自动滚动的流式日志查看器 |
+| `OrgChart` | 组织树可视化 |
+| `AgentSelect` | 可复用的代理选择器 |
+
+复用现有组件：
+
+- `StatusBadge`
+- `EntityRow`
+- `EmptyState`
+- `PropertyRow`
+- shadcn：`Dialog`、`Tabs`、`Button`、`Popover`、`Command`、`Separator`、`Toggle`
 
 ---
 
 ## 5. API Surface
 
-All endpoints already exist. No new server work needed for V1.
+V1 不需要新增后端接口，现有 API 已经足够。
 
-| Action | Endpoint | Used by |
-|--------|----------|---------|
-| List agents | `GET /companies/:id/agents` | List page |
-| Get org tree | `GET /companies/:id/org` | Org chart view |
-| Create agent | `POST /companies/:id/agents` | Creation dialog |
-| Update agent | `PATCH /agents/:id` | Configuration tab |
-| Pause/Resume/Terminate | `POST /agents/:id/{action}` | Header actions |
-| Reset session | `POST /agents/:id/runtime-state/reset-session` | Overflow menu |
-| Create API key | `POST /agents/:id/keys` | Overflow menu |
-| Get runtime state | `GET /agents/:id/runtime-state` | Overview tab, properties panel |
-| Invoke/Wakeup | `POST /agents/:id/heartbeat/invoke` | Header invoke button |
-| List runs | `GET /companies/:id/heartbeat-runs?agentId=X` | Runs tab |
-| Cancel run | `POST /heartbeat-runs/:id/cancel` | Run detail |
-| Run events | `GET /heartbeat-runs/:id/events` | Log viewer |
-| Run log | `GET /heartbeat-runs/:id/log` | Full log view |
+| 动作 | 端点 | 使用位置 |
+|---|---|---|
+| List agents | `GET /companies/:id/agents` | 列表页 |
+| Get org tree | `GET /companies/:id/org` | 组织树视图 |
+| Create agent | `POST /companies/:id/agents` | 创建对话框 |
+| Update agent | `PATCH /agents/:id` | 配置页 |
+| Pause / Resume / Terminate | `POST /agents/:id/{action}` | Header 动作 |
+| Reset session | `POST /agents/:id/runtime-state/reset-session` | 溢出菜单 |
+| Create API key | `POST /agents/:id/keys` | 溢出菜单 |
+| Get runtime state | `GET /agents/:id/runtime-state` | Overview、属性栏 |
+| Invoke / Wakeup | `POST /agents/:id/heartbeat/invoke` | Header 按钮 |
+| List runs | `GET /companies/:id/heartbeat-runs?agentId=X` | Runs 页 |
+| Cancel run | `POST /heartbeat-runs/:id/cancel` | Run 详情 |
+| Run events | `GET /heartbeat-runs/:id/events` | 日志查看器 |
+| Run log | `GET /heartbeat-runs/:id/log` | 完整日志视图 |
 
 ---
 
-## 6. Implementation Order
+## 6. 实施顺序
 
-1. **New Agent Dialog** -- unblocks agent creation from the UI
-2. **Agents List improvements** -- add New Agent button, tab filters, adapter chip, running indicator
-3. **Agent Detail: Configuration tab** -- editable adapter/heartbeat/runtime config
-4. **Agent Detail: Runs tab** -- run history list with status, tokens, cost
-5. **Agent Detail: Run Detail + Log Viewer** -- expandable run detail with streaming logs
-6. **Agent Detail: Overview tab** -- summary card, org position
-7. **Agent Detail: Costs tab** -- expanded cost breakdown
-8. **Org Chart view** -- tree visualization on list page
-9. **Properties panel updates** -- session ID, last error
+1. **New Agent Dialog**：先打通 UI 内创建代理能力
+2. **Agents List 增强**：补上 New Agent 按钮、筛选、adapter chip、running indicator
+3. **Agent Detail / Configuration**：支持编辑 adapter / heartbeat / runtime
+4. **Agent Detail / Runs**：展示运行历史、状态、token、成本
+5. **Run Detail + Log Viewer**：增加展开详情和流式日志
+6. **Overview Tab**：补摘要卡片和组织位置卡片
+7. **Costs Tab**：扩展成本细节
+8. **Org Chart View**：实现组织树视图
+9. **Properties Panel**：补 session ID 和 last error
 
-Steps 1-5 are the core. Steps 6-9 are polish.
+其中 1-5 是核心闭环，6-9 属于增强与打磨。

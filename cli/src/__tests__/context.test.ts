@@ -74,16 +74,4 @@ describe("client context store", () => {
     expect(context.profiles.x).toEqual({});
   });
 
-  it("throws a migration error for legacy repo-local .swarmifyx/context.json", () => {
-    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "swarmifyx-cli-context-"));
-    const projectDir = path.join(tempDir, "repo");
-    fs.mkdirSync(path.join(projectDir, ".swarmifyx"), { recursive: true });
-    fs.writeFileSync(
-      path.join(projectDir, ".swarmifyx", "context.json"),
-      JSON.stringify(defaultClientContext(), null, 2),
-    );
-    process.chdir(projectDir);
-
-    expect(() => readContext()).toThrow(/Legacy repo-local Swarmifyx context detected/);
-  });
 });

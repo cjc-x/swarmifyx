@@ -1,62 +1,62 @@
 ---
-title: Database
-summary: Embedded PGlite vs Docker Postgres vs hosted
+title: 数据库
+summary: 内嵌 PGlite、Docker Postgres 与托管数据库
 ---
 
-Swarmifyx uses PostgreSQL via Drizzle ORM. There are three ways to run the database.
+Swarmifyx 通过 Drizzle ORM 使用 PostgreSQL。数据库有三种运行方式。
 
-## 1. Embedded PostgreSQL (Default)
+## 1. 内嵌 PostgreSQL（默认）
 
-Zero config. If you don't set `DATABASE_URL`, the server starts an embedded PostgreSQL instance automatically.
+零配置。如果没有设置 `DATABASE_URL`，服务端会自动启动一个内嵌 PostgreSQL 实例。
 
 ```sh
 pnpm dev
 ```
 
-On first start, the server:
+首次启动时，服务端会：
 
-1. Creates `~/.swarmifyx/instances/default/db/` for storage
-2. Ensures the `swarmifyx` database exists
-3. Runs migrations automatically
-4. Starts serving requests
+1. 创建 `~/.swarmifyx/instances/default/db/` 作为数据目录
+2. 确保 `swarmifyx` 数据库存在
+3. 自动执行迁移
+4. 开始提供服务
 
-Data persists across restarts. To reset: `rm -rf ~/.swarmifyx/instances/default/db`.
+数据会跨重启保留。若要重置，可执行：`rm -rf ~/.swarmifyx/instances/default/db`。
 
-The Docker quickstart also uses embedded PostgreSQL by default.
+Docker 快速启动方案默认也使用内嵌 PostgreSQL。
 
-## 2. Local PostgreSQL (Docker)
+## 2. 本地 PostgreSQL（Docker）
 
-For a full PostgreSQL server locally:
+如果需要完整的本地 PostgreSQL 服务：
 
 ```sh
 docker compose up -d
 ```
 
-This starts PostgreSQL 17 on `localhost:5432`. Set the connection string:
+这会在 `localhost:5432` 启动 PostgreSQL 17。然后设置连接串：
 
 ```sh
 cp .env.example .env
 # DATABASE_URL=postgres://swarmifyx:swarmifyx@localhost:5432/swarmifyx
 ```
 
-Push the schema:
+推送 schema：
 
 ```sh
 DATABASE_URL=postgres://swarmifyx:swarmifyx@localhost:5432/swarmifyx \
   npx drizzle-kit push
 ```
 
-## 3. Hosted PostgreSQL (Supabase)
+## 3. 托管 PostgreSQL（Supabase）
 
-For production, use a hosted provider like [Supabase](https://supabase.com/).
+生产环境建议使用 [Supabase](https://supabase.com/) 这类托管数据库。
 
-1. Create a project at [database.new](https://database.new)
-2. Copy the connection string from Project Settings > Database
-3. Set `DATABASE_URL` in your `.env`
+1. 在 [database.new](https://database.new) 创建项目
+2. 在 Project Settings > Database 里复制连接串
+3. 在 `.env` 中设置 `DATABASE_URL`
 
-Use the **direct connection** (port 5432) for migrations and the **pooled connection** (port 6543) for the application.
+迁移请使用 **直连**（端口 5432），应用运行请使用 **连接池**（端口 6543）。
 
-If using connection pooling, disable prepared statements:
+如果使用连接池，需要禁用 prepared statements：
 
 ```ts
 // packages/db/src/client.ts
@@ -66,12 +66,12 @@ export function createDb(url: string) {
 }
 ```
 
-## Switching Between Modes
+## 模式切换
 
 | `DATABASE_URL` | Mode |
 |----------------|------|
-| Not set | Embedded PostgreSQL |
-| `postgres://...localhost...` | Local Docker PostgreSQL |
-| `postgres://...supabase.com...` | Hosted Supabase |
+| Not set | 内嵌 PostgreSQL |
+| `postgres://...localhost...` | 本地 Docker PostgreSQL |
+| `postgres://...supabase.com...` | 托管 Supabase |
 
-The Drizzle schema (`packages/db/src/schema/`) is the same regardless of mode.
+无论使用哪种模式，Drizzle schema（`packages/db/src/schema/`）都保持一致。

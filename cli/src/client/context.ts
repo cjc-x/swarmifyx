@@ -5,7 +5,6 @@ import { resolveDefaultContextPath } from "../config/home.js";
 const DEFAULT_CONTEXT_BASENAME = "context.json";
 const DEFAULT_PROFILE = "default";
 const REPO_CONTEXT_DIRNAME = ".swarmifyx";
-const LEGACY_REPO_CONTEXT_DIRNAME = ".swarmifyx";
 
 export interface ClientContextProfile {
   apiBase?: string;
@@ -27,14 +26,6 @@ function findContextFileFromAncestors(startDir: string): string | null {
     const candidate = path.resolve(currentDir, REPO_CONTEXT_DIRNAME, DEFAULT_CONTEXT_BASENAME);
     if (fs.existsSync(candidate)) {
       return candidate;
-    }
-
-    const legacyCandidate = path.resolve(currentDir, LEGACY_REPO_CONTEXT_DIRNAME, DEFAULT_CONTEXT_BASENAME);
-    if (fs.existsSync(legacyCandidate)) {
-      const targetPath = path.resolve(currentDir, REPO_CONTEXT_DIRNAME, DEFAULT_CONTEXT_BASENAME);
-      throw new Error(
-        `Legacy repo-local Swarmifyx context detected at ${legacyCandidate}. SwarmifyX only auto-loads ${targetPath}. Move the file or set SWARMIFYX_CONTEXT explicitly during migration.`,
-      );
     }
 
     const nextDir = path.resolve(currentDir, "..");

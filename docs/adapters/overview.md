@@ -1,34 +1,34 @@
 ---
-title: Adapters Overview
-summary: What adapters are and how they connect agents to Swarmifyx
+title: 适配器概览
+summary: 什么是适配器，以及它如何把代理连接到 Swarmifyx
 ---
 
-Adapters are the bridge between Swarmifyx's orchestration layer and agent runtimes. Each adapter knows how to invoke a specific type of AI agent and capture its results.
+适配器是 Swarmifyx 编排层与代理运行时之间的桥梁。每个适配器都知道如何调用某一类 AI 代理，并把它的执行结果采集回来。
 
-## How Adapters Work
+## 适配器如何工作
 
-When a heartbeat fires, Swarmifyx:
+当心跳触发时，Swarmifyx 会：
 
-1. Looks up the agent's `adapterType` and `adapterConfig`
-2. Calls the adapter's `execute()` function with the execution context
-3. The adapter spawns or calls the agent runtime
-4. The adapter captures stdout, parses usage/cost data, and returns a structured result
+1. 读取代理的 `adapterType` 和 `adapterConfig`
+2. 带着执行上下文调用适配器的 `execute()` 函数
+3. 由适配器拉起或调用实际代理运行时
+4. 由适配器采集 stdout、解析使用量/成本数据，并返回结构化结果
 
-## Built-in Adapters
+## 内置适配器
 
 | Adapter | Type Key | Description |
 |---------|----------|-------------|
-| [Claude Local](/adapters/claude-local) | `claude_local` | Runs Claude Code CLI locally |
-| [Codex Local](/adapters/codex-local) | `codex_local` | Runs OpenAI Codex CLI locally |
-| [Gemini Local](/adapters/gemini-local) | `gemini_local` | Runs Gemini CLI locally |
-| OpenCode Local | `opencode_local` | Runs OpenCode CLI locally (multi-provider `provider/model`) |
-| OpenClaw | `openclaw` | Sends wake payloads to an OpenClaw webhook |
-| [Process](/adapters/process) | `process` | Executes arbitrary shell commands |
-| [HTTP](/adapters/http) | `http` | Sends webhooks to external agents |
+| [Claude Local](/adapters/claude-local) | `claude_local` | 在本地运行 Claude Code CLI |
+| [Codex Local](/adapters/codex-local) | `codex_local` | 在本地运行 OpenAI Codex CLI |
+| [Gemini Local](/adapters/gemini-local) | `gemini_local` | 在本地运行 Gemini CLI |
+| OpenCode Local | `opencode_local` | 在本地运行 OpenCode CLI（多提供商 `provider/model`） |
+| OpenClaw | `openclaw` | 向 OpenClaw webhook 发送唤醒负载 |
+| [Process](/adapters/process) | `process` | 执行任意 shell 命令 |
+| [HTTP](/adapters/http) | `http` | 向外部代理发送 webhook |
 
-## Adapter Architecture
+## 适配器架构
 
-Each adapter is a package with three modules:
+每个适配器都是一个独立 package，包含三个模块：
 
 ```
 packages/adapters/<name>/
@@ -45,17 +45,17 @@ packages/adapters/<name>/
       format-event.ts   # Terminal output for `swarmifyx run --watch`
 ```
 
-Three registries consume these modules:
+这三个模块分别被三个注册表使用：
 
 | Registry | What it does |
 |----------|-------------|
-| **Server** | Executes agents, captures results |
-| **UI** | Renders run transcripts, provides config forms |
-| **CLI** | Formats terminal output for live watching |
+| **Server** | 执行代理并采集结果 |
+| **UI** | 渲染运行转录内容并提供配置表单 |
+| **CLI** | 为实时观察格式化终端输出 |
 
-## Choosing an Adapter
+## 如何选择适配器
 
-- **Need a coding agent?** Use `claude_local`, `codex_local`, `gemini_local`, or `opencode_local`
-- **Need to run a script or command?** Use `process`
-- **Need to call an external service?** Use `http`
-- **Need something custom?** [Create your own adapter](/adapters/creating-an-adapter)
+- **需要代码代理？** 使用 `claude_local`、`codex_local`、`gemini_local` 或 `opencode_local`
+- **需要执行脚本或命令？** 使用 `process`
+- **需要调用外部服务？** 使用 `http`
+- **需要自定义运行时？** [自己创建一个适配器](/adapters/creating-an-adapter)

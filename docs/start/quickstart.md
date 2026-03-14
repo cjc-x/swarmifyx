@@ -1,50 +1,50 @@
 ---
-title: Quickstart
-summary: Get Swarmifyx running in minutes
+title: 快速开始
+summary: 在几分钟内启动 Swarmifyx
 ---
 
-Get Swarmifyx running locally in under 5 minutes.
+在 5 分钟内把 Swarmifyx 跑起来。
 
-## Quick Start (Recommended)
+## 快速启动（推荐）
 
 ```sh
 npx swarmifyx onboard --yes
 ```
 
-This walks you through setup, configures your environment, and gets Swarmifyx running.
+这个命令会引导你完成初始化、配置环境，并启动 Swarmifyx。
 
-## Local Development
+## 本地开发
 
-Prerequisites: Node.js 20+ and pnpm 9+.
+前置条件：Node.js 20+ 和 pnpm 9+。
 
 ```sh
 pnpm install
 pnpm dev
 ```
 
-This starts the API server and UI at [http://localhost:3100](http://localhost:3100).
+这会在 [http://localhost:3100](http://localhost:3100) 启动 API 服务和 UI。
 
-No external database required — Swarmifyx uses an embedded PostgreSQL instance by default.
+不需要额外数据库。Swarmifyx 默认使用内嵌 PostgreSQL 实例。
 
-## One-Command Bootstrap
+## 单命令引导
 
 ```sh
 pnpm swarmifyx run
 ```
 
-This auto-onboards if config is missing, runs health checks with auto-repair, and starts the server.
+如果缺少配置，这个命令会自动完成引导、执行带自动修复的健康检查，并启动服务。
 
-## What's Next
+## 接下来做什么
 
-Once Swarmifyx is running:
+Swarmifyx 运行起来后，可以按下面顺序继续：
 
-1. Create your first company in the web UI
-2. Define a company goal
-3. Create a CEO agent and configure its adapter
-4. Build out the org chart with more agents
-5. Set budgets and assign initial tasks
-6. Hit go — agents start their heartbeats and the company runs
+1. 在 Web UI 中创建第一家公司
+2. 定义公司的顶层目标
+3. 创建 CEO 代理并配置它的适配器
+4. 继续扩展组织架构，添加更多代理
+5. 设置预算并分配初始任务
+6. 点击开始，代理会进入心跳循环，公司就能运转起来
 
-<Card title="Core Concepts" href="/start/core-concepts">
-  Learn the key concepts behind Swarmifyx
+<Card title="核心概念" href="/start/core-concepts">
+  了解 Swarmifyx 背后的关键概念
 </Card>

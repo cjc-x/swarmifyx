@@ -1,175 +1,180 @@
-# Agent Runtime Guide
+---
+title: 代理运行时指南
+summary: 代理运行方式、唤醒机制、会话恢复与运行排障
+---
 
-Status: User-facing guide  
-Last updated: 2026-02-17  
-Audience: Operators setting up and running agents in Swarmifyx
+# 代理运行时指南
 
-## 1. What this system does
+状态：面向用户的指南  
+最后更新：2026-02-17  
+读者：在 Swarmifyx 中配置并运行代理的运营者
 
-Agents in Swarmifyx do not run continuously.  
-They run in **heartbeats**: short execution windows triggered by a wakeup.
+## 1. 这个系统做什么
 
-Each heartbeat:
+Swarmifyx 中的代理不会持续运行。  
+它们以 **心跳** 的形式工作，也就是由唤醒事件触发的一小段执行窗口。
 
-1. Starts the configured agent adapter (for example, Claude CLI or Codex CLI)
-2. Gives it the current prompt/context
-3. Lets it work until it exits, times out, or is cancelled
-4. Stores results (status, token usage, errors, logs)
-5. Updates the UI live
+每次心跳都会：
 
-## 2. When an agent wakes up
+1. 启动已配置的代理适配器（例如 Claude CLI 或 Codex CLI）
+2. 向代理提供当前提示词和上下文
+3. 让代理执行，直到退出、超时或被取消
+4. 存储结果（状态、token 使用量、错误、日志）
+5. 将变化实时推送到 UI
 
-An agent can be woken up in four ways:
+## 2. 代理何时会被唤醒
 
-- `timer`: scheduled interval (for example every 5 minutes)
-- `assignment`: when work is assigned/checked out to that agent
-- `on_demand`: manual wakeup (button/API)
-- `automation`: system-triggered wakeup for future automations
+代理有四种常见唤醒方式：
 
-If an agent is already running, new wakeups are merged (coalesced) instead of launching duplicate runs.
+- `timer`：定时触发（例如每 5 分钟一次）
+- `assignment`：有工作被分配或 checkout 给该代理
+- `on_demand`：手动唤醒（按钮或 API）
+- `automation`：系统为了未来自动化能力触发的唤醒
 
-## 3. What to configure per agent
+如果某个代理已经在运行，新的唤醒不会重复启动一个新的 run，而是会被合并（coalesce）到已有运行中。
 
-## 3.1 Adapter choice
+## 3. 每个代理需要配置什么
 
-Common choices:
+## 3.1 选择适配器
 
-- `claude_local`: runs your local `claude` CLI
-- `codex_local`: runs your local `codex` CLI
-- `process`: generic shell command adapter
-- `http`: calls an external HTTP endpoint
+常见选择包括：
 
-For `claude_local` and `codex_local`, Swarmifyx assumes the CLI is already installed and authenticated on the host machine.
+- `claude_local`：运行本地 `claude` CLI
+- `codex_local`：运行本地 `codex` CLI
+- `process`：通用 shell 命令适配器
+- `http`：调用外部 HTTP 端点
 
-## 3.2 Runtime behavior
+对于 `claude_local` 和 `codex_local`，Swarmifyx 默认假设 CLI 已经在宿主机上安装并完成认证。
 
-In agent runtime settings, configure heartbeat policy:
+## 3.2 运行时行为
 
-- `enabled`: allow scheduled heartbeats
-- `intervalSec`: timer interval (0 = disabled)
-- `wakeOnAssignment`: wake when assigned work
-- `wakeOnOnDemand`: allow ping-style on-demand wakeups
-- `wakeOnAutomation`: allow system automation wakeups
+在代理运行时设置里，你通常需要配置心跳策略：
 
-## 3.3 Working directory and execution limits
+- `enabled`：是否允许定时心跳
+- `intervalSec`：定时器间隔（`0` 表示关闭）
+- `wakeOnAssignment`：收到任务时是否唤醒
+- `wakeOnOnDemand`：是否允许手动唤醒
+- `wakeOnAutomation`：是否允许系统自动化唤醒
 
-For local adapters, set:
+## 3.3 工作目录与执行限制
 
-- `cwd` (working directory)
-- `timeoutSec` (max runtime per heartbeat)
-- `graceSec` (time before force-kill after timeout/cancel)
-- optional env vars and extra CLI args
-- use **Test environment** in agent configuration to run adapter-specific diagnostics before saving
+对于本地适配器，建议配置：
 
-## 3.4 Prompt templates
+- `cwd`：工作目录
+- `timeoutSec`：单次心跳最长运行时间
+- `graceSec`：超时或取消后进入强制 kill 之前的宽限时间
+- 可选环境变量和额外 CLI 参数
+- 使用代理配置中的 **Test environment** 按钮，在保存前运行适配器专用诊断
 
-You can set:
+## 3.4 提示词模板
 
-- `promptTemplate`: used for every run (first run and resumed sessions)
+你可以设置：
 
-Templates support variables like `{{agent.id}}`, `{{agent.name}}`, and run context values.
+- `promptTemplate`：每次运行都会使用的提示词（无论是第一次运行还是恢复会话）
 
-## 4. Session resume behavior
+模板支持 `{{agent.id}}`、`{{agent.name}}` 以及运行上下文中的其他变量。
 
-Swarmifyx stores session IDs for resumable adapters.
+## 4. 会话恢复行为
 
-- Next heartbeat reuses the saved session automatically.
-- This gives continuity across heartbeats.
-- You can reset a session if context gets stale or confused.
+对于支持恢复的适配器，Swarmifyx 会持久化 session ID。
 
-Use session reset when:
+- 下一次心跳会自动复用已保存的会话
+- 这样可以在多次心跳之间保持上下文连续性
+- 如果上下文变脏或混乱，你也可以手动重置会话
 
-- you significantly changed prompt strategy
-- the agent is stuck in a bad loop
-- you want a clean restart
+适合重置会话的场景包括：
 
-## 5. Logs, status, and run history
+- 你明显调整了提示词策略
+- 代理陷入了不好的循环
+- 你希望完全从干净状态重新开始
 
-For each heartbeat run you get:
+## 5. 日志、状态和运行历史
 
-- run status (`queued`, `running`, `succeeded`, `failed`, `timed_out`, `cancelled`)
-- error text and stderr/stdout excerpts
-- token usage/cost when available from the adapter
-- full logs (stored outside core run rows, optimized for large output)
+每次心跳运行都会生成以下信息：
 
-In local/dev setups, full logs are stored on disk under the configured run-log path.
+- 运行状态（`queued`、`running`、`succeeded`、`failed`、`timed_out`、`cancelled`）
+- 错误文本，以及 stderr / stdout 摘要
+- 如果适配器可提供，则记录 token 使用量和成本
+- 完整日志（存储在核心运行记录之外，适合承载大输出）
 
-## 6. Live updates in the UI
+在本地 / 开发环境下，完整日志会存储在配置好的 run-log 路径中。
 
-Swarmifyx pushes runtime/activity updates to the browser in real time.
+## 6. UI 中的实时更新
 
-You should see live changes for:
+Swarmifyx 会把运行时和活动更新实时推送到浏览器。
 
-- agent status
-- heartbeat run status
-- task/activity updates caused by agent work
-- dashboard/cost/activity panels as relevant
+你应该能看到以下内容的即时变化：
 
-If the connection drops, the UI reconnects automatically.
+- 代理状态
+- 心跳运行状态
+- 代理工作引发的任务 / 活动更新
+- Dashboard、成本和活动面板的更新
 
-## 7. Common operating patterns
+如果连接中断，UI 会自动重连。
 
-## 7.1 Simple autonomous loop
+## 7. 常见运行模式
 
-1. Enable timer wakeups (for example every 300s)
-2. Keep assignment wakeups on
-3. Use a focused prompt template
-4. Watch run logs and adjust prompt/config over time
+## 7.1 简单自治循环
 
-## 7.2 Event-driven loop (less constant polling)
+1. 启用定时唤醒（例如每 300 秒一次）
+2. 保持 assignment 唤醒开启
+3. 使用聚焦、明确的提示词模板
+4. 持续观察运行日志，并根据结果迭代提示词和配置
 
-1. Disable timer or set a long interval
-2. Keep wake-on-assignment enabled
-3. Use on-demand wakeups for manual nudges
+## 7.2 事件驱动循环（减少常量轮询）
 
-## 7.3 Safety-first loop
+1. 关闭定时器，或设置较长的间隔
+2. 保持 wake-on-assignment 开启
+3. 通过 on-demand 唤醒实现人工 nudges
 
-1. Short timeout
-2. Conservative prompt
-3. Monitor errors + cancel quickly when needed
-4. Reset sessions when drift appears
+## 7.3 安全优先循环
 
-## 8. Troubleshooting
+1. 使用较短超时
+2. 使用更保守的提示词
+3. 密切观察错误，并在需要时快速取消运行
+4. 一旦发现漂移，就及时重置会话
 
-If runs fail repeatedly:
+## 8. 排障
 
-1. Check adapter command availability (`claude`/`codex` installed and logged in).
-2. Verify `cwd` exists and is accessible.
-3. Inspect run error + stderr excerpt, then full log.
-4. Confirm timeout is not too low.
-5. Reset session and retry.
-6. Pause agent if it is causing repeated bad updates.
+如果某个代理的运行反复失败：
 
-Typical failure causes:
+1. 检查适配器命令是否可用（例如 `claude` / `codex` 是否已安装且已登录）
+2. 验证 `cwd` 是否存在且可访问
+3. 先看运行错误和 stderr 摘要，再去看完整日志
+4. 确认 timeout 没有设置得过低
+5. 重置会话后重新尝试
+6. 如果代理持续产生错误更新，考虑直接暂停代理
 
-- CLI not installed/authenticated
-- bad working directory
-- malformed adapter args/env
-- prompt too broad or missing constraints
-- process timeout
+常见失败原因包括：
 
-Claude-specific note:
+- CLI 未安装或未认证
+- 工作目录错误
+- 适配器参数或环境变量格式有误
+- 提示词过于宽泛，或缺少边界约束
+- 进程超时
 
-- If `ANTHROPIC_API_KEY` is set in adapter env or host environment, Claude uses API-key auth instead of subscription login. Swarmifyx surfaces this as a warning in environment tests, not a hard error.
+Claude 特别说明：
 
-## 9. Security and risk notes
+- 如果在适配器环境变量或宿主环境中设置了 `ANTHROPIC_API_KEY`，Claude 会优先使用 API key 认证，而不是订阅登录。Swarmifyx 会在环境测试中把这一点作为 warning 展示，而不是 hard error。
 
-Local CLI adapters run unsandboxed on the host machine.
+## 9. 安全与风险说明
 
-That means:
+本地 CLI 适配器会在宿主机上以非沙箱方式运行。
 
-- prompt instructions matter
-- configured credentials/env vars are sensitive
-- working directory permissions matter
+这意味着：
 
-Start with least privilege where possible, and avoid exposing secrets in broad reusable prompts unless intentionally required.
+- 提示词本身非常重要
+- 已配置的凭据和环境变量都很敏感
+- 工作目录权限会直接影响风险边界
 
-## 10. Minimal setup checklist
+尽量从最小权限开始配置。除非明确有意为之，否则不要把敏感信息写进通用、可复用的宽泛提示词中。
 
-1. Choose adapter (`claude_local` or `codex_local`).
-2. Set `cwd` to the target workspace.
-3. Add bootstrap + normal prompt templates.
-4. Configure heartbeat policy (timer and/or assignment wakeups).
-5. Trigger a manual wakeup.
-6. Confirm run succeeds and session/token usage is recorded.
-7. Watch live updates and iterate prompt/config.
+## 10. 最小可用配置清单
+
+1. 选择适配器（`claude_local` 或 `codex_local`）。
+2. 把 `cwd` 指向目标 workspace。
+3. 添加引导提示词和正常运行提示词模板。
+4. 配置心跳策略（定时器和 / 或 assignment 唤醒）。
+5. 手动触发一次唤醒。
+6. 确认本次运行成功，并且 session / token 使用量已被记录。
+7. 观察实时更新，然后继续迭代提示词和配置。

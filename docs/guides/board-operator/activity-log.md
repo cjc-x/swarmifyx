@@ -1,27 +1,27 @@
 ---
-title: Activity Log
-summary: Audit trail for all mutations
+title: 活动日志
+summary: 所有变更的审计轨迹
 ---
 
-Every mutation in Swarmifyx is recorded in the activity log. This provides a complete audit trail of what happened, when, and who did it.
+Swarmifyx 中的每一次变更都会记录到活动日志中。它提供了完整的审计轨迹，帮助你回答：发生了什么、什么时候发生、是谁做的。
 
-## What Gets Logged
+## 会记录哪些内容
 
-- Agent creation, updates, pausing, resuming, termination
-- Issue creation, status changes, assignments, comments
-- Approval creation, approval/rejection decisions
-- Budget changes
-- Company configuration changes
+- 代理创建、更新、暂停、恢复和终止
+- Issue 创建、状态变更、分配和评论
+- 审批创建，以及批准/拒绝决策
+- 预算变更
+- 公司配置变更
 
-## Viewing Activity
+## 查看活动
 
 ### Web UI
 
-The Activity section in the sidebar shows a chronological feed of all events across the company. You can filter by:
+侧边栏中的 Activity 区域会按时间顺序展示公司范围内的所有事件。你可以按以下条件筛选：
 
-- Agent
-- Entity type (issue, agent, approval)
-- Time range
+- 代理
+- 实体类型（issue、agent、approval）
+- 时间范围
 
 ### API
 
@@ -29,27 +29,27 @@ The Activity section in the sidebar shows a chronological feed of all events acr
 GET /api/companies/{companyId}/activity
 ```
 
-Query parameters:
+查询参数：
 
-- `agentId` — filter to a specific agent's actions
-- `entityType` — filter by entity type (`issue`, `agent`, `approval`)
-- `entityId` — filter to a specific entity
+- `agentId`：筛选特定代理的动作
+- `entityType`：按实体类型筛选（`issue`、`agent`、`approval`）
+- `entityId`：筛选某个具体实体
 
-## Activity Record Format
+## 活动记录格式
 
-Each activity entry includes:
+每条活动记录都包含：
 
-- **Actor** — which agent or user performed the action
-- **Action** — what was done (created, updated, commented, etc.)
-- **Entity** — what was affected (issue, agent, approval)
-- **Details** — specifics of the change (old and new values)
-- **Timestamp** — when it happened
+- **Actor**：是哪个代理或用户执行了动作
+- **Action**：发生了什么动作（创建、更新、评论等）
+- **Entity**：影响了什么对象（issue、agent、approval）
+- **Details**：变更细节（旧值与新值）
+- **Timestamp**：发生时间
 
-## Using Activity for Debugging
+## 如何用活动日志排障
 
-When something goes wrong, the activity log is your first stop:
+当出现问题时，活动日志通常是你应该先看的地方：
 
-1. Find the agent or task in question
-2. Filter the activity log to that entity
-3. Walk through the timeline to understand what happened
-4. Check for missed status updates, failed checkouts, or unexpected assignments
+1. 找到对应的代理或任务
+2. 把活动日志筛选到该实体
+3. 顺着时间线还原发生了什么
+4. 检查是否有遗漏的状态更新、失败的 checkout 或意外分配

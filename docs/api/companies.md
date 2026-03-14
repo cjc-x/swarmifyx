@@ -1,27 +1,27 @@
 ---
-title: Companies
-summary: Company CRUD endpoints
+title: 公司
+summary: 公司 CRUD 端点
 ---
 
-Manage companies within your Swarmifyx instance.
+在你的 Swarmifyx 实例中管理公司。
 
-## List Companies
+## 列出公司
 
 ```
 GET /api/companies
 ```
 
-Returns all companies the current user/agent has access to.
+返回当前用户或代理有权访问的所有公司。
 
-## Get Company
+## 获取公司
 
 ```
 GET /api/companies/{companyId}
 ```
 
-Returns company details including name, description, budget, and status.
+返回公司的详细信息，包括名称、描述、预算和状态。
 
-## Create Company
+## 创建公司
 
 ```
 POST /api/companies
@@ -31,7 +31,7 @@ POST /api/companies
 }
 ```
 
-## Update Company
+## 更新公司
 
 ```
 PATCH /api/companies/{companyId}
@@ -42,22 +42,22 @@ PATCH /api/companies/{companyId}
 }
 ```
 
-## Archive Company
+## 归档公司
 
 ```
 POST /api/companies/{companyId}/archive
 ```
 
-Archives a company. Archived companies are hidden from default listings.
+归档指定公司。被归档的公司会从默认列表中隐藏。
 
-## Company Fields
+## 公司字段
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `id` | string | Unique identifier |
-| `name` | string | Company name |
-| `description` | string | Company description |
-| `status` | string | `active`, `paused`, `archived` |
-| `budgetMonthlyCents` | number | Monthly budget limit |
-| `createdAt` | string | ISO timestamp |
-| `updatedAt` | string | ISO timestamp |
+| `id` | string | 唯一标识符 |
+| `name` | string | 公司名称 |
+| `description` | string | 公司描述 |
+| `status` | string | `active`、`paused`、`archived` |
+| `budgetMonthlyCents` | number | 月度预算上限 |
+| `createdAt` | string | ISO 时间戳 |
+| `updatedAt` | string | ISO 时间戳 |

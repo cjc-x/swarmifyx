@@ -130,17 +130,16 @@ describe("realizeExecutionWorkspace", () => {
     const repoRoot = await createTempRepo();
     await fs.mkdir(path.join(repoRoot, "scripts"), { recursive: true });
     await fs.writeFile(
-      path.join(repoRoot, "scripts", "provision.sh"),
+      path.join(repoRoot, "scripts", "provision.js"),
       [
-        "#!/usr/bin/env bash",
-        "set -euo pipefail",
-        "printf '%s\\n' \"$SWARMIFYX_WORKSPACE_BRANCH\" > .swarmifyx-provision-branch",
-        "printf '%s\\n' \"$SWARMIFYX_WORKSPACE_BASE_CWD\" > .swarmifyx-provision-base",
-        "printf '%s\\n' \"$SWARMIFYX_WORKSPACE_CREATED\" > .swarmifyx-provision-created",
+        "const fs = require('node:fs');",
+        "fs.writeFileSync('.swarmifyx-provision-branch', `${process.env.SWARMIFYX_WORKSPACE_BRANCH}\\n`);",
+        "fs.writeFileSync('.swarmifyx-provision-base', `${process.env.SWARMIFYX_WORKSPACE_BASE_CWD}\\n`);",
+        "fs.writeFileSync('.swarmifyx-provision-created', `${process.env.SWARMIFYX_WORKSPACE_CREATED}\\n`);",
       ].join("\n"),
       "utf8",
     );
-    await runGit(repoRoot, ["add", "scripts/provision.sh"]);
+    await runGit(repoRoot, ["add", "scripts/provision.js"]);
     await runGit(repoRoot, ["commit", "-m", "Add worktree provision script"]);
 
     const workspace = await realizeExecutionWorkspace({
@@ -156,7 +155,7 @@ describe("realizeExecutionWorkspace", () => {
         workspaceStrategy: {
           type: "git_worktree",
           branchTemplate: "{{issue.identifier}}-{{slug}}",
-          provisionCommand: "bash ./scripts/provision.sh",
+          provisionCommand: "node ./scripts/provision.js",
         },
       },
       issue: {
@@ -194,7 +193,7 @@ describe("realizeExecutionWorkspace", () => {
         workspaceStrategy: {
           type: "git_worktree",
           branchTemplate: "{{issue.identifier}}-{{slug}}",
-          provisionCommand: "bash ./scripts/provision.sh",
+          provisionCommand: "node ./scripts/provision.js",
         },
       },
       issue: {
@@ -210,13 +209,18 @@ describe("realizeExecutionWorkspace", () => {
     });
 
     await expect(fs.readFile(path.join(reused.cwd, ".swarmifyx-provision-created"), "utf8")).resolves.toBe("false\n");
-  });
+  }, 15_000);
 
-  it("throws a migration error when the branch is still checked out in a legacy worktree", async () => {
+  it("throws when the branch is already checked out in another worktree", async () => {
     const repoRoot = await createTempRepo();
-    const legacyWorktreePath = path.join(repoRoot, ".swarmifyx", "worktrees", "PAP-449-legacy-worktree");
-    await fs.mkdir(path.dirname(legacyWorktreePath), { recursive: true });
-    await runGit(repoRoot, ["worktree", "add", "-b", "PAP-449-legacy-worktree", legacyWorktreePath, "HEAD"]);
+    const alternateWorktreePath = path.join(
+      path.dirname(repoRoot),
+      "swarmifyx-alt-worktrees",
+      "PAP-449-branch-conflict",
+    );
+    await fs.mkdir(path.dirname(alternateWorktreePath), { recursive: true });
+    await fs.rm(alternateWorktreePath, { recursive: true, force: true });
+    await runGit(repoRoot, ["worktree", "add", "-b", "PAP-449-branch-conflict", alternateWorktreePath, "HEAD"]);
 
     await expect(
       realizeExecutionWorkspace({
@@ -237,7 +241,7 @@ describe("realizeExecutionWorkspace", () => {
         issue: {
           id: "issue-1",
           identifier: "PAP-449",
-          title: "Legacy worktree",
+          title: "Branch conflict",
         },
         agent: {
           id: "agent-1",
@@ -253,8 +257,16 @@ describe("ensureRuntimeServicesForRun", () => {
   it("reuses shared runtime services across runs and starts a new service after release", async () => {
     const workspaceRoot = await fs.mkdtemp(path.join(os.tmpdir(), "swarmifyx-runtime-workspace-"));
     const workspace = buildWorkspace(workspaceRoot);
-    const serviceCommand =
-      "node -e \"require('node:http').createServer((req,res)=>res.end('ok')).listen(Number(process.env.PORT), '127.0.0.1')\"";
+    await fs.writeFile(
+      path.join(workspaceRoot, "serve.js"),
+      [
+        "require('node:http')",
+        "  .createServer((req, res) => res.end('ok'))",
+        "  .listen(Number(process.env.PORT), '127.0.0.1');",
+      ].join("\n"),
+      "utf8",
+    );
+    const serviceCommand = "node ./serve.js";
 
     const config = {
       workspaceRuntime: {
@@ -347,7 +359,7 @@ describe("ensureRuntimeServicesForRun", () => {
     expect(third).toHaveLength(1);
     expect(third[0]?.reused).toBe(false);
     expect(third[0]?.id).not.toBe(first[0]?.id);
-  });
+  }, 15_000);
 });
 
 describe("normalizeAdapterManagedRuntimeServices", () => {

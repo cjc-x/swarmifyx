@@ -22,15 +22,15 @@ export function resolveCodexHomeDir(env: NodeJS.ProcessEnv = process.env): strin
 }
 
 function isWorktreeMode(env: NodeJS.ProcessEnv): boolean {
-  const marker = env.SWARMIFYX_IN_WORKTREE ?? env.PAPERCLIP_IN_WORKTREE ?? "";
+  const marker = env.SWARMIFYX_IN_WORKTREE ?? env.SWARMIFYX_IN_WORKTREE ?? "";
   return TRUTHY_ENV_RE.test(marker);
 }
 
 function resolveWorktreeCodexHomeDir(env: NodeJS.ProcessEnv): string | null {
   if (!isWorktreeMode(env)) return null;
-  const swarmifyxHome = nonEmpty(env.SWARMIFYX_HOME ?? env.PAPERCLIP_HOME);
+  const swarmifyxHome = nonEmpty(env.SWARMIFYX_HOME ?? env.SWARMIFYX_HOME);
   if (!swarmifyxHome) return null;
-  const instanceId = nonEmpty(env.SWARMIFYX_INSTANCE_ID ?? env.PAPERCLIP_INSTANCE_ID);
+  const instanceId = nonEmpty(env.SWARMIFYX_INSTANCE_ID ?? env.SWARMIFYX_INSTANCE_ID);
   if (instanceId) {
     return path.resolve(swarmifyxHome, "instances", instanceId, "codex-home");
   }

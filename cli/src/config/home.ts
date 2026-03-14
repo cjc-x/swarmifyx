@@ -1,32 +1,14 @@
-import { existsSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
 const DEFAULT_INSTANCE_ID = "default";
 const INSTANCE_ID_RE = /^[a-zA-Z0-9_-]+$/;
 const DEFAULT_HOME_BASENAME = ".swarmifyx";
-const LEGACY_HOME_BASENAME = ".swarmifyx";
-
-function resolveDefaultSwarmifyxHomeDir(): string {
-  return path.resolve(os.homedir(), DEFAULT_HOME_BASENAME);
-}
-
-function resolveLegacySwarmifyxHomeDir(): string {
-  return path.resolve(os.homedir(), LEGACY_HOME_BASENAME);
-}
 
 export function resolveSwarmifyxHomeDir(): string {
   const envHome = process.env.SWARMIFYX_HOME?.trim();
   if (envHome) return path.resolve(expandHomePrefix(envHome));
-
-  const preferredHome = resolveDefaultSwarmifyxHomeDir();
-  const legacyHome = resolveLegacySwarmifyxHomeDir();
-  if (!existsSync(preferredHome) && existsSync(legacyHome)) {
-    throw new Error(
-      `Legacy Swarmifyx home detected at ${legacyHome}. SwarmifyX now uses ${preferredHome} as the only default home. Move the directory or set SWARMIFYX_HOME explicitly during migration.`,
-    );
-  }
-  return preferredHome;
+  return path.resolve(os.homedir(), DEFAULT_HOME_BASENAME);
 }
 
 export function resolveSwarmifyxInstanceId(override?: string): string {

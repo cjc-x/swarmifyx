@@ -130,7 +130,6 @@ function isCurrentSourceConfigPath(sourceConfigPath: string): boolean {
 }
 
 const WORKTREE_NAME_PREFIX = "swarmifyx-";
-const LEGACY_WORKTREE_NAME_PREFIX = "swarmifyx-";
 
 function resolveWorktreeMakeName(name: string): string {
   const value = nonEmpty(name);
@@ -142,7 +141,7 @@ function resolveWorktreeMakeName(name: string): string {
       "Worktree name must contain only letters, numbers, dots, underscores, or dashes.",
     );
   }
-  if (value.startsWith(WORKTREE_NAME_PREFIX) || value.startsWith(LEGACY_WORKTREE_NAME_PREFIX)) {
+  if (value.startsWith(WORKTREE_NAME_PREFIX)) {
     return value;
   }
   return `${WORKTREE_NAME_PREFIX}${value}`;

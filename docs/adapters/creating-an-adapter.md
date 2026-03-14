@@ -1,15 +1,15 @@
 ---
-title: Creating an Adapter
-summary: Guide to building a custom adapter
+title: 创建适配器
+summary: 构建自定义适配器的指南
 ---
 
-Build a custom adapter to connect Swarmifyx to any agent runtime.
+构建自定义适配器，把 Swarmifyx 接入任意代理运行时。
 
 <Tip>
-If you're using Claude Code, the `.agents/skills/create-agent-adapter` skill can guide you through the full adapter creation process interactively. Just ask Claude to create a new adapter and it will walk you through each step.
+如果你在使用 Claude Code，可以借助 `.agents/skills/create-agent-adapter` 这个 skill 以交互方式完成整个适配器创建流程。只要让 Claude 帮你创建一个新适配器，它就会一步步带你走完。
 </Tip>
 
-## Package Structure
+## Package 结构
 
 ```
 packages/adapters/<name>/
@@ -31,9 +31,9 @@ packages/adapters/<name>/
       format-event.ts   # Terminal formatter
 ```
 
-## Step 1: Root Metadata
+## 第一步：根元数据
 
-`src/index.ts` is imported by all three consumers. Keep it dependency-free.
+`src/index.ts` 会被三个消费者同时导入，所以要尽量保持无额外依赖。
 
 ```ts
 export const type = "my_agent";        // snake_case, globally unique
@@ -48,60 +48,60 @@ Core fields: ...
 `;
 ```
 
-## Step 2: Server Execute
+## 第二步：服务端 execute
 
-`src/server/execute.ts` is the core. It receives an `AdapterExecutionContext` and returns an `AdapterExecutionResult`.
+`src/server/execute.ts` 是核心模块。它接收 `AdapterExecutionContext`，并返回 `AdapterExecutionResult`。
 
-Key responsibilities:
+核心职责包括：
 
-1. Read config using safe helpers (`asString`, `asNumber`, etc.)
-2. Build environment with `buildSwarmifyxEnv(agent)` plus context vars
-3. Resolve session state from `runtime.sessionParams`
-4. Render prompt with `renderTemplate(template, data)`
-5. Spawn the process with `runChildProcess()` or call via `fetch()`
-6. Parse output for usage, costs, session state, errors
-7. Handle unknown session errors (retry fresh, set `clearSession: true`)
+1. 使用安全辅助函数读取配置，例如 `asString`、`asNumber`
+2. 用 `buildSwarmifyxEnv(agent)` 和上下文变量构建环境
+3. 从 `runtime.sessionParams` 中恢复会话状态
+4. 用 `renderTemplate(template, data)` 渲染提示词
+5. 使用 `runChildProcess()` 拉起进程，或通过 `fetch()` 调用外部服务
+6. 解析输出中的用量、成本、会话状态和错误信息
+7. 处理未知会话错误（使用全新会话重试，并设置 `clearSession: true`）
 
-## Step 3: Environment Test
+## 第三步：环境测试
 
-`src/server/test.ts` validates the adapter config before running.
+`src/server/test.ts` 用于在真正运行前校验适配器配置。
 
-Return structured diagnostics:
+请返回结构化诊断结果：
 
-- `error` for invalid/unusable setup
-- `warn` for non-blocking issues
-- `info` for successful checks
+- `error`：配置无效或不可用
+- `warn`：非阻塞问题
+- `info`：成功检查信息
 
-## Step 4: UI Module
+## 第四步：UI 模块
 
-- `parse-stdout.ts` — converts stdout lines to `TranscriptEntry[]` for the run viewer
-- `build-config.ts` — converts form values to `adapterConfig` JSON
-- Config fields React component in `ui/src/adapters/<name>/config-fields.tsx`
+- `parse-stdout.ts`：把 stdout 行转换成运行查看器使用的 `TranscriptEntry[]`
+- `build-config.ts`：把表单值转换成 `adapterConfig` JSON
+- 配置字段 React 组件位于 `ui/src/adapters/<name>/config-fields.tsx`
 
-## Step 5: CLI Module
+## 第五步：CLI 模块
 
-`format-event.ts` — pretty-prints stdout for `swarmifyx run --watch` using `picocolors`.
+`format-event.ts` 使用 `picocolors` 为 `swarmifyx run --watch` 美化终端输出。
 
-## Step 6: Register
+## 第六步：注册
 
-Add the adapter to all three registries:
+把适配器接入三个注册表：
 
 1. `server/src/adapters/registry.ts`
 2. `ui/src/adapters/registry.ts`
 3. `cli/src/adapters/registry.ts`
 
-## Skills Injection
+## 技能注入
 
-Make Swarmifyx skills discoverable to your agent runtime without writing to the agent's working directory:
+在不写入代理工作目录的前提下，让代理运行时能够发现 Swarmifyx 技能：
 
-1. **Best: tmpdir + flag** — create tmpdir, symlink skills, pass via CLI flag, clean up after
-2. **Acceptable: global config dir** — symlink to the runtime's global plugins directory
-3. **Acceptable: env var** — point a skills path env var at the repo's `skills/` directory
-4. **Last resort: prompt injection** — include skill content in the prompt template
+1. **最佳方案：临时目录 + 启动参数**，创建临时目录，挂载技能符号链接，通过 CLI 参数传入，执行后清理
+2. **可接受方案：全局配置目录**，把技能链接到该运行时的全局插件目录
+3. **可接受方案：环境变量**，用一个技能路径环境变量指向仓库里的 `skills/` 目录
+4. **最后手段：提示词注入**，把技能内容直接拼到提示词模板中
 
-## Security
+## 安全
 
-- Treat agent output as untrusted (parse defensively, never execute)
-- Inject secrets via environment variables, not prompts
-- Configure network access controls if the runtime supports them
-- Always enforce timeout and grace period
+- 把代理输出视为不可信输入（防御式解析，绝不直接执行）
+- 通过环境变量注入 secrets，而不是放进提示词
+- 如果运行时支持，配置网络访问控制
+- 始终启用 timeout 和 grace period

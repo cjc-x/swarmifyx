@@ -9,21 +9,6 @@ import {
 const DEFAULT_CONFIG_BASENAME = "config.json";
 const DEFAULT_ENV_BASENAME = ".env";
 const REPO_CONFIG_DIRNAME = ".swarmifyx";
-const LEGACY_REPO_CONFIG_DIRNAME = ".swarmifyx";
-
-function resolveLegacyRepoLocalSentinel(dir: string): string | null {
-  const legacyConfigPath = path.resolve(dir, LEGACY_REPO_CONFIG_DIRNAME, DEFAULT_CONFIG_BASENAME);
-  if (fs.existsSync(legacyConfigPath)) {
-    return legacyConfigPath;
-  }
-
-  const legacyEnvPath = path.resolve(dir, LEGACY_REPO_CONFIG_DIRNAME, DEFAULT_ENV_BASENAME);
-  if (fs.existsSync(legacyEnvPath)) {
-    return legacyEnvPath;
-  }
-
-  return null;
-}
 
 function findConfigFileFromAncestors(startDir: string): string | null {
   const absoluteStartDir = path.resolve(startDir);
@@ -33,14 +18,6 @@ function findConfigFileFromAncestors(startDir: string): string | null {
     const candidate = path.resolve(currentDir, REPO_CONFIG_DIRNAME, DEFAULT_CONFIG_BASENAME);
     if (fs.existsSync(candidate)) {
       return candidate;
-    }
-
-    const legacySentinel = resolveLegacyRepoLocalSentinel(currentDir);
-    if (legacySentinel) {
-      const targetDir = path.resolve(currentDir, REPO_CONFIG_DIRNAME);
-      throw new Error(
-        `Legacy repo-local Swarmifyx files detected at ${legacySentinel}. SwarmifyX only auto-loads ${targetDir}. Move the repo-local files into ${targetDir} before rerunning this command.`,
-      );
     }
 
     const nextDir = path.resolve(currentDir, "..");
@@ -65,34 +42,6 @@ function parseJson(filePath: string): unknown {
   }
 }
 
-function migrateLegacyConfig(raw: unknown): unknown {
-  if (typeof raw !== "object" || raw === null || Array.isArray(raw)) return raw;
-  const config = { ...(raw as Record<string, unknown>) };
-  const databaseRaw = config.database;
-  if (typeof databaseRaw !== "object" || databaseRaw === null || Array.isArray(databaseRaw)) {
-    return config;
-  }
-
-  const database = { ...(databaseRaw as Record<string, unknown>) };
-  if (database.mode === "pglite") {
-    database.mode = "embedded-postgres";
-
-    if (typeof database.embeddedPostgresDataDir !== "string" && typeof database.pgliteDataDir === "string") {
-      database.embeddedPostgresDataDir = database.pgliteDataDir;
-    }
-    if (
-      typeof database.embeddedPostgresPort !== "number" &&
-      typeof database.pglitePort === "number" &&
-      Number.isFinite(database.pglitePort)
-    ) {
-      database.embeddedPostgresPort = database.pglitePort;
-    }
-  }
-
-  config.database = database;
-  return config;
-}
-
 function formatValidationError(err: unknown): string {
   const issues = (err as { issues?: Array<{ path?: unknown; message?: unknown }> })?.issues;
   if (Array.isArray(issues) && issues.length > 0) {
@@ -112,8 +61,7 @@ export function readConfig(configPath?: string): SwarmifyxConfig | null {
   const filePath = resolveConfigPath(configPath);
   if (!fs.existsSync(filePath)) return null;
   const raw = parseJson(filePath);
-  const migrated = migrateLegacyConfig(raw);
-  const parsed = swarmifyxConfigSchema.safeParse(migrated);
+  const parsed = swarmifyxConfigSchema.safeParse(raw);
   if (!parsed.success) {
     throw new Error(`Invalid config at ${filePath}: ${formatValidationError(parsed.error)}`);
   }

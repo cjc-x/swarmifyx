@@ -1,7 +1,7 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "name": "Swarmifyx",
-  "description": "The control plane for autonomous AI companies",
+  "description": "面向自治 AI 公司的控制平面",
   "theme": "mint",
   "colors": {
     "primary": "#2563EB",
@@ -13,130 +13,271 @@
     "dark": "/images/logo-dark.svg",
     "light": "/images/logo-light.svg"
   },
-  "topbarLinks": [
-    {
-      "name": "GitHub",
-      "url": "https://github.com/swarmifyx-ai/swarmifyx"
-    }
-  ],
   "navigation": {
-    "tabs": [
+    "languages": [
       {
-        "tab": "Get Started",
-        "groups": [
+        "language": "cn",
+        "default": true,
+        "navbar": {
+          "links": [
+            {
+              "label": "GitHub",
+              "href": "https://github.com/cjc-x/swarmifyx"
+            }
+          ]
+        },
+        "tabs": [
           {
-            "group": "Introduction",
-            "pages": [
-              "start/what-is-swarmifyx",
-              "start/quickstart",
-              "start/core-concepts",
-              "start/architecture"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "Guides",
-        "groups": [
-          {
-            "group": "Board Operator",
-            "pages": [
-              "guides/board-operator/dashboard",
-              "guides/board-operator/creating-a-company",
-              "guides/board-operator/managing-agents",
-              "guides/board-operator/org-structure",
-              "guides/board-operator/managing-tasks",
-              "guides/board-operator/approvals",
-              "guides/board-operator/costs-and-budgets",
-              "guides/board-operator/activity-log"
+            "tab": "快速开始",
+            "groups": [
+              {
+                "group": "入门",
+                "pages": [
+                  "start/what-is-swarmifyx",
+                  "start/quickstart",
+                  "start/core-concepts",
+                  "start/architecture"
+                ]
+              }
             ]
           },
           {
-            "group": "Agent Developer",
-            "pages": [
-              "guides/agent-developer/how-agents-work",
-              "guides/agent-developer/heartbeat-protocol",
-              "guides/agent-developer/writing-a-skill",
-              "guides/agent-developer/task-workflow",
-              "guides/agent-developer/comments-and-communication",
-              "guides/agent-developer/handling-approvals",
-              "guides/agent-developer/cost-reporting"
+            "tab": "指南",
+            "groups": [
+              {
+                "group": "董事会运营者",
+                "pages": [
+                  "guides/board-operator/dashboard",
+                  "guides/board-operator/creating-a-company",
+                  "guides/board-operator/managing-agents",
+                  "guides/board-operator/org-structure",
+                  "guides/board-operator/managing-tasks",
+                  "guides/board-operator/approvals",
+                  "guides/board-operator/costs-and-budgets",
+                  "guides/board-operator/activity-log"
+                ]
+              },
+              {
+                "group": "代理开发者",
+                "pages": [
+                  "guides/agent-developer/how-agents-work",
+                  "guides/agent-developer/heartbeat-protocol",
+                  "guides/agent-developer/writing-a-skill",
+                  "guides/agent-developer/task-workflow",
+                  "guides/agent-developer/comments-and-communication",
+                  "guides/agent-developer/handling-approvals",
+                  "guides/agent-developer/cost-reporting"
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "部署",
+            "groups": [
+              {
+                "group": "部署",
+                "pages": [
+                  "deploy/overview",
+                  "deploy/local-development",
+                  "deploy/tailscale-private-access",
+                  "deploy/docker",
+                  "deploy/deployment-modes",
+                  "deploy/database",
+                  "deploy/secrets",
+                  "deploy/storage",
+                  "deploy/environment-variables"
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "适配器",
+            "groups": [
+              {
+                "group": "代理适配器",
+                "pages": [
+                  "adapters/overview",
+                  "adapters/claude-local",
+                  "adapters/codex-local",
+                  "adapters/process",
+                  "adapters/http",
+                  "adapters/creating-an-adapter"
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "API 参考",
+            "groups": [
+              {
+                "group": "REST API",
+                "pages": [
+                  "api/overview",
+                  "api/authentication",
+                  "api/companies",
+                  "api/agents",
+                  "api/issues",
+                  "api/approvals",
+                  "api/goals-and-projects",
+                  "api/costs",
+                  "api/secrets",
+                  "api/activity",
+                  "api/dashboard"
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "CLI",
+            "groups": [
+              {
+                "group": "CLI 参考",
+                "pages": [
+                  "cli/overview",
+                  "cli/setup-commands",
+                  "cli/control-plane-commands"
+                ]
+              }
             ]
           }
-        ]
+        ],
+        "footer": {
+          "socials": {
+            "github": "https://github.com/cjc-x/swarmifyx"
+          }
+        }
       },
       {
-        "tab": "Deploy",
-        "groups": [
+        "language": "en",
+        "navbar": {
+          "links": [
+            {
+              "label": "GitHub",
+              "href": "https://github.com/cjc-x/swarmifyx"
+            }
+          ]
+        },
+        "tabs": [
           {
-            "group": "Deployment",
-            "pages": [
-              "deploy/overview",
-              "deploy/local-development",
-              "deploy/tailscale-private-access",
-              "deploy/docker",
-              "deploy/deployment-modes",
-              "deploy/database",
-              "deploy/secrets",
-              "deploy/storage",
-              "deploy/environment-variables"
+            "tab": "Get Started",
+            "groups": [
+              {
+                "group": "Introduction",
+                "pages": [
+                  "en/start/what-is-swarmifyx",
+                  "en/start/quickstart",
+                  "en/start/core-concepts",
+                  "en/start/architecture"
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "Guides",
+            "groups": [
+              {
+                "group": "Board Operator",
+                "pages": [
+                  "en/guides/board-operator/dashboard",
+                  "en/guides/board-operator/creating-a-company",
+                  "en/guides/board-operator/managing-agents",
+                  "en/guides/board-operator/org-structure",
+                  "en/guides/board-operator/managing-tasks",
+                  "en/guides/board-operator/approvals",
+                  "en/guides/board-operator/costs-and-budgets",
+                  "en/guides/board-operator/activity-log"
+                ]
+              },
+              {
+                "group": "Agent Developer",
+                "pages": [
+                  "en/guides/agent-developer/how-agents-work",
+                  "en/guides/agent-developer/heartbeat-protocol",
+                  "en/guides/agent-developer/writing-a-skill",
+                  "en/guides/agent-developer/task-workflow",
+                  "en/guides/agent-developer/comments-and-communication",
+                  "en/guides/agent-developer/handling-approvals",
+                  "en/guides/agent-developer/cost-reporting"
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "Deploy",
+            "groups": [
+              {
+                "group": "Deployment",
+                "pages": [
+                  "en/deploy/overview",
+                  "en/deploy/local-development",
+                  "en/deploy/tailscale-private-access",
+                  "en/deploy/docker",
+                  "en/deploy/deployment-modes",
+                  "en/deploy/database",
+                  "en/deploy/secrets",
+                  "en/deploy/storage",
+                  "en/deploy/environment-variables"
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "Adapters",
+            "groups": [
+              {
+                "group": "Agent Adapters",
+                "pages": [
+                  "en/adapters/overview",
+                  "en/adapters/claude-local",
+                  "en/adapters/codex-local",
+                  "en/adapters/process",
+                  "en/adapters/http",
+                  "en/adapters/creating-an-adapter"
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "API Reference",
+            "groups": [
+              {
+                "group": "REST API",
+                "pages": [
+                  "en/api/overview",
+                  "en/api/authentication",
+                  "en/api/companies",
+                  "en/api/agents",
+                  "en/api/issues",
+                  "en/api/approvals",
+                  "en/api/goals-and-projects",
+                  "en/api/costs",
+                  "en/api/secrets",
+                  "en/api/activity",
+                  "en/api/dashboard"
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "CLI",
+            "groups": [
+              {
+                "group": "CLI Reference",
+                "pages": [
+                  "en/cli/overview",
+                  "en/cli/setup-commands",
+                  "en/cli/control-plane-commands"
+                ]
+              }
             ]
           }
-        ]
-      },
-      {
-        "tab": "Adapters",
-        "groups": [
-          {
-            "group": "Agent Adapters",
-            "pages": [
-              "adapters/overview",
-              "adapters/claude-local",
-              "adapters/codex-local",
-              "adapters/process",
-              "adapters/http",
-              "adapters/creating-an-adapter"
-            ]
+        ],
+        "footer": {
+          "socials": {
+            "github": "https://github.com/cjc-x/swarmifyx"
           }
-        ]
-      },
-      {
-        "tab": "API Reference",
-        "groups": [
-          {
-            "group": "REST API",
-            "pages": [
-              "api/overview",
-              "api/authentication",
-              "api/companies",
-              "api/agents",
-              "api/issues",
-              "api/approvals",
-              "api/goals-and-projects",
-              "api/costs",
-              "api/secrets",
-              "api/activity",
-              "api/dashboard"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "CLI",
-        "groups": [
-          {
-            "group": "CLI Reference",
-            "pages": [
-              "cli/overview",
-              "cli/setup-commands",
-              "cli/control-plane-commands"
-            ]
-          }
-        ]
+        }
       }
     ]
-  },
-  "footerSocials": {
-    "github": "https://github.com/swarmifyx-ai/swarmifyx"
   }
 }

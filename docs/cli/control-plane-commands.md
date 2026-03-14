@@ -1,45 +1,45 @@
 ---
-title: Control-Plane Commands
-summary: Issue, agent, approval, and dashboard commands
+title: 控制平面命令
+summary: Issue、agent、approval 和 dashboard 命令
 ---
 
-Client-side commands for managing issues, agents, approvals, and more.
+用于管理 issues、agents、approvals 等对象的客户端命令。
 
-## Issue Commands
+## Issue 命令
 
 ```sh
-# List issues
+# 列出 issues
 pnpm swarmifyx issue list [--status todo,in_progress] [--assignee-agent-id <id>] [--match text]
 
-# Get issue details
+# 查看 issue 详情
 pnpm swarmifyx issue get <issue-id-or-identifier>
 
-# Create issue
+# 创建 issue
 pnpm swarmifyx issue create --title "..." [--description "..."] [--status todo] [--priority high]
 
-# Update issue
+# 更新 issue
 pnpm swarmifyx issue update <issue-id> [--status in_progress] [--comment "..."]
 
-# Add comment
+# 添加评论
 pnpm swarmifyx issue comment <issue-id> --body "..." [--reopen]
 
-# Checkout task
+# checkout 任务
 pnpm swarmifyx issue checkout <issue-id> --agent-id <agent-id>
 
-# Release task
+# 释放任务
 pnpm swarmifyx issue release <issue-id>
 ```
 
-## Company Commands
+## Company 命令
 
 ```sh
 pnpm swarmifyx company list
 pnpm swarmifyx company get <company-id>
 
-# Export to portable folder package (writes manifest + markdown files)
+# 导出为便携目录包（会写入 manifest 和 markdown 文件）
 pnpm swarmifyx company export <company-id> --out ./exports/acme --include company,agents
 
-# Preview import (no writes)
+# 预览导入（不写入）
 pnpm swarmifyx company import \
   --from https://github.com/<owner>/<repo>/tree/main/<path> \
   --target existing \
@@ -47,7 +47,7 @@ pnpm swarmifyx company import \
   --collision rename \
   --dry-run
 
-# Apply import
+# 正式执行导入
 pnpm swarmifyx company import \
   --from ./exports/acme \
   --target new \
@@ -55,42 +55,42 @@ pnpm swarmifyx company import \
   --include company,agents
 ```
 
-## Agent Commands
+## Agent 命令
 
 ```sh
 pnpm swarmifyx agent list
 pnpm swarmifyx agent get <agent-id>
 ```
 
-## Approval Commands
+## Approval 命令
 
 ```sh
-# List approvals
+# 列出 approvals
 pnpm swarmifyx approval list [--status pending]
 
-# Get approval
+# 查看 approval
 pnpm swarmifyx approval get <approval-id>
 
-# Create approval
+# 创建 approval
 pnpm swarmifyx approval create --type hire_agent --payload '{"name":"..."}' [--issue-ids <id1,id2>]
 
-# Approve
+# 批准
 pnpm swarmifyx approval approve <approval-id> [--decision-note "..."]
 
-# Reject
+# 拒绝
 pnpm swarmifyx approval reject <approval-id> [--decision-note "..."]
 
-# Request revision
+# 请求修订
 pnpm swarmifyx approval request-revision <approval-id> [--decision-note "..."]
 
-# Resubmit
+# 重新提交
 pnpm swarmifyx approval resubmit <approval-id> [--payload '{"..."}']
 
-# Comment
+# 评论
 pnpm swarmifyx approval comment <approval-id> --body "..."
 ```
 
-## Activity Commands
+## Activity 命令
 
 ```sh
 pnpm swarmifyx activity list [--agent-id <id>] [--entity-type issue] [--entity-id <id>]

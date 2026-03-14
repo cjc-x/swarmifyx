@@ -19,15 +19,14 @@ afterEach(() => {
 });
 
 describe("resolveConfigPath", () => {
-  it("throws a migration error for legacy repo-local .swarmifyx config files", () => {
+  it("prefers repo-local .swarmifyx config files", () => {
     const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "swarmifyx-config-store-"));
     const projectDir = path.join(tempDir, "repo");
     fs.mkdirSync(path.join(projectDir, ".swarmifyx"), { recursive: true });
     fs.writeFileSync(path.join(projectDir, ".swarmifyx", "config.json"), "{}\n");
-    fs.writeFileSync(path.join(projectDir, ".swarmifyx", ".env"), "SWARMIFYX_INSTANCE_ID=legacy\n");
     delete process.env.SWARMIFYX_CONFIG;
     process.chdir(projectDir);
 
-    expect(() => resolveConfigPath()).toThrow(/Legacy repo-local Swarmifyx files detected/);
+    expect(resolveConfigPath()).toBe(path.join(projectDir, ".swarmifyx", "config.json"));
   });
 });

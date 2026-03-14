@@ -124,6 +124,3 @@ export function mergeSwarmifyxEnvEntries(
   return next;
 }
 
-// Backward-compatible aliases for legacy imports in tests and scripts.
-export const readPaperclipEnvEntries = readSwarmifyxEnvEntries;
-export const mergePaperclipEnvEntries = mergeSwarmifyxEnvEntries;

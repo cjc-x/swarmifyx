@@ -107,7 +107,7 @@ Override home and instance:
 SWARMIFYX_HOME=/custom/path SWARMIFYX_INSTANCE_ID=dev pnpm swarmifyx run
 ```
 
-Compatibility note: Swarmifyx now treats `~/.swarmifyx` as the only default local home. Legacy `~/.swarmifyx` homes are no longer auto-detected; move the directory to `~/.swarmifyx` or set `SWARMIFYX_HOME` explicitly during migration.
+Swarmifyx uses `~/.swarmifyx` as the default local home. Set `SWARMIFYX_HOME` explicitly if you want a different location.
 
 No Docker or external database is required for this mode.
 
@@ -158,8 +158,6 @@ Seed modes:
 - `--no-seed` creates an empty isolated instance
 
 After `worktree init`, both the server and the CLI auto-load the repo-local `.swarmifyx/.env` when run inside that worktree, so normal commands like `pnpm dev`, `swarmifyx doctor`, and `swarmifyx db:backup` stay scoped to the worktree instance.
-
-Legacy repo-local `.swarmifyx/config.json` and `.swarmifyx/.env` files are no longer auto-loaded. Move them into `.swarmifyx/` or regenerate the worktree-local files before rerunning commands inside older worktrees.
 
 That repo-local env also sets `SWARMIFYX_IN_WORKTREE=true`, which the server can use for worktree-specific UI behavior such as an alternate favicon.
 
@@ -240,7 +238,7 @@ eval "$(pnpm swarmifyx worktree env)"
 
 For project execution worktrees, Swarmifyx can also run a project-defined provision command after it creates or reuses an isolated git worktree. Configure this on the project's execution workspace policy (`workspaceStrategy.provisionCommand`). The command runs inside the derived worktree and receives `SWARMIFYX_WORKSPACE_*`, `SWARMIFYX_PROJECT_ID`, `SWARMIFYX_AGENT_ID`, and `SWARMIFYX_ISSUE_*` environment variables so each repo can bootstrap itself however it wants.
 
-Default execution worktrees now live under `.swarmifyx/worktrees`. Lingering legacy `.swarmifyx/worktrees` checkouts can block branch creation and should be removed, migrated, or replaced with an explicit `workspaceStrategy.worktreeParentDir`.
+Default execution worktrees live under `.swarmifyx/worktrees`. If branch creation is blocked by an existing checkout, remove the stale worktree or set `workspaceStrategy.worktreeParentDir` explicitly.
 
 ## Quick Health Checks
 

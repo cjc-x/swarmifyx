@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { resolveCompanyRouteSync } from "./company-routes";
+import { applyCompanyPrefix, resolveCompanyRouteSync } from "./company-routes";
 
 describe("resolveCompanyRouteSync", () => {
   it("redirects archived company routes to an active fallback company", () => {
@@ -37,7 +37,7 @@ describe("resolveCompanyRouteSync", () => {
     });
   });
 
-  it("does nothing when the archived company is the only available company", () => {
+  it("redirects to global onboarding when the archived company is the only available company", () => {
     const resolution = resolveCompanyRouteSync({
       companies: [{ id: "archived-company", issuePrefix: "OLD", status: "archived" }],
       companyPrefix: "OLD",
@@ -45,6 +45,13 @@ describe("resolveCompanyRouteSync", () => {
       selectedCompanyId: "archived-company",
     });
 
-    expect(resolution).toEqual({ kind: "none" });
+    expect(resolution).toEqual({
+      kind: "redirect",
+      to: "/onboarding",
+    });
+  });
+
+  it("treats onboarding as a global path", () => {
+    expect(applyCompanyPrefix("/onboarding", "OLD")).toBe("/onboarding");
   });
 });
