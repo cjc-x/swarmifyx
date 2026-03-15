@@ -30,7 +30,7 @@
     "postpack": "rm -rf ui-dist",
     "clean": "rm -rf dist",
     "start": "node dist/index.js",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "pnpm --filter @swarmifyx/plugin-sdk build && tsc --noEmit"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.888.0",
@@ -44,8 +44,13 @@
     "@swarmifyx/adapter-pi-local": "workspace:*",
     "@swarmifyx/adapter-utils": "workspace:*",
     "@swarmifyx/db": "workspace:*",
+    "@swarmifyx/plugin-sdk": "workspace:*",
     "@swarmifyx/shared": "workspace:*",
+    "hermes-paperclip-adapter": "0.1.1",
+    "ajv": "^8.18.0",
+    "ajv-formats": "^3.0.1",
     "better-auth": "1.4.18",
+    "chokidar": "^4.0.3",
     "detect-port": "^2.1.0",
     "dotenv": "^17.0.1",
     "drizzle-orm": "^0.38.4",

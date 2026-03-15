@@ -154,6 +154,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   const workspaceId = asString(workspaceContext.workspaceId, "");
   const workspaceRepoUrl = asString(workspaceContext.repoUrl, "");
   const workspaceRepoRef = asString(workspaceContext.repoRef, "");
+  const agentHome = asString(workspaceContext.agentHome, "");
   const workspaceHints = Array.isArray(context.swarmifyxWorkspaces)
     ? context.swarmifyxWorkspaces.filter(
       (value): value is Record<string, unknown> => typeof value === "object" && value !== null,
@@ -205,6 +206,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   if (workspaceId) env.SWARMIFYX_WORKSPACE_ID = workspaceId;
   if (workspaceRepoUrl) env.SWARMIFYX_WORKSPACE_REPO_URL = workspaceRepoUrl;
   if (workspaceRepoRef) env.SWARMIFYX_WORKSPACE_REPO_REF = workspaceRepoRef;
+  if (agentHome) env.AGENT_HOME = agentHome;
   if (workspaceHints.length > 0) env.SWARMIFYX_WORKSPACES_JSON = JSON.stringify(workspaceHints);
 
   for (const [key, value] of Object.entries(envConfig)) {

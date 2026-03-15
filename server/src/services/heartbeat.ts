@@ -47,6 +47,14 @@ const HEARTBEAT_MAX_CONCURRENT_RUNS_MAX = 10;
 const DEFERRED_WAKE_CONTEXT_KEY = "_swarmifyxWakeContext";
 const startLocksByAgent = new Map<string, Promise<void>>();
 const REPO_ONLY_CWD_SENTINEL = "/__swarmifyx_repo_only__";
+const SESSIONED_LOCAL_ADAPTERS = new Set([
+  "claude_local",
+  "codex_local",
+  "cursor",
+  "gemini_local",
+  "opencode_local",
+  "pi_local",
+]);
 
 const heartbeatRunListColumns = {
   id: heartbeatRuns.id,
@@ -117,6 +125,26 @@ interface WakeupOptions {
   contextSnapshot?: Record<string, unknown>;
 }
 
+type UsageTotals = {
+  inputTokens: number;
+  cachedInputTokens: number;
+  outputTokens: number;
+};
+
+type SessionCompactionPolicy = {
+  enabled: boolean;
+  maxSessionRuns: number;
+  maxRawInputTokens: number;
+  maxSessionAgeHours: number;
+};
+
+type SessionCompactionDecision = {
+  rotate: boolean;
+  reason: string | null;
+  handoffMarkdown: string | null;
+  previousRunId: string | null;
+};
+
 interface ParsedIssueAssigneeAdapterOverrides {
   adapterConfig: Record<string, unknown> | null;
   useProjectWorkspace: boolean | null;
@@ -140,6 +168,58 @@ export type ResolvedWorkspaceForRun = {
 
 function readNonEmptyString(value: unknown): string | null {
   return typeof value === "string" && value.trim().length > 0 ? value : null;
+}
+
+function readRawUsageTotals(usageJson: unknown): UsageTotals | null {
+  const parsed = parseObject(usageJson);
+  if (Object.keys(parsed).length === 0) return null;
+
+  const inputTokens = Math.max(
+    0,
+    Math.floor(asNumber(parsed.rawInputTokens, asNumber(parsed.inputTokens, 0))),
+  );
+  const cachedInputTokens = Math.max(
+    0,
+    Math.floor(asNumber(parsed.rawCachedInputTokens, asNumber(parsed.cachedInputTokens, 0))),
+  );
+  const outputTokens = Math.max(
+    0,
+    Math.floor(asNumber(parsed.rawOutputTokens, asNumber(parsed.outputTokens, 0))),
+  );
+
+  if (inputTokens <= 0 && cachedInputTokens <= 0 && outputTokens <= 0) {
+    return null;
+  }
+
+  return {
+    inputTokens,
+    cachedInputTokens,
+    outputTokens,
+  };
+}
+
+function formatCount(value: number | null | undefined) {
+  if (typeof value !== "number" || !Number.isFinite(value)) return "0";
+  return value.toLocaleString("en-US");
+}
+
+function parseSessionCompactionPolicy(agent: typeof agents.$inferSelect): SessionCompactionPolicy {
+  const runtimeConfig = parseObject(agent.runtimeConfig);
+  const heartbeat = parseObject(runtimeConfig.heartbeat);
+  const compaction = parseObject(
+    heartbeat.sessionCompaction ?? heartbeat.sessionRotation ?? runtimeConfig.sessionCompaction,
+  );
+  const supportsSessions = SESSIONED_LOCAL_ADAPTERS.has(agent.adapterType);
+  const enabled = compaction.enabled === undefined
+    ? supportsSessions
+    : asBoolean(compaction.enabled, supportsSessions);
+
+  return {
+    enabled,
+    maxSessionRuns: Math.max(0, Math.floor(asNumber(compaction.maxSessionRuns, 200))),
+    maxRawInputTokens: Math.max(0, Math.floor(asNumber(compaction.maxRawInputTokens, 2_000_000))),
+    maxSessionAgeHours: Math.max(0, Math.floor(asNumber(compaction.maxSessionAgeHours, 72))),
+  };
 }
 
 export function resolveRuntimeSessionParamsForWorkspace(input: {
@@ -246,29 +326,20 @@ function deriveTaskKey(
 export function shouldResetTaskSessionForWake(
   contextSnapshot: Record<string, unknown> | null | undefined,
 ) {
+  if (contextSnapshot?.forceFreshSession === true) return true;
+
   const wakeReason = readNonEmptyString(contextSnapshot?.wakeReason);
   if (wakeReason === "issue_assigned") return true;
-
-  const wakeSource = readNonEmptyString(contextSnapshot?.wakeSource);
-  if (wakeSource === "timer") return true;
-
-  const wakeTriggerDetail = readNonEmptyString(contextSnapshot?.wakeTriggerDetail);
-  return wakeSource === "on_demand" && wakeTriggerDetail === "manual";
+  return false;
 }
 
 function describeSessionResetReason(
   contextSnapshot: Record<string, unknown> | null | undefined,
 ) {
+  if (contextSnapshot?.forceFreshSession === true) return "forceFreshSession was requested";
+
   const wakeReason = readNonEmptyString(contextSnapshot?.wakeReason);
   if (wakeReason === "issue_assigned") return "wake reason is issue_assigned";
-
-  const wakeSource = readNonEmptyString(contextSnapshot?.wakeSource);
-  if (wakeSource === "timer") return "wake source is timer";
-
-  const wakeTriggerDetail = readNonEmptyString(contextSnapshot?.wakeTriggerDetail);
-  if (wakeSource === "on_demand" && wakeTriggerDetail === "manual") {
-    return "this is a manual invoke";
-  }
   return null;
 }
 
@@ -499,6 +570,152 @@ export function heartbeatService(db: Db) {
         ),
       )
       .then((rows) => rows[0] ?? null);
+  }
+
+  async function getLatestRunForSession(
+    agentId: string,
+    sessionId: string,
+    opts?: { excludeRunId?: string | null },
+  ) {
+    const conditions = [
+      eq(heartbeatRuns.agentId, agentId),
+      eq(heartbeatRuns.sessionIdAfter, sessionId),
+    ];
+    if (opts?.excludeRunId) {
+      conditions.push(sql`${heartbeatRuns.id} <> ${opts.excludeRunId}`);
+    }
+    return db
+      .select()
+      .from(heartbeatRuns)
+      .where(and(...conditions))
+      .orderBy(desc(heartbeatRuns.createdAt))
+      .limit(1)
+      .then((rows) => rows[0] ?? null);
+  }
+
+  async function getOldestRunForSession(agentId: string, sessionId: string) {
+    return db
+      .select({
+        id: heartbeatRuns.id,
+        createdAt: heartbeatRuns.createdAt,
+      })
+      .from(heartbeatRuns)
+      .where(and(eq(heartbeatRuns.agentId, agentId), eq(heartbeatRuns.sessionIdAfter, sessionId)))
+      .orderBy(asc(heartbeatRuns.createdAt), asc(heartbeatRuns.id))
+      .limit(1)
+      .then((rows) => rows[0] ?? null);
+  }
+
+  async function evaluateSessionCompaction(input: {
+    agent: typeof agents.$inferSelect;
+    sessionId: string | null;
+    issueId: string | null;
+  }): Promise<SessionCompactionDecision> {
+    const { agent, sessionId, issueId } = input;
+    if (!sessionId) {
+      return {
+        rotate: false,
+        reason: null,
+        handoffMarkdown: null,
+        previousRunId: null,
+      };
+    }
+
+    const policy = parseSessionCompactionPolicy(agent);
+    if (!policy.enabled) {
+      return {
+        rotate: false,
+        reason: null,
+        handoffMarkdown: null,
+        previousRunId: null,
+      };
+    }
+
+    const fetchLimit = Math.max(policy.maxSessionRuns > 0 ? policy.maxSessionRuns + 1 : 0, 4);
+    const runs = await db
+      .select({
+        id: heartbeatRuns.id,
+        createdAt: heartbeatRuns.createdAt,
+        usageJson: heartbeatRuns.usageJson,
+        resultJson: heartbeatRuns.resultJson,
+        error: heartbeatRuns.error,
+      })
+      .from(heartbeatRuns)
+      .where(and(eq(heartbeatRuns.agentId, agent.id), eq(heartbeatRuns.sessionIdAfter, sessionId)))
+      .orderBy(desc(heartbeatRuns.createdAt))
+      .limit(fetchLimit);
+
+    if (runs.length === 0) {
+      return {
+        rotate: false,
+        reason: null,
+        handoffMarkdown: null,
+        previousRunId: null,
+      };
+    }
+
+    const latestRun = runs[0] ?? null;
+    const oldestRun =
+      policy.maxSessionAgeHours > 0
+        ? await getOldestRunForSession(agent.id, sessionId)
+        : runs[runs.length - 1] ?? latestRun;
+    const latestRawUsage = readRawUsageTotals(latestRun?.usageJson);
+    const sessionAgeHours =
+      latestRun && oldestRun
+        ? Math.max(
+          0,
+          (new Date(latestRun.createdAt).getTime() - new Date(oldestRun.createdAt).getTime()) / (1000 * 60 * 60),
+        )
+        : 0;
+
+    let reason: string | null = null;
+    if (policy.maxSessionRuns > 0 && runs.length > policy.maxSessionRuns) {
+      reason = `session exceeded ${policy.maxSessionRuns} runs`;
+    } else if (
+      policy.maxRawInputTokens > 0 &&
+      latestRawUsage &&
+      latestRawUsage.inputTokens >= policy.maxRawInputTokens
+    ) {
+      reason =
+        `session raw input reached ${formatCount(latestRawUsage.inputTokens)} tokens ` +
+        `(threshold ${formatCount(policy.maxRawInputTokens)})`;
+    } else if (policy.maxSessionAgeHours > 0 && sessionAgeHours >= policy.maxSessionAgeHours) {
+      reason = `session age reached ${Math.floor(sessionAgeHours)} hours`;
+    }
+
+    if (!reason || !latestRun) {
+      return {
+        rotate: false,
+        reason: null,
+        handoffMarkdown: null,
+        previousRunId: latestRun?.id ?? null,
+      };
+    }
+
+    const latestSummary = summarizeHeartbeatRunResultJson(latestRun.resultJson);
+    const latestTextSummary =
+      readNonEmptyString(latestSummary?.summary) ??
+      readNonEmptyString(latestSummary?.result) ??
+      readNonEmptyString(latestSummary?.message) ??
+      readNonEmptyString(latestRun.error);
+
+    const handoffMarkdown = [
+      "Swarmifyx session handoff:",
+      `- Previous session: ${sessionId}`,
+      issueId ? `- Issue: ${issueId}` : "",
+      `- Rotation reason: ${reason}`,
+      latestTextSummary ? `- Last run summary: ${latestTextSummary}` : "",
+      "Continue from the current task state. Rebuild only the minimum context you need.",
+    ]
+      .filter(Boolean)
+      .join("\n");
+
+    return {
+      rotate: true,
+      reason,
+      handoffMarkdown,
+      previousRunId: latestRun.id,
+    };
   }
 
   async function resolveSessionBeforeForWakeup(
@@ -951,11 +1168,11 @@ export function heartbeatService(db: Db) {
     const staleThresholdMs = opts?.staleThresholdMs ?? 0;
     const now = new Date();
 
-    // Find all runs in "queued" or "running" state
+    // Find all runs stuck in "running" state (queued runs are legitimately waiting; resumeQueuedRuns handles them)
     const activeRuns = await db
       .select()
       .from(heartbeatRuns)
-      .where(inArray(heartbeatRuns.status, ["queued", "running"]));
+      .where(eq(heartbeatRuns.status, "running"));
 
     const reaped: string[] = [];
 
@@ -1193,14 +1410,14 @@ export function heartbeatService(db: Db) {
       );
       const issueRef = issueId
         ? await db
-          .select({
-            id: issues.id,
-            identifier: issues.identifier,
-            title: issues.title,
-          })
-          .from(issues)
-          .where(and(eq(issues.id, issueId), eq(issues.companyId, agent.companyId)))
-          .then((rows) => rows[0] ?? null)
+            .select({
+              id: issues.id,
+              identifier: issues.identifier,
+              title: issues.title,
+            })
+            .from(issues)
+            .where(and(eq(issues.id, issueId), eq(issues.companyId, agent.companyId)))
+            .then((rows) => rows[0] ?? null)
         : null;
       const executionWorkspace = await realizeExecutionWorkspace({
         base: {
@@ -1234,10 +1451,10 @@ export function heartbeatService(db: Db) {
         ...(runtimeSessionResolution.warning ? [runtimeSessionResolution.warning] : []),
         ...(resetTaskSession && sessionResetReason
           ? [
-            taskKey
-              ? `Skipping saved session resume for task "${taskKey}" because ${sessionResetReason}.`
-              : `Skipping saved session resume because ${sessionResetReason}.`,
-          ]
+              taskKey
+                ? `Skipping saved session resume for task "${taskKey}" because ${sessionResetReason}.`
+                : `Skipping saved session resume because ${sessionResetReason}.`,
+            ]
           : []),
       ];
       context.swarmifyxWorkspace = {
@@ -1251,14 +1468,15 @@ export function heartbeatService(db: Db) {
         repoRef: executionWorkspace.repoRef,
         branchName: executionWorkspace.branchName,
         worktreePath: executionWorkspace.worktreePath,
+        agentHome: resolveDefaultAgentWorkspaceDir(agent.id),
       };
       context.swarmifyxWorkspaces = resolvedWorkspace.workspaceHints;
       const runtimeServiceIntents = (() => {
         const runtimeConfig = parseObject(resolvedConfig.workspaceRuntime);
         return Array.isArray(runtimeConfig.services)
           ? runtimeConfig.services.filter(
-            (value): value is Record<string, unknown> => typeof value === "object" && value !== null,
-          )
+              (value): value is Record<string, unknown> => typeof value === "object" && value !== null,
+            )
           : [];
       })();
       if (runtimeServiceIntents.length > 0) {
@@ -1270,15 +1488,42 @@ export function heartbeatService(db: Db) {
         context.projectId = executionWorkspace.projectId;
       }
       const runtimeSessionFallback = taskKey || resetTaskSession ? null : runtime.sessionId;
-      const previousSessionDisplayId = truncateDisplayId(
+      let previousSessionDisplayId = truncateDisplayId(
         taskSessionForRun?.sessionDisplayId ??
-        (sessionCodec.getDisplayId ? sessionCodec.getDisplayId(runtimeSessionParams) : null) ??
-        readNonEmptyString(runtimeSessionParams?.sessionId) ??
-        runtimeSessionFallback,
+          (sessionCodec.getDisplayId ? sessionCodec.getDisplayId(runtimeSessionParams) : null) ??
+          readNonEmptyString(runtimeSessionParams?.sessionId) ??
+          runtimeSessionFallback,
       );
+      let runtimeSessionIdForAdapter =
+        readNonEmptyString(runtimeSessionParams?.sessionId) ?? runtimeSessionFallback;
+      let runtimeSessionParamsForAdapter = runtimeSessionParams;
+
+      const sessionCompaction = await evaluateSessionCompaction({
+        agent,
+        sessionId: previousSessionDisplayId ?? runtimeSessionIdForAdapter,
+        issueId,
+      });
+      if (sessionCompaction.rotate) {
+        context.swarmifyxSessionHandoffMarkdown = sessionCompaction.handoffMarkdown;
+        context.swarmifyxSessionRotationReason = sessionCompaction.reason;
+        context.swarmifyxPreviousSessionId = previousSessionDisplayId ?? runtimeSessionIdForAdapter;
+        runtimeSessionIdForAdapter = null;
+        runtimeSessionParamsForAdapter = null;
+        previousSessionDisplayId = null;
+        if (sessionCompaction.reason) {
+          runtimeWorkspaceWarnings.push(
+            `Starting a fresh session because ${sessionCompaction.reason}.`,
+          );
+        }
+      } else {
+        delete context.swarmifyxSessionHandoffMarkdown;
+        delete context.swarmifyxSessionRotationReason;
+        delete context.swarmifyxPreviousSessionId;
+      }
+
       const runtimeForAdapter = {
-        sessionId: readNonEmptyString(runtimeSessionParams?.sessionId) ?? runtimeSessionFallback,
-        sessionParams: runtimeSessionParams,
+        sessionId: runtimeSessionIdForAdapter,
+        sessionParams: runtimeSessionParamsForAdapter,
         sessionDisplayId: previousSessionDisplayId,
         taskKey,
       };

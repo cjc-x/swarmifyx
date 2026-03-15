@@ -1,25 +1,15 @@
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { afterEach, describe, expect, it } from "vitest";
-import { ensureCodexSkillsInjected } from "@swamifyx/adapter-codex-local/server";
+import { ensureCodexSkillsInjected } from "@swarmifyx/adapter-codex-local/server";
 
 async function makeTempDir(prefix: string): Promise<string> {
   return fs.mkdtemp(path.join(os.tmpdir(), prefix));
 }
 
-async function createSwamifyxRepoSkill(root: string, skillName: string) {
-  await fs.mkdir(path.join(root, "server"), { recursive: true });
-  await fs.mkdir(path.join(root, "packages", "adapter-utils"), { recursive: true });
-  await fs.mkdir(path.join(root, "skills", skillName), { recursive: true });
-  await fs.writeFile(path.join(root, "pnpm-workspace.yaml"), "packages:\n  - packages/*\n", "utf8");
-  await fs.writeFile(path.join(root, "package.json"), '{"name":"swarmifyx"}\n', "utf8");
-  await fs.writeFile(
-    path.join(root, "skills", skillName, "SKILL.md"),
-    `---\nname: ${skillName}\n---\n`,
-    "utf8",
-  );
-}
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 async function createCustomSkill(root: string, skillName: string) {
   await fs.mkdir(path.join(root, "custom", skillName), { recursive: true });
@@ -38,54 +28,52 @@ describe("codex local adapter skill injection", () => {
     cleanupDirs.clear();
   });
 
-  it("repairs a Codex Swamifyx skill symlink that still points at another live checkout", async () => {
-    const currentRepo = await makeTempDir("swamifyx-codex-current-");
-    const oldRepo = await makeTempDir("swamifyx-codex-old-");
-    const skillsHome = await makeTempDir("swamifyx-codex-home-");
-    cleanupDirs.add(currentRepo);
-    cleanupDirs.add(oldRepo);
-    cleanupDirs.add(skillsHome);
+  it("injects missing Codex skills from the runtime skills directory", async () => {
+    const codexHome = await makeTempDir("swarmifyx-codex-home-");
+    cleanupDirs.add(codexHome);
 
-    await createSwamifyxRepoSkill(currentRepo, "swarmifyx");
-    await createSwamifyxRepoSkill(oldRepo, "swarmifyx");
-    await fs.symlink(path.join(oldRepo, "skills", "swarmifyx"), path.join(skillsHome, "swarmifyx"));
+    const previousCodexHome = process.env.CODEX_HOME;
+    process.env.CODEX_HOME = codexHome;
 
     const logs: string[] = [];
-    await ensureCodexSkillsInjected(
-      async (_stream, chunk) => {
+    try {
+      await ensureCodexSkillsInjected(async (_stream, chunk) => {
         logs.push(chunk);
-      },
-      {
-        skillsHome,
-        skillsEntries: [{ name: "swarmifyx", source: path.join(currentRepo, "skills", "swarmifyx") }],
-      },
-    );
+      });
 
-    expect(await fs.realpath(path.join(skillsHome, "swarmifyx"))).toBe(
-      await fs.realpath(path.join(currentRepo, "skills", "swarmifyx")),
-    );
-    expect(logs.some((line) => line.includes('Repaired Codex skill "swarmifyx"'))).toBe(true);
+      const injectedSkill = path.join(codexHome, "skills", "swarmifyx");
+      const runtimeSkill = path.resolve(__dirname, "../../../skills", "swarmifyx");
+
+      expect(await fs.realpath(injectedSkill)).toBe(await fs.realpath(runtimeSkill));
+      expect(logs.some((line) => line.includes('Injected Codex skill "swarmifyx"'))).toBe(true);
+    } finally {
+      if (previousCodexHome === undefined) delete process.env.CODEX_HOME;
+      else process.env.CODEX_HOME = previousCodexHome;
+    }
   });
 
-  it("preserves a custom Codex skill symlink outside Swamifyx repo checkouts", async () => {
-    const currentRepo = await makeTempDir("swamifyx-codex-current-");
-    const customRoot = await makeTempDir("swamifyx-codex-custom-");
-    const skillsHome = await makeTempDir("swamifyx-codex-home-");
-    cleanupDirs.add(currentRepo);
+  it("preserves a custom Codex skill symlink outside Swarmifyx repo checkouts", async () => {
+    const customRoot = await makeTempDir("swarmifyx-codex-custom-");
+    const codexHome = await makeTempDir("swarmifyx-codex-home-");
     cleanupDirs.add(customRoot);
-    cleanupDirs.add(skillsHome);
+    cleanupDirs.add(codexHome);
 
-    await createSwamifyxRepoSkill(currentRepo, "swarmifyx");
     await createCustomSkill(customRoot, "swarmifyx");
-    await fs.symlink(path.join(customRoot, "custom", "swarmifyx"), path.join(skillsHome, "swarmifyx"));
+    await fs.mkdir(path.join(codexHome, "skills"), { recursive: true });
+    await fs.symlink(path.join(customRoot, "custom", "swarmifyx"), path.join(codexHome, "skills", "swarmifyx"));
 
-    await ensureCodexSkillsInjected(async () => { }, {
-      skillsHome,
-      skillsEntries: [{ name: "swarmifyx", source: path.join(currentRepo, "skills", "swarmifyx") }],
-    });
+    const previousCodexHome = process.env.CODEX_HOME;
+    process.env.CODEX_HOME = codexHome;
 
-    expect(await fs.realpath(path.join(skillsHome, "swarmifyx"))).toBe(
-      await fs.realpath(path.join(customRoot, "custom", "swarmifyx")),
-    );
+    try {
+      await ensureCodexSkillsInjected(async () => { });
+
+      expect(await fs.realpath(path.join(codexHome, "skills", "swarmifyx"))).toBe(
+        await fs.realpath(path.join(customRoot, "custom", "swarmifyx")),
+      );
+    } finally {
+      if (previousCodexHome === undefined) delete process.env.CODEX_HOME;
+      else process.env.CODEX_HOME = previousCodexHome;
+    }
   });
 });

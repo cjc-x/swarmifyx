@@ -27,16 +27,25 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import type { Project } from "@swarmifyx/shared";
+import { PluginSlotMount, usePluginSlots } from "@/plugins/slots";
+
+type ProjectSidebarSlot = ReturnType<typeof usePluginSlots>["slots"][number];
 
 function SortableProjectItem({
   activeProjectRef,
+  companyId,
+  companyPrefix,
   isMobile,
   project,
+  projectSidebarSlots,
   setSidebarOpen,
 }: {
   activeProjectRef: string | null;
+  companyId: string | null;
+  companyPrefix: string | null;
   isMobile: boolean;
   project: Project;
+  projectSidebarSlots: ProjectSidebarSlot[];
   setSidebarOpen: (open: boolean) => void;
 }) {
   const {
@@ -62,24 +71,45 @@ function SortableProjectItem({
       {...attributes}
       {...listeners}
     >
-      <NavLink
-        to={`/projects/${routeRef}/issues`}
-        onClick={() => {
-          if (isMobile) setSidebarOpen(false);
-        }}
-        className={cn(
-          "flex items-center gap-2.5 px-3 py-1.5 text-[13px] font-medium transition-colors",
-          activeProjectRef === routeRef || activeProjectRef === project.id
-            ? "bg-accent text-foreground"
-            : "text-foreground/80 hover:bg-accent/50 hover:text-foreground",
+      <div className="flex flex-col gap-0.5">
+        <NavLink
+          to={`/projects/${routeRef}/issues`}
+          onClick={() => {
+            if (isMobile) setSidebarOpen(false);
+          }}
+          className={cn(
+            "flex items-center gap-2.5 px-3 py-1.5 text-[13px] font-medium transition-colors",
+            activeProjectRef === routeRef || activeProjectRef === project.id
+              ? "bg-accent text-foreground"
+              : "text-foreground/80 hover:bg-accent/50 hover:text-foreground",
+          )}
+        >
+          <span
+            className="shrink-0 h-3.5 w-3.5 rounded-sm"
+            style={{ backgroundColor: project.color ?? "#6366f1" }}
+          />
+          <span className="flex-1 truncate">{project.name}</span>
+        </NavLink>
+        {projectSidebarSlots.length > 0 && (
+          <div className="ml-5 flex flex-col gap-0.5">
+            {projectSidebarSlots.map((slot) => (
+              <PluginSlotMount
+                key={`${project.id}:${slot.pluginKey}:${slot.id}`}
+                slot={slot}
+                context={{
+                  companyId,
+                  companyPrefix,
+                  projectId: project.id,
+                  projectRef: routeRef,
+                  entityId: project.id,
+                  entityType: "project",
+                }}
+                missingBehavior="placeholder"
+              />
+            ))}
+          </div>
         )}
-      >
-        <span
-          className="shrink-0 h-3.5 w-3.5 rounded-sm"
-          style={{ backgroundColor: project.color ?? "#6366f1" }}
-        />
-        <span className="flex-1 truncate">{project.name}</span>
-      </NavLink>
+      </div>
     </div>
   );
 }
@@ -87,7 +117,7 @@ function SortableProjectItem({
 export function SidebarProjects() {
   const { t } = useI18n();
   const [open, setOpen] = useState(true);
-  const { selectedCompanyId } = useCompany();
+  const { selectedCompany, selectedCompanyId } = useCompany();
   const { openNewProject } = useDialog();
   const { isMobile, setSidebarOpen } = useSidebar();
   const location = useLocation();
@@ -100,6 +130,12 @@ export function SidebarProjects() {
   const { data: session } = useQuery({
     queryKey: queryKeys.auth.session,
     queryFn: () => authApi.getSession(),
+  });
+  const { slots: projectSidebarSlots } = usePluginSlots({
+    slotTypes: ["projectSidebarItem"],
+    entityType: "project",
+    companyId: selectedCompanyId,
+    enabled: !!selectedCompanyId,
   });
 
   const currentUserId = session?.user?.id ?? session?.session?.userId ?? null;
@@ -180,8 +216,11 @@ export function SidebarProjects() {
                 <SortableProjectItem
                   key={project.id}
                   activeProjectRef={activeProjectRef}
+                  companyId={selectedCompanyId}
+                  companyPrefix={selectedCompany?.issuePrefix ?? null}
                   isMobile={isMobile}
                   project={project}
+                  projectSidebarSlots={projectSidebarSlots}
                   setSidebarOpen={setSidebarOpen}
                 />
               ))}

@@ -5,7 +5,6 @@ import { Link, Outlet, useLocation, useNavigate, useParams } from "@/lib/router"
 import { CompanyRail } from "./CompanyRail";
 import { Sidebar } from "./Sidebar";
 import { InstanceSidebar } from "./InstanceSidebar";
-import { SidebarNavItem } from "./SidebarNavItem";
 import { BreadcrumbBar } from "./BreadcrumbBar";
 import { PropertiesPanel } from "./PropertiesPanel";
 import { CommandPalette } from "./CommandPalette";
@@ -15,6 +14,7 @@ import { NewGoalDialog } from "./NewGoalDialog";
 import { NewAgentDialog } from "./NewAgentDialog";
 import { ToastViewport } from "./ToastViewport";
 import { MobileBottomNav } from "./MobileBottomNav";
+import { WorktreeBanner } from "./WorktreeBanner";
 import { useDialog } from "../context/DialogContext";
 import { usePanel } from "../context/PanelContext";
 import { useCompany } from "../context/CompanyContext";
@@ -29,6 +29,38 @@ import { queryKeys } from "../lib/queryKeys";
 import { cn } from "../lib/utils";
 import { NotFoundPage } from "../pages/NotFound";
 import { Button } from "@/components/ui/button";
+
+const INSTANCE_SETTINGS_MEMORY_KEY = "swarmifyx.lastInstanceSettingsPath";
+const DEFAULT_INSTANCE_SETTINGS_PATH = "/instance/settings/heartbeats";
+const DOCS_URL = "https://docs.swarmifyx.ing/";
+
+function normalizeRememberedInstanceSettingsPath(rawPath: string | null): string {
+  if (!rawPath) return DEFAULT_INSTANCE_SETTINGS_PATH;
+
+  const match = rawPath.match(/^([^?#]*)(\?[^#]*)?(#.*)?$/);
+  const pathname = match?.[1] ?? rawPath;
+  const search = match?.[2] ?? "";
+  const hash = match?.[3] ?? "";
+
+  if (pathname === "/instance/settings/heartbeats" || pathname === "/instance/settings/plugins") {
+    return `${pathname}${search}${hash}`;
+  }
+
+  if (/^\/instance\/settings\/plugins\/[^/?#]+$/.test(pathname)) {
+    return `${pathname}${search}${hash}`;
+  }
+
+  return DEFAULT_INSTANCE_SETTINGS_PATH;
+}
+
+function readRememberedInstanceSettingsPath(): string {
+  if (typeof window === "undefined") return DEFAULT_INSTANCE_SETTINGS_PATH;
+  try {
+    return normalizeRememberedInstanceSettingsPath(window.localStorage.getItem(INSTANCE_SETTINGS_MEMORY_KEY));
+  } catch {
+    return DEFAULT_INSTANCE_SETTINGS_PATH;
+  }
+}
 
 export function Layout() {
   const { sidebarOpen, setSidebarOpen, toggleSidebar, isMobile } = useSidebar();
@@ -50,6 +82,7 @@ export function Layout() {
   const onboardingTriggered = useRef(false);
   const lastMainScrollTop = useRef(0);
   const [mobileNavVisible, setMobileNavVisible] = useState(true);
+  const [instanceSettingsTarget, setInstanceSettingsTarget] = useState<string>(() => readRememberedInstanceSettingsPath());
   const nextTheme = theme === "dark" ? "light" : "dark";
   const nextLocaleOption = useMemo(() => {
     if (localeOptions.length === 0) return null;
@@ -221,20 +254,42 @@ export function Layout() {
       document.body.style.overflow = previousOverflow;
     };
   }, [isMobile]);
+  useEffect(() => {
+    if (!location.pathname.startsWith("/instance/settings/")) return;
+
+    const nextPath = normalizeRememberedInstanceSettingsPath(
+      `${location.pathname}${location.search}${location.hash}`,
+    );
+    setInstanceSettingsTarget(nextPath);
+
+    try {
+      window.localStorage.setItem(INSTANCE_SETTINGS_MEMORY_KEY, nextPath);
+    } catch {
+      // Ignore storage failures in restricted environments.
+    }
+  }, [location.hash, location.pathname, location.search]);
+
+  const docsLabel = t("Documentation");
+  const instanceSettingsLabel = t("Instance settings");
+  const themeToggleLabel = t(`Switch to ${nextTheme} mode`);
+  const closeSidebarLabel = t("Close sidebar");
 
   const sidebarFooter = (
     <div className="flex items-center gap-1">
-      <SidebarNavItem
-        to="/docs"
-        label="Documentation"
-        icon={BookOpen}
-        className="flex-1 min-w-0"
-      />
+      <a
+        href={DOCS_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex min-w-0 flex-1 items-center gap-2.5 px-3 py-2 text-[13px] font-medium text-foreground/80 transition-colors hover:bg-accent/50 hover:text-foreground"
+      >
+        <BookOpen className="h-4 w-4 shrink-0" />
+        <span className="truncate">{docsLabel}</span>
+      </a>
       <Button variant="ghost" size="icon-sm" className="text-muted-foreground shrink-0" asChild>
         <Link
-          to="/instance/settings"
-          aria-label="Instance settings"
-          title="Instance settings"
+          to={instanceSettingsTarget}
+          aria-label={instanceSettingsLabel}
+          title={instanceSettingsLabel}
           onClick={() => {
             if (isMobile) setSidebarOpen(false);
           }}
@@ -262,8 +317,8 @@ export function Layout() {
         size="icon-sm"
         className="text-muted-foreground shrink-0"
         onClick={toggleTheme}
-        aria-label={t(`Switch to ${nextTheme} mode`)}
-        title={t(`Switch to ${nextTheme} mode`)}
+        aria-label={themeToggleLabel}
+        title={themeToggleLabel}
       >
         {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
       </Button>
@@ -283,64 +338,63 @@ export function Layout() {
       >
         {t("Skip to Main Content")}
       </a>
-      {/* Mobile backdrop */}
-      {isMobile && sidebarOpen && (
-        <button
-          type="button"
-          className="fixed inset-0 z-40 bg-black/50"
-          onClick={() => setSidebarOpen(false)}
-          aria-label={t("Close sidebar")}
-        />
-      )}
+      <WorktreeBanner />
+      <div className={cn("min-h-0 flex-1", isMobile ? "w-full" : "flex overflow-hidden")}>
+        {isMobile && sidebarOpen && (
+          <button
+            type="button"
+            className="fixed inset-0 z-40 bg-black/50"
+            onClick={() => setSidebarOpen(false)}
+            aria-label={closeSidebarLabel}
+          />
+        )}
 
-      {/* Combined sidebar area: company rail + inner sidebar + docs bar */}
-      {isMobile ? (
-        <div
-          className={cn(
-            "fixed inset-y-0 left-0 z-50 flex flex-col overflow-hidden pt-[env(safe-area-inset-top)] transition-transform duration-100 ease-out",
-            sidebarOpen ? "translate-x-0" : "-translate-x-full"
-          )}
-        >
-          <div className="flex flex-1 min-h-0 overflow-hidden">
-            <CompanyRail />
-            {isInstanceSettingsRoute ? <InstanceSidebar /> : <Sidebar />}
-          </div>
-          <div className="border-t border-r border-border px-3 py-2 bg-background">
-            {sidebarFooter}
-          </div>
-        </div>
-      ) : (
-        <div className="flex flex-col shrink-0 h-full">
-          <div className="flex flex-1 min-h-0">
-            <CompanyRail />
-            <div
-              className={cn(
-                "overflow-hidden transition-[width] duration-100 ease-out",
-                sidebarOpen ? "w-60" : "w-0"
-              )}
-            >
+        {isMobile ? (
+          <div
+            className={cn(
+              "fixed inset-y-0 left-0 z-50 flex flex-col overflow-hidden pt-[env(safe-area-inset-top)] transition-transform duration-100 ease-out",
+              sidebarOpen ? "translate-x-0" : "-translate-x-full"
+            )}
+          >
+            <div className="flex flex-1 min-h-0 overflow-hidden">
+              <CompanyRail />
               {isInstanceSettingsRoute ? <InstanceSidebar /> : <Sidebar />}
             </div>
+            <div className="border-t border-r border-border px-3 py-2 bg-background">
+              {sidebarFooter}
+            </div>
           </div>
-          <div className="border-t border-r border-border px-3 py-2">
-            {sidebarFooter}
+        ) : (
+          <div className="flex h-full flex-col shrink-0">
+            <div className="flex flex-1 min-h-0">
+              <CompanyRail />
+              <div
+                className={cn(
+                  "overflow-hidden transition-[width] duration-100 ease-out",
+                  sidebarOpen ? "w-60" : "w-0"
+                )}
+              >
+                {isInstanceSettingsRoute ? <InstanceSidebar /> : <Sidebar />}
+              </div>
+            </div>
+            <div className="border-t border-r border-border px-3 py-2">
+              {sidebarFooter}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Main content */}
-      <div className={cn("flex min-w-0 flex-col", isMobile ? "w-full" : "h-full flex-1")}>
-        <div
-          className={cn(
-            isMobile && "sticky top-0 z-20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/85",
-          )}
-        >
-          <BreadcrumbBar />
-        </div>
-        <div className={cn(isMobile ? "block" : "flex flex-1 min-h-0")}>
-          <main
-            id="main-content"
-            tabIndex={-1}
+        <div className={cn("flex min-w-0 flex-col", isMobile ? "w-full" : "h-full flex-1")}>
+          <div
+            className={cn(
+              isMobile && "sticky top-0 z-20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/85",
+            )}
+          >
+            <BreadcrumbBar />
+          </div>
+          <div className={cn(isMobile ? "block" : "flex flex-1 min-h-0")}>
+            <main
+              id="main-content"
+              tabIndex={-1}
             className={cn(
               "flex-1 p-4 md:p-6",
               isMobile ? "overflow-visible pb-[calc(5rem+env(safe-area-inset-bottom))]" : "overflow-auto",
@@ -357,6 +411,7 @@ export function Layout() {
           </main>
           <PropertiesPanel />
         </div>
+      </div>
       </div>
       {isMobile && <MobileBottomNav visible={mobileNavVisible} />}
       <CommandPalette />
