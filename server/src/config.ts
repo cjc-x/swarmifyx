@@ -1,5 +1,6 @@
 import { readConfigFile } from "./config-file.js";
-import { existsSync } from "node:fs";
+import { existsSync, realpathSync } from "node:fs";
+import { resolve } from "node:path";
 import { config as loadDotenv } from "dotenv";
 import { resolveSwarmifyxEnvPath } from "./paths.js";
 import {
@@ -25,6 +26,14 @@ import {
 const SWARMIFYX_ENV_FILE_PATH = resolveSwarmifyxEnvPath();
 if (existsSync(SWARMIFYX_ENV_FILE_PATH)) {
   loadDotenv({ path: SWARMIFYX_ENV_FILE_PATH, override: false, quiet: true });
+}
+
+const CWD_ENV_PATH = resolve(process.cwd(), ".env");
+const isSameFile = existsSync(CWD_ENV_PATH) && existsSync(SWARMIFYX_ENV_FILE_PATH)
+  ? realpathSync(CWD_ENV_PATH) === realpathSync(SWARMIFYX_ENV_FILE_PATH)
+  : CWD_ENV_PATH === SWARMIFYX_ENV_FILE_PATH;
+if (!isSameFile && existsSync(CWD_ENV_PATH)) {
+  loadDotenv({ path: CWD_ENV_PATH, override: false, quiet: true });
 }
 
 type DatabaseMode = "embedded-postgres" | "postgres";

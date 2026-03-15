@@ -9,7 +9,6 @@ import { accessApi } from "../api/access";
 import { queryKeys } from "../lib/queryKeys";
 import { useNavigate } from "@/lib/router";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Settings, Check } from "lucide-react";
 import { CompanyPatternIcon } from "../components/CompanyPatternIcon";
 import {
@@ -30,7 +29,7 @@ export function CompanySettings() {
     selectedCompanyId
   } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
-  const { locale, localeOptions, setLocale, t } = useI18n();
+  const { t } = useI18n();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
@@ -270,34 +269,6 @@ export function CompanySettings() {
               </Field>
             </div>
           </div>
-        </div>
-      </div>
-
-      <div className="space-y-4">
-        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-          {t("Interface")}
-        </div>
-        <div className="space-y-3 rounded-md border border-border px-4 py-4">
-          <Field
-            label={t("Display language")}
-            hint={t("Choose the UI language for this browser.")}
-          >
-            <Select value={locale} onValueChange={(value) => setLocale(value as typeof locale)}>
-              <SelectTrigger className="w-full justify-between">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent align="start" className="w-[var(--radix-select-trigger-width)]">
-                {localeOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    <span>{option.nativeLabel}</span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-          <p className="text-xs text-muted-foreground">
-            {t("Interface preferences apply immediately and are stored only in this browser.")}
-          </p>
         </div>
       </div>
 

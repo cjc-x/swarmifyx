@@ -183,11 +183,16 @@
   background: oklch(0.5 0 0);
 }
 
-/* Auto-hide scrollbar: transparent by default, visible on container hover */
+/* Auto-hide scrollbar: fully transparent by default, visible on container hover */
+.scrollbar-auto-hide::-webkit-scrollbar-track {
+  background: transparent !important;
+}
 .scrollbar-auto-hide::-webkit-scrollbar-thumb {
   background: transparent !important;
 }
-
+.scrollbar-auto-hide:hover::-webkit-scrollbar-track {
+  background: oklch(0.205 0 0) !important;
+}
 .scrollbar-auto-hide:hover::-webkit-scrollbar-thumb {
   background: oklch(0.4 0 0) !important;
 }
@@ -317,21 +322,26 @@
   color: inherit;
 }
 
-.swarmifyx-mdxeditor-content>*:first-child {
+.swarmifyx-edit-in-place-content {
+  font-size: 0.9375rem;
+  line-height: 1.75rem;
+}
+
+.swarmifyx-mdxeditor-content > *:first-child {
   margin-top: 0;
 }
 
-.swarmifyx-mdxeditor-content>*:last-child {
+.swarmifyx-mdxeditor-content > *:last-child {
   margin-bottom: 0;
 }
 
 .swarmifyx-mdxeditor-content p {
   margin: 0;
-  line-height: 1.4;
+  line-height: inherit;
 }
 
-.swarmifyx-mdxeditor-content p+p {
-  margin-top: 0.6rem;
+.swarmifyx-mdxeditor-content p + p {
+  margin-top: 1.1em;
 }
 
 .swarmifyx-mdxeditor-content a.swarmifyx-project-mention-chip {
@@ -352,8 +362,8 @@
 
 .swarmifyx-mdxeditor-content ul,
 .swarmifyx-mdxeditor-content ol {
-  margin: 0.35rem 0;
-  padding-left: 1.1rem;
+  margin: 1.1em 0;
+  padding-left: 1.6em;
 }
 
 .swarmifyx-mdxeditor-content ul {
@@ -366,19 +376,33 @@
 
 .swarmifyx-mdxeditor-content li {
   display: list-item;
-  margin: 0.15rem 0;
-  line-height: 1.4;
+  margin: 0.3em 0;
+  line-height: inherit;
 }
 
 .swarmifyx-mdxeditor-content li::marker {
   color: var(--muted-foreground);
 }
 
-.swarmifyx-mdxeditor-content h1,
-.swarmifyx-mdxeditor-content h2,
-.swarmifyx-mdxeditor-content h3 {
-  margin: 0.4rem 0 0.25rem;
+.swarmifyx-mdxeditor-content h1 {
+  margin: 0 0 0.9em;
+  font-size: 1.75em;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.swarmifyx-mdxeditor-content h2 {
+  margin: 0 0 0.85em;
+  font-size: 1.35em;
+  font-weight: 700;
   line-height: 1.3;
+}
+
+.swarmifyx-mdxeditor-content h3 {
+  margin: 0 0 0.8em;
+  font-size: 1.15em;
+  font-weight: 600;
+  line-height: 1.35;
 }
 
 .swarmifyx-mdxeditor-content img {
@@ -387,11 +411,11 @@
 }
 
 .swarmifyx-mdxeditor-content blockquote {
-  margin: 0.45rem 0;
-  padding-left: 0.7rem;
-  border-left: 2px solid var(--border);
+  margin: 1.2em 0;
+  padding-left: 1em;
+  border-left: 3px solid var(--border);
   color: var(--muted-foreground);
-  line-height: 1.4;
+  line-height: inherit;
 }
 
 .swarmifyx-mdxeditor-content code {

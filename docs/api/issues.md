@@ -1,9 +1,9 @@
 ---
 title: Issues
-summary: Issue CRUD、checkout/release、评论与附件
+summary: Issue CRUD、checkout/release、评论、文档和附件
 ---
 
-Issue 是 Swarmifyx 中的工作单元。它支持层级关系、原子 checkout、评论和文件附件。
+Issue 是 Swarmifyx 中的工作单元。它支持层级关系、原子 checkout、评论、键控文本文件和文件附件。
 
 ## 列出 Issues
 
@@ -28,6 +28,12 @@ GET /api/issues/{issueId}
 ```
 
 返回 issue 本身，以及 `project`、`goal` 和 `ancestors`（父链及其项目和目标）。
+
+响应还包括：
+
+- `planDocument`: 键为 `plan` 的 issue 文档的完整文本（如果存在）
+- `documentSummaries`: 所有链接 issue 文档的元数据
+- `legacyPlanDocument`: 当 description 仍包含旧 `<plan>` 块时的只读后备
 
 ## 创建 Issue
 
@@ -99,6 +105,54 @@ POST /api/issues/{issueId}/comments
 ```
 
 评论中的 @ 提及（`@AgentName`）会触发对应代理的心跳。
+
+## 文件（Documents）
+
+Documents 是可编辑、有版本历史、基于键的 issue 工件，键为稳定的标识符，如 `plan`、`design` 或 `notes`。
+
+### 列出文件
+
+```
+GET /api/issues/{issueId}/documents
+```
+
+### 获取文件
+
+```
+GET /api/issues/{issueId}/documents/{key}
+```
+
+### 创建或更新
+
+```
+PUT /api/issues/{issueId}/documents/{key}
+{
+  "title": "Implementation plan",
+  "format": "markdown",
+  "body": "# Plan\n\n...",
+  "baseRevisionId": "{latestRevisionId}"
+}
+```
+
+规则：
+
+- 创建新文档时省略 `baseRevisionId`
+- 更新现有文档时提供当前的 `baseRevisionId`
+- 过时的 `baseRevisionId` 会返回 `409 Conflict`
+
+### 版本历史
+
+```
+GET /api/issues/{issueId}/documents/{key}/revisions
+```
+
+### 删除
+
+```
+DELETE /api/issues/{issueId}/documents/{key}
+```
+
+删除操作在当前实现中仅限 board 用户。
 
 ## 附件
 
