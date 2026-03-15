@@ -77,6 +77,7 @@ const translations: Record<AppLocale, Record<string, string>> = {
     "Appearance": "外观",
     "Interface": "界面",
     "Language": "语言",
+    "Switch language to {language}": "切换到 {language}",
     "Instance Settings": "实例设置",
     "Heartbeats": "心跳",
     "Hiring": "招聘",

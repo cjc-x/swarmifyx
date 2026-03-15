@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { BookOpen, Moon, Settings, Sun } from "lucide-react";
+import { BookOpen, Languages, Moon, Settings, Sun } from "lucide-react";
 import { Link, Outlet, useLocation, useNavigate, useParams } from "@/lib/router";
 import { CompanyRail } from "./CompanyRail";
 import { Sidebar } from "./Sidebar";
@@ -42,7 +42,7 @@ export function Layout() {
     setSelectedCompanyId,
   } = useCompany();
   const { theme, toggleTheme } = useTheme();
-  const { t } = useI18n();
+  const { locale, localeOptions, setLocale, t } = useI18n();
   const { companyPrefix } = useParams<{ companyPrefix: string }>();
   const navigate = useNavigate();
   const location = useLocation();
@@ -51,6 +51,22 @@ export function Layout() {
   const lastMainScrollTop = useRef(0);
   const [mobileNavVisible, setMobileNavVisible] = useState(true);
   const nextTheme = theme === "dark" ? "light" : "dark";
+  const nextLocaleOption = useMemo(() => {
+    if (localeOptions.length === 0) return null;
+    const currentIndex = localeOptions.findIndex((option) => option.value === locale);
+    const safeIndex = currentIndex >= 0 ? currentIndex : 0;
+    return localeOptions[(safeIndex + 1) % localeOptions.length] ?? localeOptions[0];
+  }, [locale, localeOptions]);
+  const nextLocaleLabel = nextLocaleOption
+    ? nextLocaleOption.value === "zh-CN"
+      ? "中文"
+      : nextLocaleOption.value === "en-US"
+        ? "EN"
+        : nextLocaleOption.nativeLabel
+    : null;
+  const languageToggleTitle = nextLocaleOption
+    ? t("Switch language to {language}", { language: nextLocaleOption.nativeLabel })
+    : t("Language");
   const matchedCompany = useMemo(() => {
     if (!companyPrefix) return null;
     const requestedPrefix = companyPrefix.toUpperCase();
@@ -206,6 +222,54 @@ export function Layout() {
     };
   }, [isMobile]);
 
+  const sidebarFooter = (
+    <div className="flex items-center gap-1">
+      <SidebarNavItem
+        to="/docs"
+        label="Documentation"
+        icon={BookOpen}
+        className="flex-1 min-w-0"
+      />
+      <Button variant="ghost" size="icon-sm" className="text-muted-foreground shrink-0" asChild>
+        <Link
+          to="/instance/settings"
+          aria-label="Instance settings"
+          title="Instance settings"
+          onClick={() => {
+            if (isMobile) setSidebarOpen(false);
+          }}
+        >
+          <Settings className="h-4 w-4" />
+        </Link>
+      </Button>
+      {nextLocaleOption && nextLocaleLabel ? (
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="h-9 rounded-full px-3 text-[11px] font-semibold text-muted-foreground shrink-0"
+          onClick={() => setLocale(nextLocaleOption.value)}
+          aria-label={languageToggleTitle}
+          title={languageToggleTitle}
+        >
+          <Languages className="h-3.5 w-3.5" />
+          <span>{nextLocaleLabel}</span>
+        </Button>
+      ) : null}
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon-sm"
+        className="text-muted-foreground shrink-0"
+        onClick={toggleTheme}
+        aria-label={t(`Switch to ${nextTheme} mode`)}
+        title={t(`Switch to ${nextTheme} mode`)}
+      >
+        {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+      </Button>
+    </div>
+  );
+
   return (
     <div
       className={cn(
@@ -242,37 +306,7 @@ export function Layout() {
             {isInstanceSettingsRoute ? <InstanceSidebar /> : <Sidebar />}
           </div>
           <div className="border-t border-r border-border px-3 py-2 bg-background">
-            <div className="flex items-center gap-1">
-              <SidebarNavItem
-                to="/docs"
-                label="Documentation"
-                icon={BookOpen}
-                className="flex-1 min-w-0"
-              />
-              <Button variant="ghost" size="icon-sm" className="text-muted-foreground shrink-0" asChild>
-                <Link
-                  to="/instance/settings"
-                  aria-label="Instance settings"
-                  title="Instance settings"
-                  onClick={() => {
-                    if (isMobile) setSidebarOpen(false);
-                  }}
-                >
-                  <Settings className="h-4 w-4" />
-                </Link>
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-sm"
-                className="text-muted-foreground shrink-0"
-                onClick={toggleTheme}
-                aria-label={t(`Switch to ${nextTheme} mode`)}
-                title={t(`Switch to ${nextTheme} mode`)}
-              >
-                {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-              </Button>
-            </div>
+            {sidebarFooter}
           </div>
         </div>
       ) : (
@@ -289,37 +323,7 @@ export function Layout() {
             </div>
           </div>
           <div className="border-t border-r border-border px-3 py-2">
-            <div className="flex items-center gap-1">
-              <SidebarNavItem
-                to="/docs"
-                label="Documentation"
-                icon={BookOpen}
-                className="flex-1 min-w-0"
-              />
-              <Button variant="ghost" size="icon-sm" className="text-muted-foreground shrink-0" asChild>
-                <Link
-                  to="/instance/settings"
-                  aria-label="Instance settings"
-                  title="Instance settings"
-                  onClick={() => {
-                    if (isMobile) setSidebarOpen(false);
-                  }}
-                >
-                  <Settings className="h-4 w-4" />
-                </Link>
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-sm"
-                className="text-muted-foreground shrink-0"
-                onClick={toggleTheme}
-                aria-label={t(`Switch to ${nextTheme} mode`)}
-                title={t(`Switch to ${nextTheme} mode`)}
-              >
-                {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-              </Button>
-            </div>
+            {sidebarFooter}
           </div>
         </div>
       )}
