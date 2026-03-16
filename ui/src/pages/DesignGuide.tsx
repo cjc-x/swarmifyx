@@ -225,7 +225,7 @@ export function DesignGuide() {
       <div>
         <h2 className="text-xl font-bold">{t("Design Guide")}</h2>
         <p className="text-sm text-muted-foreground mt-1">
-          {t("Every component, style, and pattern used across Swarmifyx.")}
+          {t("Every component, style, and pattern used across Papertape.")}
         </p>
       </div>
 
@@ -792,7 +792,7 @@ export function DesignGuide() {
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbLink href="#">{t("Swarmifyx App")}</BreadcrumbLink>
+              <BreadcrumbLink href="#">{t("Papertape App")}</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>

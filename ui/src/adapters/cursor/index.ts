@@ -1,7 +1,7 @@
 import type { UIAdapterModule } from "../types";
-import { parseCursorStdoutLine } from "@swarmifyx/adapter-cursor-local/ui";
+import { parseCursorStdoutLine } from "@papertape/adapter-cursor-local/ui";
 import { CursorLocalConfigFields } from "./config-fields";
-import { buildCursorLocalConfig } from "@swarmifyx/adapter-cursor-local/ui";
+import { buildCursorLocalConfig } from "@papertape/adapter-cursor-local/ui";
 
 export const cursorLocalUIAdapter: UIAdapterModule = {
   type: "cursor",

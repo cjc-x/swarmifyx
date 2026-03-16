@@ -2,15 +2,15 @@
 
 **Download a company.**
 
-ClipHub is the public registry where people share, discover, and download Swarmifyx company configurations. A company template is a portable artifact containing an entire org — agents, reporting structure, adapter configs, role definitions, seed tasks — ready to spin up with one command.
+ClipHub is the public registry where people share, discover, and download Papertape company configurations. A company template is a portable artifact containing an entire org — agents, reporting structure, adapter configs, role definitions, seed tasks — ready to spin up with one command.
 
 ---
 
 ## What It Is
 
-ClipHub is to Swarmifyx what a package registry is to a programming language. Swarmifyx already supports exportable org configs (see [SPEC.md](./SPEC.md) §2). ClipHub is the public directory where those exports live.
+ClipHub is to Papertape what a package registry is to a programming language. Papertape already supports exportable org configs (see [SPEC.md](./SPEC.md) §2). ClipHub is the public directory where those exports live.
 
-A user builds a working company in Swarmifyx — a dev shop, a marketing agency, a research lab, a content studio — exports the template, and publishes it to ClipHub. Anyone can browse, search, download, and spin up that company on their own Swarmifyx instance.
+A user builds a working company in Papertape — a dev shop, a marketing agency, a research lab, a content studio — exports the template, and publishes it to ClipHub. Anyone can browse, search, download, and spin up that company on their own Papertape instance.
 
 The tagline: **you can literally download a company.**
 
@@ -18,7 +18,7 @@ The tagline: **you can literally download a company.**
 
 ## What Gets Published
 
-A ClipHub package is a **company template export** — the portable artifact format defined in the Swarmifyx spec. It contains:
+A ClipHub package is a **company template export** — the portable artifact format defined in the Papertape spec. It contains:
 
 | Component | Description |
 |---|---|
@@ -85,9 +85,9 @@ Two ways to use a template:
 
 **Install (fresh start):**
 ```
-swarmifyx install cliphub:<publisher>/<company-slug>
+papertape install cliphub:<publisher>/<company-slug>
 ```
-Downloads the template and creates a new company in your local Swarmifyx instance. You add your own API keys, set budgets, customize agents, and hit go.
+Downloads the template and creates a new company in your local Papertape instance. You add your own API keys, set budgets, customize agents, and hit go.
 
 **Fork:**
 Forking creates a copy of the template under your own ClipHub account. You can modify it, republish it as your own variant, and the fork lineage is tracked. This enables evolutionary improvement — someone publishes a marketing agency, you fork it, add a social media team, republish.
@@ -118,11 +118,11 @@ Anyone with a GitHub account can publish to ClipHub. Authentication is via GitHu
 
 ### How to Publish
 
-From within Swarmifyx, export your company as a template, then publish:
+From within Papertape, export your company as a template, then publish:
 
 ```
-swarmifyx export --template my-company
-swarmifyx publish cliphub my-company
+papertape export --template my-company
+papertape publish cliphub my-company
 ```
 
 Or use the web UI to upload a template export directly.
@@ -152,7 +152,7 @@ Templates use semantic versioning. Each publish creates an immutable version. Us
 For power users who maintain multiple templates:
 
 ```
-swarmifyx cliphub sync
+papertape cliphub sync
 ```
 
 Scans your local exported templates and publishes any that are new or updated. Useful for maintaining a portfolio of company templates from a single repo.
@@ -201,7 +201,7 @@ New accounts have a waiting period before they can publish. This prevents drive-
 
 ## Architecture
 
-ClipHub is a **separate service** from Swarmifyx itself. Swarmifyx is self-hosted; ClipHub is a hosted registry that Swarmifyx instances talk to.
+ClipHub is a **separate service** from Papertape itself. Papertape is self-hosted; ClipHub is a hosted registry that Papertape instances talk to.
 
 ### Integration Points
 
@@ -209,15 +209,15 @@ ClipHub is a **separate service** from Swarmifyx itself. Swarmifyx is self-hoste
 |---|---|
 | **ClipHub Web** | Browse, search, discover, comment, star — the website |
 | **ClipHub API** | Registry API for publishing, downloading, searching programmatically |
-| **Swarmifyx CLI** | `swarmifyx install`, `swarmifyx publish`, `swarmifyx cliphub sync` — built into Swarmifyx |
-| **Swarmifyx UI** | "Browse ClipHub" panel in the Swarmifyx web UI for discovering templates without leaving the app |
+| **Papertape CLI** | `papertape install`, `papertape publish`, `papertape cliphub sync` — built into Papertape |
+| **Papertape UI** | "Browse ClipHub" panel in the Papertape web UI for discovering templates without leaving the app |
 
 ### Tech Stack
 
 | Layer | Technology |
 |---|---|
-| Frontend | React + Vite (consistent with Swarmifyx) |
-| Backend | TypeScript + Hono (consistent with Swarmifyx) |
+| Frontend | React + Vite (consistent with Papertape) |
+| Backend | TypeScript + Hono (consistent with Papertape) |
 | Database | PostgreSQL |
 | Search | Vector embeddings for semantic search |
 | Auth | GitHub OAuth |
@@ -260,16 +260,16 @@ Report
 1. Open ClipHub, browse by category or search "dev shop for building SaaS"
 2. Find a template that fits — "Lean SaaS Dev Shop (CEO + CTO + 3 Engineers)"
 3. Read the description, inspect the org chart, check the comments
-4. Run `swarmifyx install cliphub:acme/lean-saas-shop`
-5. Swarmifyx creates the company locally with all agents pre-configured
+4. Run `papertape install cliphub:acme/lean-saas-shop`
+5. Papertape creates the company locally with all agents pre-configured
 6. Set your API keys, adjust budgets, add your initial tasks
 7. Hit go
 
 ### "I built something great and want to share it"
 
-1. Build and iterate on a company in Swarmifyx until it works well
-2. Export: `swarmifyx export --template my-agency`
-3. Publish: `swarmifyx publish cliphub my-agency`
+1. Build and iterate on a company in Papertape until it works well
+2. Export: `papertape export --template my-agency`
+3. Publish: `papertape publish cliphub my-agency`
 4. Fill in description, category, tags on the web UI
 5. Template is live — others can find and install it
 
@@ -285,21 +285,21 @@ Report
 
 1. Search ClipHub for agent templates: "senior python engineer"
 2. Find a well-starred agent config
-3. Install just that agent: `swarmifyx install cliphub:acme/senior-python-eng --agent`
+3. Install just that agent: `papertape install cliphub:acme/senior-python-eng --agent`
 4. Assign it to a manager in your existing company
 5. Done
 
 ---
 
-## Relationship to Swarmifyx
+## Relationship to Papertape
 
-ClipHub is **not required** to use Swarmifyx. You can build companies entirely from scratch without ever touching ClipHub. But ClipHub dramatically lowers the barrier to entry:
+ClipHub is **not required** to use Papertape. You can build companies entirely from scratch without ever touching ClipHub. But ClipHub dramatically lowers the barrier to entry:
 
 - **New users** get a working company in minutes instead of hours
 - **Experienced users** share proven configurations with the community
 - **The ecosystem** compounds — every good template makes the next company easier to build
 
-ClipHub is to Swarmifyx what a package registry is to a language runtime: optional, but transformative.
+ClipHub is to Papertape what a package registry is to a language runtime: optional, but transformative.
 
 ---
 
@@ -311,7 +311,7 @@ ClipHub is to Swarmifyx what a package registry is to a language runtime: option
 - [ ] Template browsing (list, filter by category)
 - [ ] Template detail page (description, org chart, agent list, install command)
 - [ ] Semantic search (vector embeddings)
-- [ ] `swarmifyx install cliphub:<publisher>/<slug>` CLI command
+- [ ] `papertape install cliphub:<publisher>/<slug>` CLI command
 - [ ] GitHub OAuth authentication
 - [ ] Stars
 - [ ] Download counts
@@ -325,12 +325,12 @@ ClipHub is to Swarmifyx what a package registry is to a language runtime: option
 - [ ] Agent and team sub-packages
 - [ ] Verified publisher badges
 - [ ] Automated security scanning of adapter configs
-- [ ] "Browse ClipHub" panel in Swarmifyx web UI
-- [ ] `swarmifyx cliphub sync` for bulk publishing
+- [ ] "Browse ClipHub" panel in Papertape web UI
+- [ ] `papertape cliphub sync` for bulk publishing
 - [ ] Publisher profiles and portfolios
 
 ### Not in Scope
 
 - Paid / premium templates (everything is free and public, at least initially)
 - Private registries (may be a future enterprise feature)
-- Running companies on ClipHub (it's a registry, not a runtime — consistent with Swarmifyx's own philosophy)
+- Running companies on ClipHub (it's a registry, not a runtime — consistent with Papertape's own philosophy)

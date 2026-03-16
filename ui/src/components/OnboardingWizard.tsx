@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import type { AdapterEnvironmentTestResult } from "@swarmifyx/shared";
+import type { AdapterEnvironmentTestResult } from "@papertape/shared";
 import { useDialog } from "../context/DialogContext";
 import { useCompany } from "../context/CompanyContext";
 import { useI18n } from "../context/I18nContext";
@@ -24,13 +24,13 @@ import { getUIAdapter } from "../adapters";
 import { defaultCreateValues } from "./agent-config-defaults";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { parseOnboardingGoalInput } from "../lib/onboarding-goal";
-import { DEFAULT_CODEBUDDY_LOCAL_MODEL } from "@swarmifyx/adapter-codebuddy-local";
+import { DEFAULT_CODEBUDDY_LOCAL_MODEL } from "@papertape/adapter-codebuddy-local";
 import {
   DEFAULT_CODEX_LOCAL_BYPASS_APPROVALS_AND_SANDBOX,
   DEFAULT_CODEX_LOCAL_MODEL
-} from "@swarmifyx/adapter-codex-local";
-import { DEFAULT_CURSOR_LOCAL_MODEL } from "@swarmifyx/adapter-cursor-local";
-import { DEFAULT_GEMINI_LOCAL_MODEL } from "@swarmifyx/adapter-gemini-local";
+} from "@papertape/adapter-codex-local";
+import { DEFAULT_CURSOR_LOCAL_MODEL } from "@papertape/adapter-cursor-local";
+import { DEFAULT_GEMINI_LOCAL_MODEL } from "@papertape/adapter-gemini-local";
 import { AsciiArtAnimation } from "./AsciiArtAnimation";
 import { CodeBuddyLogoIcon } from "./CodeBuddyLogoIcon";
 import { ChoosePathButton } from "./PathInstructionsModal";
@@ -912,7 +912,7 @@ export function OnboardingWizard() {
                             <label className="text-xs text-muted-foreground">
                               {t("Working directory")}
                             </label>
-                            <HintIcon text="Swarmifyx works best if you create a new folder for your agents to keep their memories and stay organized. Create a new folder and put the path here." />
+                            <HintIcon text="Papertape works best if you create a new folder for your agents to keep their memories and stay organized. Create a new folder and put the path here." />
                           </div>
                           <div className="flex items-center gap-2 rounded-md border border-border px-2.5 py-1.5">
                             <FolderOpen className="h-3.5 w-3.5 text-muted-foreground shrink-0" />

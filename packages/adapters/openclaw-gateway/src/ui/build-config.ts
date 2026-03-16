@@ -1,4 +1,4 @@
-import type { CreateConfigValues } from "@swarmifyx/adapter-utils";
+import type { CreateConfigValues } from "@papertape/adapter-utils";
 
 function parseJsonObject(text: string): Record<string, unknown> | null {
   const trimmed = text.trim();

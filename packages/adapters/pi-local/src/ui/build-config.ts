@@ -1,4 +1,4 @@
-import type { CreateConfigValues } from "@swarmifyx/adapter-utils";
+import type { CreateConfigValues } from "@papertape/adapter-utils";
 
 function parseEnvVars(text: string): Record<string, string> {
   const env: Record<string, string> = {};

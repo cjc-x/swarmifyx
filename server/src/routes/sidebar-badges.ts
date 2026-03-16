@@ -1,7 +1,7 @@
 import { Router } from "express";
-import type { Db } from "@swarmifyx/db";
+import type { Db } from "@papertape/db";
 import { and, eq, sql } from "drizzle-orm";
-import { joinRequests } from "@swarmifyx/db";
+import { joinRequests } from "@papertape/db";
 import { sidebarBadgeService } from "../services/sidebar-badges.js";
 import { accessService } from "../services/access.js";
 import { dashboardService } from "../services/dashboard.js";

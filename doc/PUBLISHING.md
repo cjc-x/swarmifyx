@@ -1,6 +1,6 @@
 # Publishing to npm
 
-Low-level reference for how Swarmifyx packages are built for npm.
+Low-level reference for how Papertape packages are built for npm.
 
 For the maintainer release workflow, use [doc/RELEASING.md](RELEASING.md). This document is only about packaging internals and the scripts that produce publishable artifacts.
 
@@ -16,11 +16,11 @@ Use these scripts instead of older one-off publish commands:
 
 ## Why the CLI needs special packaging
 
-The CLI package, `swarmifyx`, imports code from workspace packages such as:
+The CLI package, `papertape`, imports code from workspace packages such as:
 
-- `@swarmifyx/server`
-- `@swarmifyx/db`
-- `@swarmifyx/shared`
+- `@papertape/server`
+- `@papertape/db`
+- `@papertape/shared`
 - adapter packages under `packages/adapters/`
 
 Those workspace references use `workspace:*` during development. npm cannot install those references directly for end users, so the release build has to transform the CLI into a publishable standalone package.
@@ -80,8 +80,8 @@ They are published under the npm dist-tag `canary`.
 
 This means:
 
-- `npx swarmifyx@canary onboard` can install them explicitly
-- `npx swarmifyx onboard` continues to resolve `latest`
+- `npx papertape@canary onboard` can install them explicitly
+- `npx papertape onboard` continues to resolve `latest`
 - the stable changelog can stay at `releases/v1.2.3.md`
 
 ## Stable packaging model

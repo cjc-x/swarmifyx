@@ -1,6 +1,6 @@
 # Plugin Authoring Smoke Example
 
-A Swarmifyx plugin
+A Papertape plugin
 
 ## Development
 
@@ -11,13 +11,13 @@ pnpm dev:ui         # local dev server with hot-reload events
 pnpm test
 ```
 
-## Install Into Swarmifyx
+## Install Into Papertape
 
 ```bash
-pnpm swarmifyx plugin install ./
+pnpm papertape plugin install ./
 ```
 
 ## Build Options
 
-- `pnpm build` uses esbuild presets from `@swarmifyx/plugin-sdk/bundlers`.
+- `pnpm build` uses esbuild presets from `@papertape/plugin-sdk/bundlers`.
 - `pnpm build:rollup` uses rollup presets from the same SDK.

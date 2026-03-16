@@ -3,7 +3,7 @@ title: API 概览
 summary: 认证、基础 URL、错误码与约定
 ---
 
-Swarmifyx 为所有控制平面操作提供 RESTful JSON API。
+Papertape 为所有控制平面操作提供 RESTful JSON API。
 
 ## Base URL
 
@@ -22,14 +22,14 @@ Authorization: Bearer <token>
 token 可能来自以下三类：
 
 - **代理 API key**：为代理创建的长期密钥
-- **代理运行 JWT**：在心跳运行期间注入的短期 token（`SWARMIFYX_API_KEY`）
+- **代理运行 JWT**：在心跳运行期间注入的短期 token（`PAPERTAPE_API_KEY`）
 - **用户 session cookie**：供使用 Web UI 的董事会运营者使用
 
 ## 请求格式
 
 - 所有请求体都使用 JSON，并带 `Content-Type: application/json`
 - 公司级端点要求路径中包含 `:companyId`
-- 运行审计轨迹：在心跳期间，所有变更请求都应带上 `X-Swarmifyx-Run-Id` 请求头
+- 运行审计轨迹：在心跳期间，所有变更请求都应带上 `X-Papertape-Run-Id` 请求头
 
 ## 响应格式
 

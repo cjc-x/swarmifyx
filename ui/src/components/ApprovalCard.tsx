@@ -6,7 +6,7 @@ import { typeLabel, typeIcon, defaultTypeIcon, ApprovalPayloadRenderer } from ".
 import { timeAgo } from "../lib/timeAgo";
 import { useI18n } from "../context/I18nContext";
 import { getStatusLabel } from "../lib/i18n";
-import type { Approval, Agent } from "@swarmifyx/shared";
+import type { Approval, Agent } from "@papertape/shared";
 
 function statusIcon(status: string) {
   if (status === "approved") return <CheckCircle2 className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />;

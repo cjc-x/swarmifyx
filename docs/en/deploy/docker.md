@@ -3,7 +3,7 @@ title: Docker
 summary: Docker Compose quickstart
 ---
 
-Run Swarmifyx in Docker without installing Node or pnpm locally.
+Run Papertape in Docker without installing Node or pnpm locally.
 
 ## Compose Quickstart (Recommended)
 
@@ -16,30 +16,30 @@ Open [http://localhost:3100](http://localhost:3100).
 Defaults:
 
 - Host port: `3100`
-- Data directory: `./data/docker-swarmifyx`
+- Data directory: `./data/docker-papertape`
 
 Override with environment variables:
 
 ```sh
-SWARMIFYX_PORT=3200 SWARMIFYX_DATA_DIR=./data/pc \
+PAPERTAPE_PORT=3200 PAPERTAPE_DATA_DIR=./data/pc \
   docker compose -f docker-compose.quickstart.yml up --build
 ```
 
 ## Manual Docker Build
 
 ```sh
-docker build -t swarmifyx-local .
-docker run --name swarmifyx \
+docker build -t papertape-local .
+docker run --name papertape \
   -p 3100:3100 \
   -e HOST=0.0.0.0 \
-  -e SWARMIFYX_HOME=/swarmifyx \
-  -v "$(pwd)/data/docker-swarmifyx:/swarmifyx" \
-  swarmifyx-local
+  -e PAPERTAPE_HOME=/papertape \
+  -v "$(pwd)/data/docker-papertape:/papertape" \
+  papertape-local
 ```
 
 ## Data Persistence
 
-All data is persisted under the bind mount (`./data/docker-swarmifyx`):
+All data is persisted under the bind mount (`./data/docker-papertape`):
 
 - Embedded PostgreSQL data
 - Uploaded assets
@@ -56,14 +56,14 @@ The Docker image pre-installs:
 Pass API keys to enable local adapter runs inside the container:
 
 ```sh
-docker run --name swarmifyx \
+docker run --name papertape \
   -p 3100:3100 \
   -e HOST=0.0.0.0 \
-  -e SWARMIFYX_HOME=/swarmifyx \
+  -e PAPERTAPE_HOME=/papertape \
   -e OPENAI_API_KEY=sk-... \
   -e ANTHROPIC_API_KEY=sk-... \
-  -v "$(pwd)/data/docker-swarmifyx:/swarmifyx" \
-  swarmifyx-local
+  -v "$(pwd)/data/docker-papertape:/papertape" \
+  papertape-local
 ```
 
 Without API keys, the app runs normally — adapter environment checks will surface missing prerequisites.

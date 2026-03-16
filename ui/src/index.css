@@ -252,8 +252,8 @@
 }
 
 /* MDXEditor theme integration */
-.swarmifyx-mdxeditor-scope,
-.swarmifyx-mdxeditor {
+.papertape-mdxeditor-scope,
+.papertape-mdxeditor {
   --baseBase: var(--background);
   --baseBg: transparent;
   --baseBgSubtle: color-mix(in oklab, var(--accent) 35%, transparent);
@@ -284,67 +284,67 @@
   color: var(--foreground);
 }
 
-.swarmifyx-mdxeditor-scope [class*="_iconButton_"],
-.swarmifyx-mdxeditor [class*="_iconButton_"] {
+.papertape-mdxeditor-scope [class*="_iconButton_"],
+.papertape-mdxeditor [class*="_iconButton_"] {
   color: var(--baseText);
 }
 
-.swarmifyx-mdxeditor-scope [class*="_iconButton_"]:hover,
-.swarmifyx-mdxeditor [class*="_iconButton_"]:hover {
+.papertape-mdxeditor-scope [class*="_iconButton_"]:hover,
+.papertape-mdxeditor [class*="_iconButton_"]:hover {
   color: var(--baseTextContrast);
 }
 
-.swarmifyx-mdxeditor .mdxeditor-root-contenteditable {
+.papertape-mdxeditor .mdxeditor-root-contenteditable {
   min-height: 2.5rem;
   padding: 0;
   line-height: 1.5;
 }
 
-.swarmifyx-mdxeditor [class*="_contentEditable_"] {
+.papertape-mdxeditor [class*="_contentEditable_"] {
   padding: 0.375rem 0.625rem !important;
 }
 
-.swarmifyx-mdxeditor--borderless [class*="_contentEditable_"] {
+.papertape-mdxeditor--borderless [class*="_contentEditable_"] {
   padding: 0 !important;
 }
 
-.swarmifyx-mdxeditor [class*="_placeholder_"] {
+.papertape-mdxeditor [class*="_placeholder_"] {
   font-family: inherit;
   font-size: 0.875rem;
   line-height: 1.5;
   color: var(--muted-foreground);
 }
 
-.swarmifyx-mdxeditor-content {
+.papertape-mdxeditor-content {
   font-family: inherit;
   font-size: inherit;
   line-height: inherit;
   color: inherit;
 }
 
-.swarmifyx-edit-in-place-content {
+.papertape-edit-in-place-content {
   font-size: 0.9375rem;
   line-height: 1.75rem;
 }
 
-.swarmifyx-mdxeditor-content > *:first-child {
+.papertape-mdxeditor-content > *:first-child {
   margin-top: 0;
 }
 
-.swarmifyx-mdxeditor-content > *:last-child {
+.papertape-mdxeditor-content > *:last-child {
   margin-bottom: 0;
 }
 
-.swarmifyx-mdxeditor-content p {
+.papertape-mdxeditor-content p {
   margin: 0;
   line-height: inherit;
 }
 
-.swarmifyx-mdxeditor-content p + p {
+.papertape-mdxeditor-content p + p {
   margin-top: 1.1em;
 }
 
-.swarmifyx-mdxeditor-content a.swarmifyx-project-mention-chip {
+.papertape-mdxeditor-content a.papertape-project-mention-chip {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
@@ -360,57 +360,57 @@
   user-select: none;
 }
 
-.swarmifyx-mdxeditor-content ul,
-.swarmifyx-mdxeditor-content ol {
+.papertape-mdxeditor-content ul,
+.papertape-mdxeditor-content ol {
   margin: 1.1em 0;
   padding-left: 1.6em;
 }
 
-.swarmifyx-mdxeditor-content ul {
+.papertape-mdxeditor-content ul {
   list-style: disc;
 }
 
-.swarmifyx-mdxeditor-content ol {
+.papertape-mdxeditor-content ol {
   list-style: decimal;
 }
 
-.swarmifyx-mdxeditor-content li {
+.papertape-mdxeditor-content li {
   display: list-item;
   margin: 0.3em 0;
   line-height: inherit;
 }
 
-.swarmifyx-mdxeditor-content li::marker {
+.papertape-mdxeditor-content li::marker {
   color: var(--muted-foreground);
 }
 
-.swarmifyx-mdxeditor-content h1 {
+.papertape-mdxeditor-content h1 {
   margin: 0 0 0.9em;
   font-size: 1.75em;
   font-weight: 700;
   line-height: 1.2;
 }
 
-.swarmifyx-mdxeditor-content h2 {
+.papertape-mdxeditor-content h2 {
   margin: 0 0 0.85em;
   font-size: 1.35em;
   font-weight: 700;
   line-height: 1.3;
 }
 
-.swarmifyx-mdxeditor-content h3 {
+.papertape-mdxeditor-content h3 {
   margin: 0 0 0.8em;
   font-size: 1.15em;
   font-weight: 600;
   line-height: 1.35;
 }
 
-.swarmifyx-mdxeditor-content img {
+.papertape-mdxeditor-content img {
   max-height: 18rem;
   border-radius: calc(var(--radius) - 2px);
 }
 
-.swarmifyx-mdxeditor-content blockquote {
+.papertape-mdxeditor-content blockquote {
   margin: 1.2em 0;
   padding-left: 1em;
   border-left: 3px solid var(--border);
@@ -418,12 +418,12 @@
   line-height: inherit;
 }
 
-.swarmifyx-mdxeditor-content code {
+.papertape-mdxeditor-content code {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   font-size: 0.84em;
 }
 
-.swarmifyx-mdxeditor-content pre {
+.papertape-mdxeditor-content pre {
   margin: 0.5rem 0;
   padding: 0.45rem 0.55rem;
   border: 1px solid var(--border);
@@ -460,52 +460,52 @@
   font-weight: 500;
 }
 
-.swarmifyx-markdown {
+.papertape-markdown {
   color: var(--foreground);
   font-size: 0.9375rem;
   line-height: 1.6;
 }
 
-.swarmifyx-markdown> :first-child {
+.papertape-markdown> :first-child {
   margin-top: 0;
 }
 
-.swarmifyx-markdown> :last-child {
+.papertape-markdown> :last-child {
   margin-bottom: 0;
 }
 
-.swarmifyx-markdown :where(p, ul, ol, blockquote, pre, table) {
+.papertape-markdown :where(p, ul, ol, blockquote, pre, table) {
   margin-top: 0.7rem;
   margin-bottom: 0.7rem;
 }
 
-.swarmifyx-markdown :where(ul, ol) {
+.papertape-markdown :where(ul, ol) {
   padding-left: 1.15rem;
 }
 
-.swarmifyx-markdown ul {
+.papertape-markdown ul {
   list-style-type: disc;
 }
 
-.swarmifyx-markdown ol {
+.papertape-markdown ol {
   list-style-type: decimal;
 }
 
-.swarmifyx-markdown li {
+.papertape-markdown li {
   margin: 0.14rem 0;
   padding-left: 0.2rem;
 }
 
-.swarmifyx-markdown li> :where(p, ul, ol) {
+.papertape-markdown li> :where(p, ul, ol) {
   margin-top: 0.3rem;
   margin-bottom: 0.3rem;
 }
 
-.swarmifyx-markdown li::marker {
+.papertape-markdown li::marker {
   color: var(--muted-foreground);
 }
 
-.swarmifyx-markdown :where(h1, h2, h3, h4) {
+.papertape-markdown :where(h1, h2, h3, h4) {
   margin-top: 1.15rem;
   margin-bottom: 0.45rem;
   color: var(--foreground);
@@ -514,68 +514,68 @@
   line-height: 1.3;
 }
 
-.swarmifyx-markdown h1 {
+.papertape-markdown h1 {
   font-size: 1.5rem;
 }
 
-.swarmifyx-markdown h2 {
+.papertape-markdown h2 {
   font-size: 1.25rem;
 }
 
-.swarmifyx-markdown h3 {
+.papertape-markdown h3 {
   font-size: 1.05rem;
 }
 
-.swarmifyx-markdown h4 {
+.papertape-markdown h4 {
   font-size: 0.95rem;
 }
 
-.swarmifyx-markdown :where(strong, b) {
+.papertape-markdown :where(strong, b) {
   color: var(--foreground);
   font-weight: 600;
 }
 
-.swarmifyx-markdown a {
+.papertape-markdown a {
   color: color-mix(in oklab, var(--foreground) 76%, #0969da 24%);
   text-decoration: none;
 }
 
-.swarmifyx-markdown a:hover {
+.papertape-markdown a:hover {
   text-decoration: underline;
   text-underline-offset: 0.15em;
 }
 
-.dark .swarmifyx-markdown a {
+.dark .papertape-markdown a {
   color: color-mix(in oklab, var(--foreground) 80%, #58a6ff 20%);
 }
 
-.swarmifyx-markdown blockquote {
+.papertape-markdown blockquote {
   margin-left: 0;
   padding-left: 0.95rem;
   border-left: 0.24rem solid color-mix(in oklab, var(--border) 84%, var(--muted-foreground) 16%);
   color: var(--muted-foreground);
 }
 
-.swarmifyx-markdown hr {
+.papertape-markdown hr {
   margin: 1.25rem 0;
   border-color: var(--border);
 }
 
-.swarmifyx-markdown img {
+.papertape-markdown img {
   border-radius: calc(var(--radius) + 2px);
   box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--foreground) 10%, transparent);
 }
 
-.swarmifyx-markdown table {
+.papertape-markdown table {
   width: 100%;
 }
 
-.swarmifyx-markdown th {
+.papertape-markdown th {
   font-weight: 600;
   text-align: left;
 }
 
-.swarmifyx-mermaid {
+.papertape-mermaid {
   margin: 0.5rem 0;
   padding: 0.45rem 0.55rem;
   border: 1px solid var(--border);
@@ -584,7 +584,7 @@
   overflow-x: auto;
 }
 
-.swarmifyx-mermaid svg {
+.papertape-mermaid svg {
   display: block;
   width: max-content;
   max-width: none;
@@ -592,17 +592,17 @@
   height: auto;
 }
 
-.swarmifyx-mermaid-status {
+.papertape-mermaid-status {
   margin: 0 0 0.45rem;
   font-size: 0.75rem;
   color: var(--muted-foreground);
 }
 
-.swarmifyx-mermaid-status-error {
+.papertape-mermaid-status-error {
   color: var(--destructive);
 }
 
-.swarmifyx-mermaid-source {
+.papertape-mermaid-source {
   margin: 0;
   padding: 0;
   border: 0;
@@ -610,7 +610,7 @@
 }
 
 /* Project mention chips rendered inside MarkdownBody */
-a.swarmifyx-project-mention-chip {
+a.papertape-project-mention-chip {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;

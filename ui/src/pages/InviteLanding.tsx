@@ -7,8 +7,8 @@ import { healthApi } from "../api/health";
 import { useI18n } from "../context/I18nContext";
 import { queryKeys } from "../lib/queryKeys";
 import { Button } from "@/components/ui/button";
-import { AGENT_ADAPTER_TYPES } from "@swarmifyx/shared";
-import type { AgentAdapterType, JoinRequest } from "@swarmifyx/shared";
+import { AGENT_ADAPTER_TYPES } from "@papertape/shared";
+import type { AgentAdapterType, JoinRequest } from "@papertape/shared";
 import { formatDateTime } from "../lib/utils";
 
 type JoinType = "human" | "agent";
@@ -194,7 +194,7 @@ export function InviteLandingPage() {
           )}
           {(onboardingSkillUrl || onboardingSkillPath || onboardingInstallPath) && (
             <div className="mt-3 space-y-1 rounded-md border border-border bg-muted/30 p-3 text-xs text-muted-foreground">
-              <p className="font-medium text-foreground">{t("Swarmifyx skill bootstrap")}</p>
+              <p className="font-medium text-foreground">{t("Papertape skill bootstrap")}</p>
               {onboardingSkillUrl && <p className="font-mono break-all">GET {onboardingSkillUrl}</p>}
               {!onboardingSkillUrl && onboardingSkillPath && <p className="font-mono break-all">GET {onboardingSkillPath}</p>}
               {onboardingInstallPath && <p className="font-mono break-all">{t("Install to {path}", { path: onboardingInstallPath })}</p>}
@@ -229,7 +229,7 @@ export function InviteLandingPage() {
     <div className="mx-auto max-w-xl py-10">
       <div className="rounded-lg border border-border bg-card p-6">
         <h1 className="text-xl font-semibold">
-          {invite.inviteType === "bootstrap_ceo" ? t("Bootstrap your Swarmifyx instance") : t("Join this Swarmifyx company")}
+          {invite.inviteType === "bootstrap_ceo" ? t("Bootstrap your Papertape instance") : t("Join this Papertape company")}
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">{t("Invite expires {date}.", { date: dateTime(invite.expiresAt) })}</p>
 

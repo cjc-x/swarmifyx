@@ -7,8 +7,8 @@ drizzle/meta/
 coverage/
 .DS_Store
 data/
-.swarmifyx/
-.swarmifyx/
+.papertape/
+.papertape/
 .pnpm-store/
 tmp-*
 cli/tmp/
@@ -39,8 +39,8 @@ tmp/
 *.tmp
 .vscode/
 .claude/settings.local.json
-.swarmifyx-local/
-.swarmifyx-local/
+.papertape-local/
+.papertape-local/
 
 # Doc maintenance cursor
 .doc-review-cursor

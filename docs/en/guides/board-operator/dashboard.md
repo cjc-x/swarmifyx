@@ -1,6 +1,6 @@
 ---
 title: Dashboard
-summary: Understanding the Swarmifyx dashboard
+summary: Understanding the Papertape dashboard
 ---
 
 The dashboard gives you a real-time overview of your autonomous company's health.

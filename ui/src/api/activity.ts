@@ -1,4 +1,4 @@
-import type { ActivityEvent } from "@swarmifyx/shared";
+import type { ActivityEvent } from "@papertape/shared";
 import { api } from "./client";
 
 export interface RunForIssue {

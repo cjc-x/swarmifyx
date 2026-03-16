@@ -1,13 +1,13 @@
 {
-  "name": "swarmifyx",
+  "name": "papertape",
   "version": "0.3.1",
-  "description": "SwarmifyX CLI — orchestrate AI agent teams to run a business",
+  "description": "Papertape CLI — orchestrate AI agent teams to run a business",
   "type": "module",
   "bin": {
-    "swarmifyx": "./dist/index.js"
+    "papertape": "./dist/index.js"
   },
   "keywords": [
-    "swarmifyx",
+    "papertape",
     "ai",
     "agents",
     "orchestration",
@@ -16,10 +16,10 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/cjc-x/swarmifyx.git",
+    "url": "https://github.com/papertapeai/papertape.git",
     "directory": "cli"
   },
-  "homepage": "https://github.com/cjc-x/swarmifyx",
+  "homepage": "https://github.com/papertapeai/papertape",
   "files": [
     "dist"
   ],
@@ -34,18 +34,18 @@
   },
   "dependencies": {
     "@clack/prompts": "^0.10.0",
-    "@swarmifyx/adapter-claude-local": "workspace:*",
-    "@swarmifyx/adapter-codebuddy-local": "workspace:*",
-    "@swarmifyx/adapter-codex-local": "workspace:*",
-    "@swarmifyx/adapter-cursor-local": "workspace:*",
-    "@swarmifyx/adapter-gemini-local": "workspace:*",
-    "@swarmifyx/adapter-opencode-local": "workspace:*",
-    "@swarmifyx/adapter-pi-local": "workspace:*",
-    "@swarmifyx/adapter-openclaw-gateway": "workspace:*",
-    "@swarmifyx/adapter-utils": "workspace:*",
-    "@swarmifyx/db": "workspace:*",
-    "@swarmifyx/server": "workspace:*",
-    "@swarmifyx/shared": "workspace:*",
+    "@papertape/adapter-claude-local": "workspace:*",
+    "@papertape/adapter-codebuddy-local": "workspace:*",
+    "@papertape/adapter-codex-local": "workspace:*",
+    "@papertape/adapter-cursor-local": "workspace:*",
+    "@papertape/adapter-gemini-local": "workspace:*",
+    "@papertape/adapter-opencode-local": "workspace:*",
+    "@papertape/adapter-pi-local": "workspace:*",
+    "@papertape/adapter-openclaw-gateway": "workspace:*",
+    "@papertape/adapter-utils": "workspace:*",
+    "@papertape/db": "workspace:*",
+    "@papertape/server": "workspace:*",
+    "@papertape/shared": "workspace:*",
     "drizzle-orm": "0.38.4",
     "dotenv": "^17.0.1",
     "commander": "^13.1.0",

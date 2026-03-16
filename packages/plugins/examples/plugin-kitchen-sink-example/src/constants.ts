@@ -1,6 +1,6 @@
-import type { PluginLauncherRegistration } from "@swarmifyx/plugin-sdk";
+import type { PluginLauncherRegistration } from "@papertape/plugin-sdk";
 
-export const PLUGIN_ID = "swarmifyx-kitchen-sink-example";
+export const PLUGIN_ID = "papertape-kitchen-sink-example";
 export const PLUGIN_VERSION = "0.1.0";
 export const PAGE_ROUTE = "kitchensink";
 
@@ -93,7 +93,7 @@ export const DEFAULT_CONFIG = {
   secretRefExample: "",
   httpDemoUrl: "https://httpbin.org/anything",
   allowedCommands: SAFE_COMMANDS.map((command) => command.key),
-  workspaceScratchFile: ".swarmifyx-kitchen-sink-demo.txt",
+  workspaceScratchFile: ".papertape-kitchen-sink-demo.txt",
 } as const;
 
 export const RUNTIME_LAUNCHER: PluginLauncherRegistration = {

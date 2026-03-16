@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-base_cwd="${SWARMIFYX_WORKSPACE_BASE_CWD:?SWARMIFYX_WORKSPACE_BASE_CWD is required}"
-worktree_cwd="${SWARMIFYX_WORKSPACE_CWD:?SWARMIFYX_WORKSPACE_CWD is required}"
+base_cwd="${PAPERTAPE_WORKSPACE_BASE_CWD:?PAPERTAPE_WORKSPACE_BASE_CWD is required}"
+worktree_cwd="${PAPERTAPE_WORKSPACE_CWD:?PAPERTAPE_WORKSPACE_CWD is required}"
 
 if [[ ! -d "$base_cwd" ]]; then
   echo "Base workspace does not exist: $base_cwd" >&2
@@ -32,6 +32,6 @@ done < <(
       -type d \
       -name node_modules \
       ! -path './.git/*' \
-      ! -path './.swarmifyx/*' \
+      ! -path './.papertape/*' \
       | sed 's#^\./##'
 )

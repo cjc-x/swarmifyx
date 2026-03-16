@@ -1,6 +1,6 @@
 import { and, eq, gte, sql } from "drizzle-orm";
-import type { Db } from "@swarmifyx/db";
-import { agents, approvals, companies, costEvents, issues } from "@swarmifyx/db";
+import type { Db } from "@papertape/db";
+import { agents, approvals, companies, costEvents, issues } from "@papertape/db";
 import { notFound } from "../errors.js";
 
 export function dashboardService(db: Db) {

@@ -13,5 +13,5 @@ export type {
   UsageSummary,
   AdapterAgent,
   AdapterRuntime,
-} from "@swarmifyx/adapter-utils";
+} from "@papertape/adapter-utils";
 export { runningProcesses } from "./utils.js";

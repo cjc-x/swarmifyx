@@ -1,4 +1,4 @@
-import type { CreateConfigValues } from "@swarmifyx/adapter-utils";
+import type { CreateConfigValues } from "@papertape/adapter-utils";
 
 function parseCommaArgs(value: string): string[] {
   return value

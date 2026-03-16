@@ -2,17 +2,17 @@ import { describe, expect, it } from "vitest";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { execute } from "@swarmifyx/adapter-gemini-local/server";
+import { execute } from "@papertape/adapter-gemini-local/server";
 
 async function writeFakeGeminiCommand(commandPath: string): Promise<void> {
   const script = `#!/usr/bin/env node
 const fs = require("node:fs");
 
-const capturePath = process.env.SWARMIFYX_TEST_CAPTURE_PATH;
+const capturePath = process.env.PAPERTAPE_TEST_CAPTURE_PATH;
 const payload = {
   argv: process.argv.slice(2),
-  swarmifyxEnvKeys: Object.keys(process.env)
-    .filter((key) => key.startsWith("SWARMIFYX_"))
+  papertapeEnvKeys: Object.keys(process.env)
+    .filter((key) => key.startsWith("PAPERTAPE_"))
     .sort(),
 };
 if (capturePath) {
@@ -41,12 +41,12 @@ console.log(JSON.stringify({
 
 type CapturePayload = {
   argv: string[];
-  swarmifyxEnvKeys: string[];
+  papertapeEnvKeys: string[];
 };
 
 describe("gemini execute", () => {
-  it("passes prompt as final argument and injects swarmifyx env vars", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "swarmifyx-gemini-execute-"));
+  it("passes prompt as final argument and injects papertape env vars", async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "papertape-gemini-execute-"));
     const workspace = path.join(root, "workspace");
     const commandPath = path.join(root, "gemini");
     const capturePath = path.join(root, "capture.json");
@@ -78,9 +78,9 @@ describe("gemini execute", () => {
           cwd: workspace,
           model: "gemini-2.5-pro",
           env: {
-            SWARMIFYX_TEST_CAPTURE_PATH: capturePath,
+            PAPERTAPE_TEST_CAPTURE_PATH: capturePath,
           },
-          promptTemplate: "Follow the swarmifyx heartbeat.",
+          promptTemplate: "Follow the papertape heartbeat.",
         },
         context: {},
         authToken: "run-jwt-token",
@@ -98,20 +98,20 @@ describe("gemini execute", () => {
       expect(capture.argv).toContain("stream-json");
       expect(capture.argv).toContain("--approval-mode");
       expect(capture.argv).toContain("yolo");
-      expect(capture.argv.at(-1)).toContain("Follow the swarmifyx heartbeat.");
-      expect(capture.argv.at(-1)).toContain("Swarmifyx runtime note:");
-      expect(capture.swarmifyxEnvKeys).toEqual(
+      expect(capture.argv.at(-1)).toContain("Follow the papertape heartbeat.");
+      expect(capture.argv.at(-1)).toContain("Papertape runtime note:");
+      expect(capture.papertapeEnvKeys).toEqual(
         expect.arrayContaining([
-          "SWARMIFYX_AGENT_ID",
-          "SWARMIFYX_API_KEY",
-          "SWARMIFYX_API_URL",
-          "SWARMIFYX_COMPANY_ID",
-          "SWARMIFYX_RUN_ID",
+          "PAPERTAPE_AGENT_ID",
+          "PAPERTAPE_API_KEY",
+          "PAPERTAPE_API_URL",
+          "PAPERTAPE_COMPANY_ID",
+          "PAPERTAPE_RUN_ID",
         ]),
       );
-      expect(invocationPrompt).toContain("Swarmifyx runtime note:");
-      expect(invocationPrompt).toContain("SWARMIFYX_API_URL");
-      expect(invocationPrompt).toContain("Swarmifyx API access note:");
+      expect(invocationPrompt).toContain("Papertape runtime note:");
+      expect(invocationPrompt).toContain("PAPERTAPE_API_URL");
+      expect(invocationPrompt).toContain("Papertape API access note:");
       expect(invocationPrompt).toContain("run_shell_command");
       expect(result.question).toBeNull();
     } finally {
@@ -125,7 +125,7 @@ describe("gemini execute", () => {
   });
 
   it("always passes --approval-mode yolo", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "swarmifyx-gemini-yolo-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "papertape-gemini-yolo-"));
     const workspace = path.join(root, "workspace");
     const commandPath = path.join(root, "gemini");
     const capturePath = path.join(root, "capture.json");
@@ -143,7 +143,7 @@ describe("gemini execute", () => {
         config: {
           command: commandPath,
           cwd: workspace,
-          env: { SWARMIFYX_TEST_CAPTURE_PATH: capturePath },
+          env: { PAPERTAPE_TEST_CAPTURE_PATH: capturePath },
         },
         context: {},
         authToken: "t",

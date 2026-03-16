@@ -26,7 +26,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import type { Project } from "@swarmifyx/shared";
+import type { Project } from "@papertape/shared";
 import { PluginSlotMount, usePluginSlots } from "@/plugins/slots";
 
 type ProjectSidebarSlot = ReturnType<typeof usePluginSlots>["slots"][number];

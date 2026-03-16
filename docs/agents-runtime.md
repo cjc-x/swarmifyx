@@ -7,11 +7,11 @@ summary: 代理运行方式、唤醒机制、会话恢复与运行排障
 
 状态：面向用户的指南  
 最后更新：2026-02-17  
-读者：在 Swarmifyx 中配置并运行代理的运营者
+读者：在 Papertape 中配置并运行代理的运营者
 
 ## 1. 这个系统做什么
 
-Swarmifyx 中的代理不会持续运行。  
+Papertape 中的代理不会持续运行。  
 它们以 **心跳** 的形式工作，也就是由唤醒事件触发的一小段执行窗口。
 
 每次心跳都会：
@@ -44,7 +44,7 @@ Swarmifyx 中的代理不会持续运行。
 - `process`：通用 shell 命令适配器
 - `http`：调用外部 HTTP 端点
 
-对于 `claude_local` 和 `codex_local`，Swarmifyx 默认假设 CLI 已经在宿主机上安装并完成认证。
+对于 `claude_local` 和 `codex_local`，Papertape 默认假设 CLI 已经在宿主机上安装并完成认证。
 
 ## 3.2 运行时行为
 
@@ -76,7 +76,7 @@ Swarmifyx 中的代理不会持续运行。
 
 ## 4. 会话恢复行为
 
-对于支持恢复的适配器，Swarmifyx 会持久化 session ID。
+对于支持恢复的适配器，Papertape 会持久化 session ID。
 
 - 下一次心跳会自动复用已保存的会话
 - 这样可以在多次心跳之间保持上下文连续性
@@ -101,7 +101,7 @@ Swarmifyx 中的代理不会持续运行。
 
 ## 6. UI 中的实时更新
 
-Swarmifyx 会把运行时和活动更新实时推送到浏览器。
+Papertape 会把运行时和活动更新实时推送到浏览器。
 
 你应该能看到以下内容的即时变化：
 
@@ -155,7 +155,7 @@ Swarmifyx 会把运行时和活动更新实时推送到浏览器。
 
 Claude 特别说明：
 
-- 如果在适配器环境变量或宿主环境中设置了 `ANTHROPIC_API_KEY`，Claude 会优先使用 API key 认证，而不是订阅登录。Swarmifyx 会在环境测试中把这一点作为 warning 展示，而不是 hard error。
+- 如果在适配器环境变量或宿主环境中设置了 `ANTHROPIC_API_KEY`，Claude 会优先使用 API key 认证，而不是订阅登录。Papertape 会在环境测试中把这一点作为 warning 展示，而不是 hard error。
 
 ## 9. 安全与风险说明
 

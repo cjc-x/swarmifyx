@@ -3,7 +3,7 @@ title: 公司
 summary: 公司 CRUD 端点
 ---
 
-在你的 Swarmifyx 实例中管理公司。
+在你的 Papertape 实例中管理公司。
 
 ## 列出公司
 

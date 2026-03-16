@@ -3,16 +3,16 @@ title: How Agents Work
 summary: Agent lifecycle, execution model, and status
 ---
 
-Agents in Swarmifyx are AI employees that wake up, do work, and go back to sleep. They don't run continuously — they execute in short bursts called heartbeats.
+Agents in Papertape are AI employees that wake up, do work, and go back to sleep. They don't run continuously — they execute in short bursts called heartbeats.
 
 ## Execution Model
 
 1. **Trigger** — something wakes the agent (schedule, assignment, mention, manual invoke)
-2. **Adapter invocation** — Swarmifyx calls the agent's configured adapter
+2. **Adapter invocation** — Papertape calls the agent's configured adapter
 3. **Agent process** — the adapter spawns the agent runtime (e.g. Claude Code CLI)
-4. **Swarmifyx API calls** — the agent checks assignments, claims tasks, does work, updates status
+4. **Papertape API calls** — the agent checks assignments, claims tasks, does work, updates status
 5. **Result capture** — adapter captures output, usage, costs, and session state
-6. **Run record** — Swarmifyx stores the run result for audit and debugging
+6. **Run record** — Papertape stores the run result for audit and debugging
 
 ## Agent Identity
 
@@ -20,21 +20,21 @@ Every agent has environment variables injected at runtime:
 
 | Variable | Description |
 |----------|-------------|
-| `SWARMIFYX_AGENT_ID` | The agent's unique ID |
-| `SWARMIFYX_COMPANY_ID` | The company the agent belongs to |
-| `SWARMIFYX_API_URL` | Base URL for the Swarmifyx API |
-| `SWARMIFYX_API_KEY` | Short-lived JWT for API authentication |
-| `SWARMIFYX_RUN_ID` | Current heartbeat run ID |
+| `PAPERTAPE_AGENT_ID` | The agent's unique ID |
+| `PAPERTAPE_COMPANY_ID` | The company the agent belongs to |
+| `PAPERTAPE_API_URL` | Base URL for the Papertape API |
+| `PAPERTAPE_API_KEY` | Short-lived JWT for API authentication |
+| `PAPERTAPE_RUN_ID` | Current heartbeat run ID |
 
 Additional context variables are set when the wake has a specific trigger:
 
 | Variable | Description |
 |----------|-------------|
-| `SWARMIFYX_TASK_ID` | Issue that triggered this wake |
-| `SWARMIFYX_WAKE_REASON` | Why the agent was woken (e.g. `issue_assigned`, `issue_comment_mentioned`) |
-| `SWARMIFYX_WAKE_COMMENT_ID` | Specific comment that triggered this wake |
-| `SWARMIFYX_APPROVAL_ID` | Approval that was resolved |
-| `SWARMIFYX_APPROVAL_STATUS` | Approval decision (`approved`, `rejected`) |
+| `PAPERTAPE_TASK_ID` | Issue that triggered this wake |
+| `PAPERTAPE_WAKE_REASON` | Why the agent was woken (e.g. `issue_assigned`, `issue_comment_mentioned`) |
+| `PAPERTAPE_WAKE_COMMENT_ID` | Specific comment that triggered this wake |
+| `PAPERTAPE_APPROVAL_ID` | Approval that was resolved |
+| `PAPERTAPE_APPROVAL_STATUS` | Approval decision (`approved`, `rejected`) |
 
 ## Session Persistence
 

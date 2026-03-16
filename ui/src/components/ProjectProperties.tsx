@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "@/lib/router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { Project } from "@swarmifyx/shared";
+import type { Project } from "@papertape/shared";
 import { StatusBadge } from "./StatusBadge";
 import { cn, formatDate } from "../lib/utils";
 import { getStatusLabel, translateText } from "../lib/i18n";
@@ -52,7 +52,7 @@ export type ProjectConfigFieldKey =
   | "execution_workspace_provision_command"
   | "execution_workspace_teardown_command";
 
-const REPO_ONLY_CWD_SENTINEL = "/__swarmifyx_repo_only__";
+const REPO_ONLY_CWD_SENTINEL = "/__papertape_repo_only__";
 
 function SaveIndicator({ state }: { state: ProjectFieldSaveState }) {
   if (state === "saving") {
@@ -895,7 +895,7 @@ export function ProjectProperties({ project, onUpdate, onFieldUpdate, getFieldSa
                               })}
                             immediate
                             className="w-full rounded border border-border bg-transparent px-2 py-1 text-xs font-mono outline-none"
-                            placeholder={t(".swarmifyx/worktrees")}
+                            placeholder={t(".papertape/worktrees")}
                           />
                         </div>
                         <div>

@@ -7,8 +7,8 @@ import type {
   HeartbeatRun,
   Approval,
   AgentConfigRevision,
-} from "@swarmifyx/shared";
-import { isUuidLike, normalizeAgentUrlKey } from "@swarmifyx/shared";
+} from "@papertape/shared";
+import { isUuidLike, normalizeAgentUrlKey } from "@papertape/shared";
 import { ApiError, api } from "./client";
 
 export interface AgentKey {

@@ -1,13 +1,13 @@
 /**
- * `@swarmifyx/plugin-sdk` — Swarmifyx plugin worker-side SDK.
+ * `@papertape/plugin-sdk` — Papertape plugin worker-side SDK.
  *
  * This is the main entrypoint for plugin worker code.  For plugin UI bundles,
- * import from `@swarmifyx/plugin-sdk/ui` instead.
+ * import from `@papertape/plugin-sdk/ui` instead.
  *
  * @example
  * ```ts
  * // Plugin worker entrypoint (dist/worker.ts)
- * import { definePlugin, runWorker, z } from "@swarmifyx/plugin-sdk";
+ * import { definePlugin, runWorker, z } from "@papertape/plugin-sdk";
  *
  * const plugin = definePlugin({
  *   async setup(ctx) {
@@ -91,7 +91,7 @@ export {
 // Plugin definition and lifecycle types
 export type {
   PluginDefinition,
-  SwarmifyxPlugin,
+  PapertapePlugin,
   PluginHealthDiagnostics,
   PluginConfigValidationResult,
   PluginWebhookInput,
@@ -206,11 +206,11 @@ export type {
   Goal,
 } from "./types.js";
 
-// Manifest and constant types re-exported from @swarmifyx/shared
+// Manifest and constant types re-exported from @papertape/shared
 // Plugin authors import manifest types from here so they have a single
-// dependency (@swarmifyx/plugin-sdk) for all plugin authoring needs.
+// dependency (@papertape/plugin-sdk) for all plugin authoring needs.
 export type {
-  SwarmifyxPluginManifestV1,
+  PapertapePluginManifestV1,
   PluginJobDeclaration,
   PluginWebhookDeclaration,
   PluginToolDeclaration,
@@ -255,7 +255,7 @@ export type {
  *
  * @example
  * ```ts
- * import { z } from "@swarmifyx/plugin-sdk";
+ * import { z } from "@papertape/plugin-sdk";
  *
  * const configSchema = z.object({
  *   apiKey: z.string().describe("Your API key"),
@@ -283,4 +283,4 @@ export {
   PLUGIN_WEBHOOK_DELIVERY_STATUSES,
   PLUGIN_EVENT_TYPES,
   PLUGIN_BRIDGE_ERROR_CODES,
-} from "@swarmifyx/shared";
+} from "@papertape/shared";

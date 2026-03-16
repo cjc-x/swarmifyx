@@ -1,4 +1,4 @@
-import { asString, asNumber, parseObject, parseJson } from "@swarmifyx/adapter-utils/server-utils";
+import { asString, asNumber, parseObject, parseJson } from "@papertape/adapter-utils/server-utils";
 
 export function parseCodexJsonl(stdout: string) {
   let sessionId: string | null = null;

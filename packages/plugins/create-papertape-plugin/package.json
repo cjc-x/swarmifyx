@@ -1,9 +1,9 @@
 {
-  "name": "@swarmifyx/create-swarmifyx-plugin",
+  "name": "@papertape/create-papertape-plugin",
   "version": "0.1.0",
   "type": "module",
   "bin": {
-    "create-swarmifyx-plugin": "./dist/index.js"
+    "create-papertape-plugin": "./dist/index.js"
   },
   "exports": {
     ".": "./src/index.ts"
@@ -11,7 +11,7 @@
   "publishConfig": {
     "access": "public",
     "bin": {
-      "create-swarmifyx-plugin": "./dist/index.js"
+      "create-papertape-plugin": "./dist/index.js"
     },
     "exports": {
       ".": {
@@ -31,7 +31,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@swarmifyx/plugin-sdk": "workspace:*"
+    "@papertape/plugin-sdk": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^24.6.0",

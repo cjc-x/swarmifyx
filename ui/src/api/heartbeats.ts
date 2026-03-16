@@ -2,7 +2,7 @@ import type {
   HeartbeatRun,
   HeartbeatRunEvent,
   InstanceSchedulerHeartbeatAgent,
-} from "@swarmifyx/shared";
+} from "@papertape/shared";
 import { api } from "./client";
 
 export interface ActiveRunForIssue extends HeartbeatRun {

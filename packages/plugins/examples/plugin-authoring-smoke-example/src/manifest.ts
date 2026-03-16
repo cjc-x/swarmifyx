@@ -1,11 +1,11 @@
-import type { SwarmifyxPluginManifestV1 } from "@swarmifyx/plugin-sdk";
+import type { PapertapePluginManifestV1 } from "@papertape/plugin-sdk";
 
-const manifest: SwarmifyxPluginManifestV1 = {
-  id: "swarmifyx.plugin-authoring-smoke-example",
+const manifest: PapertapePluginManifestV1 = {
+  id: "papertape.plugin-authoring-smoke-example",
   apiVersion: 1,
   version: "0.1.0",
   displayName: "Plugin Authoring Smoke Example",
-  description: "A Swarmifyx plugin",
+  description: "A Papertape plugin",
   author: "Plugin Author",
   categories: ["connector"],
   capabilities: [

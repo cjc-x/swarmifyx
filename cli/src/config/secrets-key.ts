@@ -1,7 +1,7 @@
 import { randomBytes } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
-import type { SwarmifyxConfig } from "./schema.js";
+import type { PapertapeConfig } from "./schema.js";
 import { resolveRuntimeLikePath } from "../utils/path-resolver.js";
 
 export type EnsureSecretsKeyResult =
@@ -11,19 +11,19 @@ export type EnsureSecretsKeyResult =
   | { status: "skipped_provider"; path: null };
 
 export function ensureLocalSecretsKeyFile(
-  config: Pick<SwarmifyxConfig, "secrets">,
+  config: Pick<PapertapeConfig, "secrets">,
   configPath?: string,
 ): EnsureSecretsKeyResult {
   if (config.secrets.provider !== "local_encrypted") {
     return { status: "skipped_provider", path: null };
   }
 
-  const envMasterKey = process.env.SWARMIFYX_SECRETS_MASTER_KEY;
+  const envMasterKey = process.env.PAPERTAPE_SECRETS_MASTER_KEY;
   if (envMasterKey && envMasterKey.trim().length > 0) {
     return { status: "skipped_env", path: null };
   }
 
-  const keyFileOverride = process.env.SWARMIFYX_SECRETS_MASTER_KEY_FILE;
+  const keyFileOverride = process.env.PAPERTAPE_SECRETS_MASTER_KEY_FILE;
   const configuredPath =
     keyFileOverride && keyFileOverride.trim().length > 0
       ? keyFileOverride.trim()

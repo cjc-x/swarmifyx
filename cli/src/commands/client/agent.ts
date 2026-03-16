@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import type { Agent } from "@swarmifyx/shared";
+import type { Agent } from "@papertape/shared";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
@@ -39,7 +39,7 @@ interface SkillsInstallSummary {
 }
 
 const __moduleDir = path.dirname(fileURLToPath(import.meta.url));
-const SWARMIFYX_SKILLS_CANDIDATES = [
+const PAPERTAPE_SKILLS_CANDIDATES = [
   path.resolve(__moduleDir, "../../../../../skills"), // dev: cli/src/commands/client -> repo root/skills
   path.resolve(process.cwd(), "skills"),
 ];
@@ -56,8 +56,8 @@ function claudeSkillsHome(): string {
   return path.join(base, "skills");
 }
 
-async function resolveSwarmifyxSkillsDir(): Promise<string | null> {
-  for (const candidate of SWARMIFYX_SKILLS_CANDIDATES) {
+async function resolvePapertapeSkillsDir(): Promise<string | null> {
+  for (const candidate of PAPERTAPE_SKILLS_CANDIDATES) {
     const isDir = await fs.stat(candidate).then((s) => s.isDirectory()).catch(() => false);
     if (isDir) return candidate;
   }
@@ -111,10 +111,10 @@ function buildAgentEnvExports(input: {
 }): string {
   const escaped = (value: string) => value.replace(/'/g, "'\"'\"'");
   return [
-    `export SWARMIFYX_API_URL='${escaped(input.apiBase)}'`,
-    `export SWARMIFYX_COMPANY_ID='${escaped(input.companyId)}'`,
-    `export SWARMIFYX_AGENT_ID='${escaped(input.agentId)}'`,
-    `export SWARMIFYX_API_KEY='${escaped(input.apiKey)}'`,
+    `export PAPERTAPE_API_URL='${escaped(input.apiBase)}'`,
+    `export PAPERTAPE_COMPANY_ID='${escaped(input.companyId)}'`,
+    `export PAPERTAPE_AGENT_ID='${escaped(input.agentId)}'`,
+    `export PAPERTAPE_API_KEY='${escaped(input.apiKey)}'`,
   ].join("\n");
 }
 
@@ -181,14 +181,14 @@ export function registerAgentCommands(program: Command): void {
     agent
       .command("local-cli")
       .description(
-        "Create an agent API key, install local SwarmifyX skills for Codex/Claude, and print shell exports",
+        "Create an agent API key, install local Papertape skills for Codex/Claude, and print shell exports",
       )
       .argument("<agentRef>", "Agent ID or shortname/url-key")
       .requiredOption("-C, --company-id <id>", "Company ID")
       .option("--key-name <name>", "API key label", "local-cli")
       .option(
         "--no-install-skills",
-        "Skip installing SwarmifyX skills into ~/.codex/skills and ~/.claude/skills",
+        "Skip installing Papertape skills into ~/.codex/skills and ~/.claude/skills",
       )
       .action(async (agentRef: string, opts: AgentLocalCliOptions) => {
         try {
@@ -210,10 +210,10 @@ export function registerAgentCommands(program: Command): void {
 
           const installSummaries: SkillsInstallSummary[] = [];
           if (opts.installSkills !== false) {
-            const skillsDir = await resolveSwarmifyxSkillsDir();
+            const skillsDir = await resolvePapertapeSkillsDir();
             if (!skillsDir) {
               throw new Error(
-                "Could not locate local SwarmifyX skills directory. Expected ./skills in the repo checkout.",
+                "Could not locate local Papertape skills directory. Expected ./skills in the repo checkout.",
               );
             }
 

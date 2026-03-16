@@ -2,12 +2,12 @@
 
 ## 背景
 
-本仓库是上游 `paperclipai/paperclip` 的私有 fork，已全面改名为 **Swarmifyx**。
+本仓库是上游 `paperclipai/paperclip` 的私有 fork，已全面改名为 **Papertape**。
 
 | 角色 | 仓库地址 |
 |---|---|
 | 上游（upstream） | `https://github.com/paperclipai/paperclip` |
-| 私仓（origin） | `https://github.com/cjc-x/swarmifyx` |
+| 私仓（origin） | `https://github.com/papertapeai/papertape` |
 
 从 `upstream/master` 拉取更新并 merge 到本地时，上游代码中仍然使用 `paperclipai` / `Paperclip` 等旧名称，与本仓库已完成的改名产生冲突。本文档定义解决这类冲突的唯一权威规则。
 
@@ -22,14 +22,14 @@
 
 | 上游原名 | 本仓库新名 | 典型出现位置 |
 |---|---|---|
-| `paperclipai` | `swarmifyx` | npm scope、import path、GitHub org/URL、CLI 命令名、CSS 类名、URL slug |
-| `Paperclipai` | `Swarmifyx` | 类名、组件名、品牌展示（Pascal/Title case） |
-| `PAPERCLIPAI` | `SWARMIFYX` | 环境变量、常量定义（全大写） |
-| `papercli` | `swarmifyx` | 旧缩写小写残留（CLI 名等） |
-| `Papercli` | `Swarmifyx` | 旧缩写首字母大写残留 |
-| `PAPERCLI` | `SWARMIFYX` | 旧缩写全大写残留 |
-| `Paperclip`（独立品牌名） | `Swarmifyx` | 文档标题、UI 文案、README、注释中的产品名 |
-| `paperclip`（独立小写） | `swarmifyx` | CLI 二进制名、文档正文小写引用、配置文件值 |
+| `paperclipai` | `papertape` | npm scope、import path、GitHub org/URL、CLI 命令名、CSS 类名、URL slug |
+| `Paperclipai` | `Papertape` | 类名、组件名、品牌展示（Pascal/Title case） |
+| `PAPERCLIPAI` | `PAPERTAPE` | 环境变量、常量定义（全大写） |
+| `papercli` | `papertape` | 旧缩写小写残留（CLI 名等） |
+| `Papercli` | `Papertape` | 旧缩写首字母大写残留 |
+| `PAPERCLI` | `PAPERTAPE` | 旧缩写全大写残留 |
+| `Paperclip`（独立品牌名） | `Papertape` | 文档标题、UI 文案、README、注释中的产品名 |
+| `paperclip`（独立小写） | `papertape` | CLI 二进制名、文档正文小写引用、配置文件值 |
 
 > [!IMPORTANT]
 > 替换时注意大小写精确匹配。从上到下逐条检查，优先匹配更长的模式（如 `paperclipai` 优先于 `paperclip`）。
@@ -43,27 +43,27 @@
 ### 1. 代码文件（`.ts` / `.tsx` / `.js` / `.mjs` / `.css` 等）
 
 - 上游新增或修改的文件中出现任何上述旧名称 → **全部替换为新名称**
-- `@paperclipai/*` 包 scope → 替换为 `@swarmifyx/*`
-- import 路径中的 `@paperclipai/` → 替换为 `@swarmifyx/`
+- `@paperclipai/*` 包 scope → 替换为 `@papertape/*`
+- import 路径中的 `@paperclipai/` → 替换为 `@papertape/`
 - 冲突双方都修改了同一位置：以**本仓库的新名称**为准，同时保留上游的逻辑变更
 
 ### 2. `package.json` 文件
 
-- `"name"` 字段：以本仓库为准（已改为 `swarmifyx` 或 `@swarmifyx/*`）
-- `"repository"` 字段：使用 `https://github.com/cjc-x/swarmifyx`
-- 依赖名中的 `@paperclipai/*` → 替换为 `@swarmifyx/*`
+- `"name"` 字段：以本仓库为准（已改为 `papertape` 或 `@papertape/*`）
+- `"repository"` 字段：使用 `https://github.com/papertapeai/papertape`
+- 依赖名中的 `@paperclipai/*` → 替换为 `@papertape/*`
 - 版本号冲突：取上游较新的版本号
 
 ### 3. 文档文件（`.md`）
 
-- 用户可见的品牌名 `Paperclip` → `Swarmifyx`
-- GitHub 链接 `github.com/paperclipai/paperclip` → `github.com/cjc-x/swarmifyx`
-- GitHub 链接 `github.com/paperclipai/` → `github.com/cjc-x/`
+- 用户可见的品牌名 `Paperclip` → `Papertape`
+- GitHub 链接 `github.com/paperclipai/paperclip` → `github.com/papertapeai/papertape`
+- GitHub 链接 `github.com/paperclipai/` → `github.com/papertapeai/`
 - 文档中引用的 CLI 命令名遵循替换表
 
 ### 4. 配置文件（`drizzle.config.ts`、`.env` 模板等）
 
-- 环境变量名中的 `PAPERCLIP` / `PAPERCLIPAI` → 替换为 `SWARMIFYX`
+- 环境变量名中的 `PAPERCLIP` / `PAPERCLIPAI` → 替换为 `PAPERTAPE`
 - 配置值中的旧名称 → 按替换表替换
 
 ### 5. 不替换的例外
@@ -99,6 +99,6 @@ pnpm build
 ## 本地化相关补充
 
 UI 本地化的详细 spec 见 [`doc/ui-localization.md`](./ui-localization.md)，其中涉及：
-- `localStorage` key 使用 `swarmifyx.locale`
+- `localStorage` key 使用 `papertape.locale`
 - `DEFAULT_TASK_DESCRIPTION` 的 CEO persona 仓库地址使用 `github.com/cjc-x/companies/...`
-- UI 用户可见链接中 `github.com/paperclipai/` → `github.com/cjc-x/`
+- UI 用户可见链接中 `github.com/paperclipai/paperclip` → `github.com/papertapeai/papertape`

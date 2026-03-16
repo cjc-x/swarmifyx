@@ -1,4 +1,4 @@
-import type { CLIAdapterModule } from "@swarmifyx/adapter-utils";
+import type { CLIAdapterModule } from "@papertape/adapter-utils";
 import { printHttpStdoutEvent } from "./format-event.js";
 
 export const httpCLIAdapter: CLIAdapterModule = {

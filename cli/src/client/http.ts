@@ -23,7 +23,7 @@ interface ApiClientOptions {
   runId?: string;
 }
 
-export class SwarmifyxApiClient {
+export class PapertapeApiClient {
   readonly apiBase: string;
   readonly apiKey?: string;
   readonly runId?: string;
@@ -73,7 +73,7 @@ export class SwarmifyxApiClient {
     }
 
     if (this.runId) {
-      headers["x-swarmifyx-run-id"] = this.runId;
+      headers["x-papertape-run-id"] = this.runId;
     }
 
     const response = await fetch(url, {

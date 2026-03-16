@@ -1,8 +1,8 @@
 import { and, desc, eq } from "drizzle-orm";
-import type { Db } from "@swarmifyx/db";
-import { companySecrets, companySecretVersions } from "@swarmifyx/db";
-import type { AgentEnvConfig, EnvBinding, SecretProvider } from "@swarmifyx/shared";
-import { envBindingSchema } from "@swarmifyx/shared";
+import type { Db } from "@papertape/db";
+import { companySecrets, companySecretVersions } from "@papertape/db";
+import type { AgentEnvConfig, EnvBinding, SecretProvider } from "@papertape/shared";
+import { envBindingSchema } from "@papertape/shared";
 import { conflict, notFound, unprocessable } from "../errors.js";
 import { getSecretProvider, listSecretProviders } from "../secrets/provider-registry.js";
 

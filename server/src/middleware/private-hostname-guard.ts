@@ -44,8 +44,8 @@ export function resolvePrivateHostnameAllowSet(opts: { allowedHostnames: string[
 
 function blockedHostnameMessage(hostname: string): string {
   return (
-    `Hostname '${hostname}' is not allowed for this Swarmifyx instance. ` +
-    `If you want to allow this hostname, please run pnpm swarmifyx allowed-hostname ${hostname}`
+    `Hostname '${hostname}' is not allowed for this Papertape instance. ` +
+    `If you want to allow this hostname, please run pnpm papertape allowed-hostname ${hostname}`
   );
 }
 
@@ -68,7 +68,7 @@ export function privateHostnameGuard(opts: {
     const wantsJson = req.path.startsWith("/api") || req.accepts(["json", "html", "text"]) === "json";
 
     if (!hostname) {
-      const error = "Missing Host header. If you want to allow a hostname, run pnpm swarmifyx allowed-hostname <host>.";
+      const error = "Missing Host header. If you want to allow a hostname, run pnpm papertape allowed-hostname <host>.";
       if (wantsJson) {
         res.status(403).json({ error });
       } else {

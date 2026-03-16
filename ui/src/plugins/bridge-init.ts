@@ -27,7 +27,7 @@ import {
 /**
  * The global bridge registry shape.
  *
- * This is placed on `globalThis.__swarmifyxPluginBridge__` and consumed by
+ * This is placed on `globalThis.__papertapePluginBridge__` and consumed by
  * the plugin module loader to provide implementations for external imports.
  */
 export interface PluginBridgeRegistry {
@@ -38,14 +38,14 @@ export interface PluginBridgeRegistry {
 
 declare global {
   // eslint-disable-next-line no-var
-  var __swarmifyxPluginBridge__: PluginBridgeRegistry | undefined;
+  var __papertapePluginBridge__: PluginBridgeRegistry | undefined;
 }
 
 /**
  * Initialize the plugin bridge global registry.
  *
  * Registers the host's React, ReactDOM, and SDK UI bridge implementations
- * on `globalThis.__swarmifyxPluginBridge__` so the plugin module loader
+ * on `globalThis.__papertapePluginBridge__` so the plugin module loader
  * can provide them to plugin bundles.
  *
  * @param react - The host's React module
@@ -55,7 +55,7 @@ export function initPluginBridge(
   react: typeof import("react"),
   reactDom: typeof import("react-dom"),
 ): void {
-  globalThis.__swarmifyxPluginBridge__ = {
+  globalThis.__papertapePluginBridge__ = {
     react,
     reactDom,
     sdkUi: {

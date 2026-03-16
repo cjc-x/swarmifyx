@@ -6,8 +6,8 @@ const DEFAULT_INSTANCE_ID = "default";
 const CONFIG_BASENAME = "config.json";
 const ENV_BASENAME = ".env";
 const INSTANCE_ID_RE = /^[a-zA-Z0-9_-]+$/;
-const DEFAULT_HOME_BASENAME = ".swarmifyx";
-const REPO_CONFIG_DIRNAME = ".swarmifyx";
+const DEFAULT_HOME_BASENAME = ".papertape";
+const REPO_CONFIG_DIRNAME = ".papertape";
 
 type PartialConfig = {
   database?: {
@@ -22,7 +22,7 @@ export type ResolvedDatabaseTarget =
   | {
     mode: "postgres";
     connectionString: string;
-    source: "DATABASE_URL" | "swarmifyx-env" | "config.database.connectionString";
+    source: "DATABASE_URL" | "papertape-env" | "config.database.connectionString";
     configPath: string;
     envPath: string;
   }
@@ -41,31 +41,31 @@ function expandHomePrefix(value: string): string {
   return value;
 }
 
-function resolveSwarmifyxHomeDir(): string {
-  const envHome = process.env.SWARMIFYX_HOME?.trim();
+function resolvePapertapeHomeDir(): string {
+  const envHome = process.env.PAPERTAPE_HOME?.trim();
   if (envHome) return path.resolve(expandHomePrefix(envHome));
   return path.resolve(os.homedir(), DEFAULT_HOME_BASENAME);
 }
 
-function resolveSwarmifyxInstanceId(): string {
-  const raw = process.env.SWARMIFYX_INSTANCE_ID?.trim() || DEFAULT_INSTANCE_ID;
+function resolvePapertapeInstanceId(): string {
+  const raw = process.env.PAPERTAPE_INSTANCE_ID?.trim() || DEFAULT_INSTANCE_ID;
   if (!INSTANCE_ID_RE.test(raw)) {
-    throw new Error(`Invalid SWARMIFYX_INSTANCE_ID '${raw}'.`);
+    throw new Error(`Invalid PAPERTAPE_INSTANCE_ID '${raw}'.`);
   }
   return raw;
 }
 
 function resolveDefaultConfigPath(): string {
   return path.resolve(
-    resolveSwarmifyxHomeDir(),
+    resolvePapertapeHomeDir(),
     "instances",
-    resolveSwarmifyxInstanceId(),
+    resolvePapertapeInstanceId(),
     CONFIG_BASENAME,
   );
 }
 
 function resolveDefaultEmbeddedPostgresDir(): string {
-  return path.resolve(resolveSwarmifyxHomeDir(), "instances", resolveSwarmifyxInstanceId(), "db");
+  return path.resolve(resolvePapertapeHomeDir(), "instances", resolvePapertapeInstanceId(), "db");
 }
 
 function resolveHomeAwarePath(value: string): string {
@@ -85,14 +85,14 @@ function findConfigFileFromAncestors(startDir: string): string | null {
   }
 }
 
-function resolveSwarmifyxConfigPath(): string {
-  if (process.env.SWARMIFYX_CONFIG?.trim()) {
-    return path.resolve(process.env.SWARMIFYX_CONFIG.trim());
+function resolvePapertapeConfigPath(): string {
+  if (process.env.PAPERTAPE_CONFIG?.trim()) {
+    return path.resolve(process.env.PAPERTAPE_CONFIG.trim());
   }
   return findConfigFileFromAncestors(process.cwd()) ?? resolveDefaultConfigPath();
 }
 
-function resolveSwarmifyxEnvPath(configPath: string): string {
+function resolvePapertapeEnvPath(configPath: string): string {
   return path.resolve(path.dirname(configPath), ENV_BASENAME);
 }
 
@@ -188,8 +188,8 @@ function readConfig(configPath: string): PartialConfig | null {
 }
 
 export function resolveDatabaseTarget(): ResolvedDatabaseTarget {
-  const configPath = resolveSwarmifyxConfigPath();
-  const envPath = resolveSwarmifyxEnvPath(configPath);
+  const configPath = resolvePapertapeConfigPath();
+  const envPath = resolvePapertapeEnvPath(configPath);
   const envEntries = readEnvEntries(envPath);
 
   const envUrl = process.env.DATABASE_URL?.trim();
@@ -208,7 +208,7 @@ export function resolveDatabaseTarget(): ResolvedDatabaseTarget {
     return {
       mode: "postgres",
       connectionString: fileEnvUrl,
-      source: "swarmifyx-env",
+      source: "papertape-env",
       configPath,
       envPath,
     };

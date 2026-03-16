@@ -35,8 +35,8 @@
  */
 
 import { and, eq, lte, or } from "drizzle-orm";
-import type { Db } from "@swarmifyx/db";
-import { pluginJobs, pluginJobRuns } from "@swarmifyx/db";
+import type { Db } from "@papertape/db";
+import { pluginJobs, pluginJobRuns } from "@papertape/db";
 import type { PluginJobStore } from "./plugin-job-store.js";
 import type { PluginWorkerManager } from "./plugin-worker-manager.js";
 import { parseCron, nextCronTick, validateCron } from "./cron.js";

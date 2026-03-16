@@ -17,10 +17,10 @@
   - `exp`
   - optional `jti` (run token id)
 - New config/env settings:
-  - `SWARMIFYX_AGENT_JWT_SECRET`
-  - `SWARMIFYX_AGENT_JWT_TTL_SECONDS` (default: `172800`)
-  - `SWARMIFYX_AGENT_JWT_ISSUER` (default: `swarmifyx`)
-  - `SWARMIFYX_AGENT_JWT_AUDIENCE` (default: `swarmifyx-api`)
+  - `PAPERTAPE_AGENT_JWT_SECRET`
+  - `PAPERTAPE_AGENT_JWT_TTL_SECONDS` (default: `172800`)
+  - `PAPERTAPE_AGENT_JWT_ISSUER` (default: `papertape`)
+  - `PAPERTAPE_AGENT_JWT_AUDIENCE` (default: `papertape-api`)
 
 ## 2) Dual authentication path in `actorMiddleware`
 
@@ -48,24 +48,24 @@
    - `packages/adapters/claude-local/src/server/execute.ts`
    - `packages/adapters/codex-local/src/server/execute.ts`
 
-   inject `SWARMIFYX_API_KEY` from context token.
+   inject `PAPERTAPE_API_KEY` from context token.
 
 - Preserve existing behavior for explicit user-defined env vars in `adapterConfig.env`:
-  - if user already sets `SWARMIFYX_API_KEY`, do not overwrite it.
+  - if user already sets `PAPERTAPE_API_KEY`, do not overwrite it.
 - Continue injecting:
-  - `SWARMIFYX_AGENT_ID`
-  - `SWARMIFYX_COMPANY_ID`
-  - `SWARMIFYX_API_URL`
+  - `PAPERTAPE_AGENT_ID`
+  - `PAPERTAPE_COMPANY_ID`
+  - `PAPERTAPE_API_URL`
 
 ## 5) Documentation updates
 
 - Update operator-facing docs to remove manual key setup expectation for local adapters:
-  - `skills/swarmifyx/SKILL.md`
+  - `skills/papertape/SKILL.md`
   - `cli/src/commands/heartbeat-run.ts` output/help examples if they mention manual API key setup.
 
 ## 6) P0 acceptance criteria
 
-- Local adapters authenticate without manual `SWARMIFYX_API_KEY` config.
+- Local adapters authenticate without manual `PAPERTAPE_API_KEY` config.
 - Existing static keys (`agent_api_keys`) still work unchanged.
 - Auth remains company-scoped (`req.actor.companyId` used by existing checks).
 - JWT generation and verification errors are logged as non-leaking structured events.

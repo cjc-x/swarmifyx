@@ -1,4 +1,4 @@
-import type { SidebarBadges } from "@swarmifyx/shared";
+import type { SidebarBadges } from "@papertape/shared";
 import { api } from "./client";
 
 export const sidebarBadgesApi = {

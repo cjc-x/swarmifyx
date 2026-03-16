@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { Company } from "@swarmifyx/shared";
+import type { Company } from "@papertape/shared";
 import { companiesApi } from "../api/companies";
 import { ApiError } from "../api/client";
 import { queryKeys } from "../lib/queryKeys";
@@ -31,7 +31,7 @@ interface CompanyContextValue {
   }) => Promise<Company>;
 }
 
-const STORAGE_KEY = "swarmifyx.selectedCompanyId";
+const STORAGE_KEY = "papertape.selectedCompanyId";
 
 const CompanyContext = createContext<CompanyContextValue | null>(null);
 

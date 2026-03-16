@@ -4,16 +4,16 @@ import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { doctor } from "../commands/doctor.js";
 import { writeConfig } from "../config/store.js";
-import type { SwarmifyxConfig } from "../config/schema.js";
+import type { PapertapeConfig } from "../config/schema.js";
 
 const ORIGINAL_ENV = { ...process.env };
 
 function createTempConfig(): string {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "swarmifyx-doctor-"));
-  const configPath = path.join(root, ".swarmifyx", "config.json");
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "papertape-doctor-"));
+  const configPath = path.join(root, ".papertape", "config.json");
   const runtimeRoot = path.join(root, "runtime");
 
-  const config: SwarmifyxConfig = {
+  const config: PapertapeConfig = {
     $meta: {
       version: 1,
       updatedAt: "2026-03-10T00:00:00.000Z",
@@ -52,7 +52,7 @@ function createTempConfig(): string {
         baseDir: path.join(runtimeRoot, "storage"),
       },
       s3: {
-        bucket: "swarmifyx",
+        bucket: "papertape",
         region: "us-east-1",
         prefix: "",
         forcePathStyle: false,
@@ -74,9 +74,9 @@ function createTempConfig(): string {
 describe("doctor", () => {
   beforeEach(() => {
     process.env = { ...ORIGINAL_ENV };
-    delete process.env.SWARMIFYX_AGENT_JWT_SECRET;
-    delete process.env.SWARMIFYX_SECRETS_MASTER_KEY;
-    delete process.env.SWARMIFYX_SECRETS_MASTER_KEY_FILE;
+    delete process.env.PAPERTAPE_AGENT_JWT_SECRET;
+    delete process.env.PAPERTAPE_SECRETS_MASTER_KEY;
+    delete process.env.PAPERTAPE_SECRETS_MASTER_KEY_FILE;
   });
 
   afterEach(() => {
@@ -94,6 +94,6 @@ describe("doctor", () => {
 
     expect(summary.failed).toBe(0);
     expect(summary.warned).toBe(0);
-    expect(process.env.SWARMIFYX_AGENT_JWT_SECRET).toBeTruthy();
+    expect(process.env.PAPERTAPE_AGENT_JWT_SECRET).toBeTruthy();
   });
 });

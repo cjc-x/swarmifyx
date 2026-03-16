@@ -2,16 +2,16 @@ import fs from "node:fs";
 import path from "node:path";
 import { resolveDefaultConfigPath } from "./home-paths.js";
 
-const SWARMIFYX_CONFIG_BASENAME = "config.json";
-const SWARMIFYX_ENV_FILENAME = ".env";
-const REPO_CONFIG_DIRNAME = ".swarmifyx";
+const PAPERTAPE_CONFIG_BASENAME = "config.json";
+const PAPERTAPE_ENV_FILENAME = ".env";
+const REPO_CONFIG_DIRNAME = ".papertape";
 
 function findConfigFileFromAncestors(startDir: string): string | null {
   const absoluteStartDir = path.resolve(startDir);
   let currentDir = absoluteStartDir;
 
   while (true) {
-    const candidate = path.resolve(currentDir, REPO_CONFIG_DIRNAME, SWARMIFYX_CONFIG_BASENAME);
+    const candidate = path.resolve(currentDir, REPO_CONFIG_DIRNAME, PAPERTAPE_CONFIG_BASENAME);
     if (fs.existsSync(candidate)) {
       return candidate;
     }
@@ -24,12 +24,12 @@ function findConfigFileFromAncestors(startDir: string): string | null {
   return null;
 }
 
-export function resolveSwarmifyxConfigPath(overridePath?: string): string {
+export function resolvePapertapeConfigPath(overridePath?: string): string {
   if (overridePath) return path.resolve(overridePath);
-  if (process.env.SWARMIFYX_CONFIG) return path.resolve(process.env.SWARMIFYX_CONFIG);
+  if (process.env.PAPERTAPE_CONFIG) return path.resolve(process.env.PAPERTAPE_CONFIG);
   return findConfigFileFromAncestors(process.cwd()) ?? resolveDefaultConfigPath();
 }
 
-export function resolveSwarmifyxEnvPath(overrideConfigPath?: string): string {
-  return path.resolve(path.dirname(resolveSwarmifyxConfigPath(overrideConfigPath)), SWARMIFYX_ENV_FILENAME);
+export function resolvePapertapeEnvPath(overrideConfigPath?: string): string {
+  return path.resolve(path.dirname(resolvePapertapeConfigPath(overrideConfigPath)), PAPERTAPE_ENV_FILENAME);
 }

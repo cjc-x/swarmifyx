@@ -1,18 +1,18 @@
 services:
-  swarmifyx:
+  papertape:
     build:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "${SWARMIFYX_PORT:-3100}:3100"
+      - "${PAPERTAPE_PORT:-3100}:3100"
     environment:
       HOST: "0.0.0.0"
-      SWARMIFYX_HOME: "/swarmifyx"
+      PAPERTAPE_HOME: "/papertape"
       OPENAI_API_KEY: "${OPENAI_API_KEY:-}"
       ANTHROPIC_API_KEY: "${ANTHROPIC_API_KEY:-}"
-      SWARMIFYX_DEPLOYMENT_MODE: "authenticated"
-      SWARMIFYX_DEPLOYMENT_EXPOSURE: "private"
-      SWARMIFYX_PUBLIC_URL: "${SWARMIFYX_PUBLIC_URL:-http://localhost:3100}"
+      PAPERTAPE_DEPLOYMENT_MODE: "authenticated"
+      PAPERTAPE_DEPLOYMENT_EXPOSURE: "private"
+      PAPERTAPE_PUBLIC_URL: "${PAPERTAPE_PUBLIC_URL:-http://localhost:3100}"
       BETTER_AUTH_SECRET: "${BETTER_AUTH_SECRET:?BETTER_AUTH_SECRET must be set}"
     volumes:
-      - "${SWARMIFYX_DATA_DIR:-./data/docker-swarmifyx}:/swarmifyx"
+      - "${PAPERTAPE_DATA_DIR:-./data/docker-papertape}:/papertape"

@@ -1,6 +1,6 @@
 import { and, desc, eq, inArray } from "drizzle-orm";
-import type { Db } from "@swarmifyx/db";
-import { approvals, issueApprovals, issues } from "@swarmifyx/db";
+import type { Db } from "@papertape/db";
+import { approvals, issueApprovals, issues } from "@papertape/db";
 import { notFound, unprocessable } from "../errors.js";
 import { redactEventPayload } from "../redaction.js";
 

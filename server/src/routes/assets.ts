@@ -1,7 +1,7 @@
 import { Router, type Request, type Response } from "express";
 import multer from "multer";
-import type { Db } from "@swarmifyx/db";
-import { createAssetImageMetadataSchema } from "@swarmifyx/shared";
+import type { Db } from "@papertape/db";
+import { createAssetImageMetadataSchema } from "@papertape/shared";
 import type { StorageService } from "../storage/types.js";
 import { assetService, logActivity } from "../services/index.js";
 import { assertCompanyAccess, getActorInfo } from "./authz.js";

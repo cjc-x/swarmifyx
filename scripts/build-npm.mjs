@@ -14,7 +14,7 @@ const publishReadme = path.resolve(cliDir, "README.md");
 const rootReadme = path.resolve(repoRoot, "README.md");
 const skipChecks = process.argv.includes("--skip-checks");
 
-console.log("==> Building swarmifyx for npm");
+console.log("==> Building papertape for npm");
 
 if (!skipChecks) {
   console.log("  [1/6] Running forbidden token check...");

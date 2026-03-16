@@ -1,7 +1,7 @@
 import { and, asc, desc, eq } from "drizzle-orm";
-import type { Db } from "@swarmifyx/db";
-import { documentRevisions, documents, issueDocuments, issues } from "@swarmifyx/db";
-import { issueDocumentKeySchema } from "@swarmifyx/shared";
+import type { Db } from "@papertape/db";
+import { documentRevisions, documents, issueDocuments, issues } from "@papertape/db";
+import { issueDocumentKeySchema } from "@papertape/shared";
 import { conflict, notFound, unprocessable } from "../errors.js";
 
 function normalizeDocumentKey(key: string) {

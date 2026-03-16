@@ -2,7 +2,7 @@ import {
   redactHomePathUserSegments,
   redactHomePathUserSegmentsInValue,
   type TranscriptEntry,
-} from "@swarmifyx/adapter-utils";
+} from "@papertape/adapter-utils";
 
 function safeJsonParse(text: string): unknown {
   try {

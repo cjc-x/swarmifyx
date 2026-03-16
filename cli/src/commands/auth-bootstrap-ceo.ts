@@ -2,9 +2,9 @@ import { createHash, randomBytes } from "node:crypto";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
 import { and, eq, gt, isNull } from "drizzle-orm";
-import { createDb, instanceUserRoles, invites } from "@swarmifyx/db";
+import { createDb, instanceUserRoles, invites } from "@papertape/db";
 import { publicCliCommand } from "../config/branding.js";
-import { loadSwarmifyxEnvFile } from "../config/env.js";
+import { loadPapertapeEnvFile } from "../config/env.js";
 import { readConfig, resolveConfigPath } from "../config/store.js";
 
 function hashToken(token: string) {
@@ -24,7 +24,7 @@ function resolveDbUrl(configPath?: string, explicitDbUrl?: string) {
   }
   if (config?.database.mode === "embedded-postgres") {
     const port = config.database.embeddedPostgresPort ?? 54329;
-    return `postgres://swarmifyx:swarmifyx@127.0.0.1:${port}/swarmifyx`;
+    return `postgres://papertape:papertape@127.0.0.1:${port}/papertape`;
   }
   return null;
 }
@@ -32,8 +32,8 @@ function resolveDbUrl(configPath?: string, explicitDbUrl?: string) {
 function resolveBaseUrl(configPath?: string, explicitBaseUrl?: string) {
   if (explicitBaseUrl) return explicitBaseUrl.replace(/\/+$/, "");
   const fromEnv =
-    process.env.SWARMIFYX_PUBLIC_URL ??
-    process.env.SWARMIFYX_AUTH_PUBLIC_BASE_URL ??
+    process.env.PAPERTAPE_PUBLIC_URL ??
+    process.env.PAPERTAPE_AUTH_PUBLIC_BASE_URL ??
     process.env.BETTER_AUTH_URL ??
     process.env.BETTER_AUTH_BASE_URL;
   if (fromEnv?.trim()) return fromEnv.trim().replace(/\/+$/, "");
@@ -55,7 +55,7 @@ export async function bootstrapCeoInvite(opts: {
   dbUrl?: string;
 }) {
   const configPath = resolveConfigPath(opts.config);
-  loadSwarmifyxEnvFile(configPath);
+  loadPapertapeEnvFile(configPath);
   const config = readConfig(configPath);
   if (!config) {
     p.log.error(`No config found at ${configPath}. Run ${pc.cyan(publicCliCommand("onboard"))} first.`);
@@ -127,7 +127,7 @@ export async function bootstrapCeoInvite(opts: {
     p.log.message(`Expires: ${pc.dim(created.expiresAt.toISOString())}`);
   } catch (err) {
     p.log.error(`Could not create bootstrap invite: ${err instanceof Error ? err.message : String(err)}`);
-    p.log.info("If using embedded-postgres, start the SwarmifyX server and run this command again.");
+    p.log.info("If using embedded-postgres, start the Papertape server and run this command again.");
   } finally {
     await closableDb.$client?.end?.({ timeout: 5 }).catch(() => undefined);
   }

@@ -1,7 +1,7 @@
 /**
- * esbuild configuration for building the swarmifyx CLI for npm.
+ * esbuild configuration for building the papertape CLI for npm.
  *
- * Bundles all workspace packages (@swarmifyx/*) into a single file.
+ * Bundles all workspace packages (@papertape/*) into a single file.
  * External npm packages remain as regular dependencies.
  */
 
@@ -25,9 +25,9 @@ const workspacePaths = [
 ];
 
 // Workspace packages that should NOT be bundled — they'll be published
-// to npm and resolved at runtime (e.g. @swarmifyx/server uses dynamic import).
+// to npm and resolved at runtime (e.g. @papertape/server uses dynamic import).
 const externalWorkspacePackages = new Set([
-  "@swarmifyx/server",
+  "@papertape/server",
 ]);
 
 // Collect all external (non-workspace) npm package names
@@ -37,7 +37,7 @@ for (const p of workspacePaths) {
   for (const name of Object.keys(pkg.dependencies || {})) {
     if (externalWorkspacePackages.has(name)) {
       externals.add(name);
-    } else if (!name.startsWith("@swarmifyx/")) {
+    } else if (!name.startsWith("@papertape/")) {
       externals.add(name);
     }
   }

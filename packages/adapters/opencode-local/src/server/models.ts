@@ -1,25 +1,25 @@
 import { createHash } from "node:crypto";
-import type { AdapterModel } from "@swarmifyx/adapter-utils";
+import type { AdapterModel } from "@papertape/adapter-utils";
 import {
   asString,
   ensurePathInEnv,
   runChildProcess,
-} from "@swarmifyx/adapter-utils/server-utils";
+} from "@papertape/adapter-utils/server-utils";
 
 const MODELS_CACHE_TTL_MS = 60_000;
 const MODELS_DISCOVERY_TIMEOUT_MS = 20_000;
 
 function resolveOpenCodeCommand(input: unknown): string {
   const envOverride =
-    typeof process.env.SWARMIFYX_OPENCODE_COMMAND === "string" &&
-      process.env.SWARMIFYX_OPENCODE_COMMAND.trim().length > 0
-      ? process.env.SWARMIFYX_OPENCODE_COMMAND.trim()
+    typeof process.env.PAPERTAPE_OPENCODE_COMMAND === "string" &&
+      process.env.PAPERTAPE_OPENCODE_COMMAND.trim().length > 0
+      ? process.env.PAPERTAPE_OPENCODE_COMMAND.trim()
       : "opencode";
   return asString(input, envOverride);
 }
 
 const discoveryCache = new Map<string, { expiresAt: number; models: AdapterModel[] }>();
-const VOLATILE_ENV_KEY_PREFIXES = ["SWARMIFYX_", "npm_", "NPM_"] as const;
+const VOLATILE_ENV_KEY_PREFIXES = ["PAPERTAPE_", "npm_", "NPM_"] as const;
 const VOLATILE_ENV_KEY_EXACT = new Set(["PWD", "OLDPWD", "SHLVL", "_", "TERM_SESSION_ID"]);
 
 function dedupeModels(models: AdapterModel[]): AdapterModel[] {

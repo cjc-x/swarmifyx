@@ -142,7 +142,7 @@ Note:
 
 - use Better Auth canonical table names/types to avoid custom forks
 
-## 5.2 New Swarmifyx tables
+## 5.2 New Papertape tables
 
 1. `instance_user_roles`
 
@@ -455,11 +455,11 @@ Files:
 
 Commands:
 
-1. `swarmifyx auth bootstrap-ceo`
+1. `papertape auth bootstrap-ceo`
 - create bootstrap invite
 - print one-time URL
 
-2. `swarmifyx onboard`
+2. `papertape onboard`
 - in cloud mode with `bootstrap_pending`, print bootstrap URL and next steps
 - in local mode, skip bootstrap requirement
 

@@ -1,10 +1,10 @@
 import * as p from "@clack/prompts";
-import type { SecretProvider } from "@swarmifyx/shared";
+import type { SecretProvider } from "@papertape/shared";
 import type { SecretsConfig } from "../config/schema.js";
-import { resolveDefaultSecretsKeyFilePath, resolveSwarmifyxInstanceId } from "../config/home.js";
+import { resolveDefaultSecretsKeyFilePath, resolvePapertapeInstanceId } from "../config/home.js";
 
 function defaultKeyFilePath(): string {
-  return resolveDefaultSecretsKeyFilePath(resolveSwarmifyxInstanceId());
+  return resolveDefaultSecretsKeyFilePath(resolvePapertapeInstanceId());
 }
 
 export function defaultSecretsConfig(): SecretsConfig {

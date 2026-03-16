@@ -1,4 +1,4 @@
-import type { Goal } from "@swarmifyx/shared";
+import type { Goal } from "@papertape/shared";
 import { api } from "./client";
 
 export const goalsApi = {

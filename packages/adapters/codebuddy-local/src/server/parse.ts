@@ -1,4 +1,4 @@
-import { asNumber, asString, parseObject } from "@swarmifyx/adapter-utils/server-utils";
+import { asNumber, asString, parseObject } from "@papertape/adapter-utils/server-utils";
 import { normalizeCodeBuddyStreamLine } from "../shared/stream.js";
 
 function safeJsonParse(text: string): unknown {

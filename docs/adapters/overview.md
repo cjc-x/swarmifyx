@@ -1,13 +1,13 @@
 ---
 title: 适配器概览
-summary: 什么是适配器，以及它如何把代理连接到 Swarmifyx
+summary: 什么是适配器，以及它如何把代理连接到 Papertape
 ---
 
-适配器是 Swarmifyx 编排层与代理运行时之间的桥梁。每个适配器都知道如何调用某一类 AI 代理，并把它的执行结果采集回来。
+适配器是 Papertape 编排层与代理运行时之间的桥梁。每个适配器都知道如何调用某一类 AI 代理，并把它的执行结果采集回来。
 
 ## 适配器如何工作
 
-当心跳触发时，Swarmifyx 会：
+当心跳触发时，Papertape 会：
 
 1. 读取代理的 `adapterType` 和 `adapterConfig`
 2. 带着执行上下文调用适配器的 `execute()` 函数
@@ -42,7 +42,7 @@ packages/adapters/<name>/
       parse-stdout.ts   # Stdout -> transcript entries for run viewer
       build-config.ts   # Form values -> adapterConfig JSON
     cli/
-      format-event.ts   # Terminal output for `swarmifyx run --watch`
+      format-event.ts   # Terminal output for `papertape run --watch`
 ```
 
 这三个模块分别被三个注册表使用：

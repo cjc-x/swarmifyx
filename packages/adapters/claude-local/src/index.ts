@@ -33,5 +33,5 @@ Operational fields:
 - graceSec (number, optional): SIGTERM grace period in seconds
 
 Notes:
-- When Swarmifyx realizes a workspace/runtime for a run, it injects SWARMIFYX_WORKSPACE_* and SWARMIFYX_RUNTIME_* env vars for agent-side tooling.
+- When Papertape realizes a workspace/runtime for a run, it injects PAPERTAPE_WORKSPACE_* and PAPERTAPE_RUNTIME_* env vars for agent-side tooling.
 `;

@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
-import { isOpenCodeUnknownSessionError, parseOpenCodeJsonl } from "@swarmifyx/adapter-opencode-local/server";
-import { parseOpenCodeStdoutLine } from "@swarmifyx/adapter-opencode-local/ui";
-import { printOpenCodeStreamEvent } from "@swarmifyx/adapter-opencode-local/cli";
+import { isOpenCodeUnknownSessionError, parseOpenCodeJsonl } from "@papertape/adapter-opencode-local/server";
+import { parseOpenCodeStdoutLine } from "@papertape/adapter-opencode-local/ui";
+import { printOpenCodeStreamEvent } from "@papertape/adapter-opencode-local/cli";
 
 describe("opencode_local parser", () => {
   it("extracts session, summary, usage, cost, and terminal error message", () => {

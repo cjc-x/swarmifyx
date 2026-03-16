@@ -3,7 +3,7 @@ title: 数据库
 summary: 内嵌 PGlite、Docker Postgres 与托管数据库
 ---
 
-Swarmifyx 通过 Drizzle ORM 使用 PostgreSQL。数据库有三种运行方式。
+Papertape 通过 Drizzle ORM 使用 PostgreSQL。数据库有三种运行方式。
 
 ## 1. 内嵌 PostgreSQL（默认）
 
@@ -15,12 +15,12 @@ pnpm dev
 
 首次启动时，服务端会：
 
-1. 创建 `~/.swarmifyx/instances/default/db/` 作为数据目录
-2. 确保 `swarmifyx` 数据库存在
+1. 创建 `~/.papertape/instances/default/db/` 作为数据目录
+2. 确保 `papertape` 数据库存在
 3. 自动执行迁移
 4. 开始提供服务
 
-数据会跨重启保留。若要重置，可执行：`rm -rf ~/.swarmifyx/instances/default/db`。
+数据会跨重启保留。若要重置，可执行：`rm -rf ~/.papertape/instances/default/db`。
 
 Docker 快速启动方案默认也使用内嵌 PostgreSQL。
 
@@ -36,13 +36,13 @@ docker compose up -d
 
 ```sh
 cp .env.example .env
-# DATABASE_URL=postgres://swarmifyx:swarmifyx@localhost:5432/swarmifyx
+# DATABASE_URL=postgres://papertape:papertape@localhost:5432/papertape
 ```
 
 推送 schema：
 
 ```sh
-DATABASE_URL=postgres://swarmifyx:swarmifyx@localhost:5432/swarmifyx \
+DATABASE_URL=postgres://papertape:papertape@localhost:5432/papertape \
   npx drizzle-kit push
 ```
 

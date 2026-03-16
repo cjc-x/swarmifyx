@@ -96,7 +96,7 @@ export type {
   PluginLauncherDeclaration,
   PluginMinimumHostVersion,
   PluginUiDeclaration,
-  SwarmifyxPluginManifestV1,
+  PapertapePluginManifestV1,
   PluginRecord,
   PluginStateRecord,
   PluginConfig,

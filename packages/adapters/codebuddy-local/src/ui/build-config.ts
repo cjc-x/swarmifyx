@@ -1,4 +1,4 @@
-import type { CreateConfigValues } from "@swarmifyx/adapter-utils";
+import type { CreateConfigValues } from "@papertape/adapter-utils";
 import {
   DEFAULT_CODEBUDDY_LOCAL_MODEL,
   DEFAULT_CODEBUDDY_LOCAL_SKIP_PERMISSIONS,

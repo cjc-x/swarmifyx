@@ -9,9 +9,9 @@
  * @see PLUGIN_SPEC.md §10 — Plugin Manifest
  * @see packages/shared/src/validators/plugin.ts — Zod schema definition
  */
-import { pluginManifestV1Schema } from "@swarmifyx/shared";
-import type { SwarmifyxPluginManifestV1 } from "@swarmifyx/shared";
-import { PLUGIN_API_VERSION } from "@swarmifyx/shared";
+import { pluginManifestV1Schema } from "@papertape/shared";
+import type { PapertapePluginManifestV1 } from "@papertape/shared";
+import { PLUGIN_API_VERSION } from "@papertape/shared";
 import { badRequest } from "../errors.js";
 
 // ---------------------------------------------------------------------------
@@ -34,7 +34,7 @@ const SUPPORTED_VERSIONS = [PLUGIN_API_VERSION] as const;
  */
 export interface ManifestParseSuccess {
   success: true;
-  manifest: SwarmifyxPluginManifestV1;
+  manifest: PapertapePluginManifestV1;
 }
 
 /**
@@ -79,7 +79,7 @@ export interface PluginManifestValidator {
    *
    * @throws {HttpError} 400 Bad Request if the manifest is invalid.
    */
-  parseOrThrow(input: unknown): SwarmifyxPluginManifestV1;
+  parseOrThrow(input: unknown): PapertapePluginManifestV1;
 
   /**
    * Return the list of plugin API versions supported by this host.
@@ -124,7 +124,7 @@ export function pluginManifestValidator(): PluginManifestValidator {
       if (result.success) {
         return {
           success: true,
-          manifest: result.data as SwarmifyxPluginManifestV1,
+          manifest: result.data as PapertapePluginManifestV1,
         };
       }
 
@@ -146,7 +146,7 @@ export function pluginManifestValidator(): PluginManifestValidator {
       };
     },
 
-    parseOrThrow(input: unknown): SwarmifyxPluginManifestV1 {
+    parseOrThrow(input: unknown): PapertapePluginManifestV1 {
       const result = this.parse(input);
 
       if (!result.success) {

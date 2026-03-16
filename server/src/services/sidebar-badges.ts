@@ -1,7 +1,7 @@
 import { and, desc, eq, inArray, not, sql } from "drizzle-orm";
-import type { Db } from "@swarmifyx/db";
-import { agents, approvals, heartbeatRuns } from "@swarmifyx/db";
-import type { SidebarBadges } from "@swarmifyx/shared";
+import type { Db } from "@papertape/db";
+import { agents, approvals, heartbeatRuns } from "@papertape/db";
+import type { SidebarBadges } from "@papertape/shared";
 
 const ACTIONABLE_APPROVAL_STATUSES = ["pending", "revision_requested"];
 const FAILED_HEARTBEAT_STATUSES = ["failed", "timed_out"];

@@ -5,11 +5,11 @@ summary: Local Docker setup and smoke testing for the OpenClaw adapter
 
 # Running OpenClaw in Docker (Local Development)
 
-How to get OpenClaw running in a Docker container for local development and testing the Swarmifyx OpenClaw adapter integration.
+How to get OpenClaw running in a Docker container for local development and testing the Papertape OpenClaw adapter integration.
 
 ## Automated Join Smoke Test (Recommended First)
 
-Swarmifyx includes an end-to-end join smoke harness:
+Papertape includes an end-to-end join smoke harness:
 
 ```bash
 pnpm smoke:openclaw-join
@@ -44,10 +44,10 @@ What this command does:
 
 - clones/updates `openclaw/openclaw` in `/tmp/openclaw-docker`
 - builds `openclaw:local` (unless `OPENCLAW_BUILD=0`)
-- writes isolated smoke config under `~/.openclaw-swarmifyx-smoke/openclaw.json` and Docker `.env`
+- writes isolated smoke config under `~/.openclaw-papertape-smoke/openclaw.json` and Docker `.env`
 - pins agent model defaults to OpenAI (`openai/gpt-5.2` with OpenAI fallback)
 - starts `openclaw-gateway` via Compose (with required `/tmp` tmpfs override)
-- probes and prints a Swarmifyx host URL that is reachable from inside OpenClaw Docker
+- probes and prints a Papertape host URL that is reachable from inside OpenClaw Docker
 - waits for health and prints:
   - `http://127.0.0.1:18789/#token=...`
 - disables Control UI device pairing by default for local smoke ergonomics
@@ -64,38 +64,38 @@ Environment knobs:
 - `OPENCLAW_DISABLE_DEVICE_AUTH=0` keeps pairing enabled (then approve browser with `devices` CLI commands)
 - `OPENCLAW_MODEL_PRIMARY` (default `openai/gpt-5.2`)
 - `OPENCLAW_MODEL_FALLBACK` (default `openai/gpt-5.2-chat-latest`)
-- `OPENCLAW_CONFIG_DIR` (default `~/.openclaw-swarmifyx-smoke`)
+- `OPENCLAW_CONFIG_DIR` (default `~/.openclaw-papertape-smoke`)
 - `OPENCLAW_RESET_STATE=1` (default) resets smoke agent state on each run to avoid stale auth/session drift
-- `SWARMIFYX_HOST_PORT` (default `3100`)
-- `SWARMIFYX_HOST_FROM_CONTAINER` (default `host.docker.internal`)
+- `PAPERTAPE_HOST_PORT` (default `3100`)
+- `PAPERTAPE_HOST_FROM_CONTAINER` (default `host.docker.internal`)
 
 ### Authenticated mode
 
-If your Swarmifyx deployment is `authenticated`, provide auth context:
+If your Papertape deployment is `authenticated`, provide auth context:
 
 ```bash
-SWARMIFYX_AUTH_HEADER="Bearer <token>" pnpm smoke:openclaw-join
+PAPERTAPE_AUTH_HEADER="Bearer <token>" pnpm smoke:openclaw-join
 # or
-SWARMIFYX_COOKIE="your_session_cookie=..." pnpm smoke:openclaw-join
+PAPERTAPE_COOKIE="your_session_cookie=..." pnpm smoke:openclaw-join
 ```
 
 ### Network topology tips
 
 - Local same-host smoke: default callback uses `http://127.0.0.1:<port>/webhook`.
-- Inside OpenClaw Docker, `127.0.0.1` points to the container itself, not your host Swarmifyx server.
-- For invite/onboarding URLs consumed by OpenClaw in Docker, use the script-printed Swarmifyx URL (typically `http://host.docker.internal:3100`).
-- If Swarmifyx rejects the container-visible host with a hostname error, allow it from host:
+- Inside OpenClaw Docker, `127.0.0.1` points to the container itself, not your host Papertape server.
+- For invite/onboarding URLs consumed by OpenClaw in Docker, use the script-printed Papertape URL (typically `http://host.docker.internal:3100`).
+- If Papertape rejects the container-visible host with a hostname error, allow it from host:
 
 ```bash
-pnpm swarmifyx allowed-hostname host.docker.internal
+pnpm papertape allowed-hostname host.docker.internal
 ```
 
-Then restart Swarmifyx and rerun the smoke script.
+Then restart Papertape and rerun the smoke script.
 - Docker/remote OpenClaw: prefer a reachable hostname (Docker host alias, Tailscale hostname, or public domain).
 - Authenticated/private mode: ensure hostnames are in the allowed list when required:
 
 ```bash
-pnpm swarmifyx allowed-hostname <host>
+pnpm papertape allowed-hostname <host>
 ```
 
 ## Prerequisites

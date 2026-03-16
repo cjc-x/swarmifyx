@@ -204,7 +204,7 @@ Add plain-text reflection routes:
 
 Index file includes:
 
-- installed adapter list for this Swarmifyx instance
+- installed adapter list for this Papertape instance
 - per-adapter doc URLs
 - brief "how to hire" API sequence links
 
@@ -284,12 +284,12 @@ Provide board-only destructive action in approval detail:
 - explicit confirmation dialog
 - preserves approval + comment history (audit)
 
-## 8. New Skill: `swarmifyx-create-agent`
+## 8. New Skill: `papertape-create-agent`
 
 Create new skill directory:
 
-- `skills/swarmifyx-create-agent/SKILL.md`
-- `skills/swarmifyx-create-agent/references/api-reference.md`
+- `skills/papertape-create-agent/SKILL.md`
+- `skills/papertape-create-agent/references/api-reference.md`
 
 Skill responsibilities:
 
@@ -301,7 +301,7 @@ Skill responsibilities:
 - Execute hire API flow
 - Handle revision loop with board comments
 
-Also update `skills/swarmifyx/SKILL.md` to reference this skill for hiring workflows.
+Also update `skills/papertape/SKILL.md` to reference this skill for hiring workflows.
 
 ## 9. Enforcement and Invariants
 
@@ -344,7 +344,7 @@ New/updated invariants:
 - permission controls
 - approval detail + comments/revision flow in inbox/approvals
 - disapproved agent delete flow
-- `swarmifyx-create-agent` skill + docs updates
+- `papertape-create-agent` skill + docs updates
 
 ## 11. Test Plan
 

@@ -30,48 +30,48 @@ afterEach(() => {
 
 describe("resolveDatabaseTarget", () => {
   it("uses DATABASE_URL from process env first", () => {
-    process.env.DATABASE_URL = "postgres://env-user:env-pass@db.example.com:5432/swarmifyx";
+    process.env.DATABASE_URL = "postgres://env-user:env-pass@db.example.com:5432/papertape";
 
     const target = resolveDatabaseTarget();
 
     expect(target).toMatchObject({
       mode: "postgres",
-      connectionString: "postgres://env-user:env-pass@db.example.com:5432/swarmifyx",
+      connectionString: "postgres://env-user:env-pass@db.example.com:5432/papertape",
       source: "DATABASE_URL",
     });
   });
 
-  it("uses DATABASE_URL from repo-local .swarmifyx/.env", () => {
-    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "swarmifyx-db-runtime-"));
+  it("uses DATABASE_URL from repo-local .papertape/.env", () => {
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "papertape-db-runtime-"));
     const projectDir = path.join(tempDir, "repo");
     fs.mkdirSync(projectDir, { recursive: true });
     process.chdir(projectDir);
-    delete process.env.SWARMIFYX_CONFIG;
-    writeJson(path.join(projectDir, ".swarmifyx", "config.json"), {
+    delete process.env.PAPERTAPE_CONFIG;
+    writeJson(path.join(projectDir, ".papertape", "config.json"), {
       database: { mode: "embedded-postgres", embeddedPostgresPort: 54329 },
     });
     writeText(
-      path.join(projectDir, ".swarmifyx", ".env"),
-      'DATABASE_URL="postgres://file-user:file-pass@db.example.com:6543/swarmifyx"\n',
+      path.join(projectDir, ".papertape", ".env"),
+      'DATABASE_URL="postgres://file-user:file-pass@db.example.com:6543/papertape"\n',
     );
 
     const target = resolveDatabaseTarget();
 
     expect(target).toMatchObject({
       mode: "postgres",
-      connectionString: "postgres://file-user:file-pass@db.example.com:6543/swarmifyx",
-      source: "swarmifyx-env",
+      connectionString: "postgres://file-user:file-pass@db.example.com:6543/papertape",
+      source: "papertape-env",
     });
   });
 
   it("uses config postgres connection string when configured", () => {
-    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "swarmifyx-db-runtime-"));
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "papertape-db-runtime-"));
     const configPath = path.join(tempDir, "instance", "config.json");
-    process.env.SWARMIFYX_CONFIG = configPath;
+    process.env.PAPERTAPE_CONFIG = configPath;
     writeJson(configPath, {
       database: {
         mode: "postgres",
-        connectionString: "postgres://cfg-user:cfg-pass@db.example.com:5432/swarmifyx",
+        connectionString: "postgres://cfg-user:cfg-pass@db.example.com:5432/papertape",
       },
     });
 
@@ -79,15 +79,15 @@ describe("resolveDatabaseTarget", () => {
 
     expect(target).toMatchObject({
       mode: "postgres",
-      connectionString: "postgres://cfg-user:cfg-pass@db.example.com:5432/swarmifyx",
+      connectionString: "postgres://cfg-user:cfg-pass@db.example.com:5432/papertape",
       source: "config.database.connectionString",
     });
   });
 
   it("rejects unsupported database modes in config", () => {
-    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "swarmifyx-db-runtime-"));
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "papertape-db-runtime-"));
     const configPath = path.join(tempDir, "instance", "config.json");
-    process.env.SWARMIFYX_CONFIG = configPath;
+    process.env.PAPERTAPE_CONFIG = configPath;
     writeJson(configPath, {
       database: {
         mode: "pglite",
@@ -98,13 +98,13 @@ describe("resolveDatabaseTarget", () => {
   });
 
   it("falls back to embedded postgres settings from config", () => {
-    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "swarmifyx-db-runtime-"));
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "papertape-db-runtime-"));
     const configPath = path.join(tempDir, "instance", "config.json");
-    process.env.SWARMIFYX_CONFIG = configPath;
+    process.env.PAPERTAPE_CONFIG = configPath;
     writeJson(configPath, {
       database: {
         mode: "embedded-postgres",
-        embeddedPostgresDataDir: "~/swarmifyx-test-db",
+        embeddedPostgresDataDir: "~/papertape-test-db",
         embeddedPostgresPort: 55444,
       },
     });
@@ -113,7 +113,7 @@ describe("resolveDatabaseTarget", () => {
 
     expect(target).toMatchObject({
       mode: "embedded-postgres",
-      dataDir: path.resolve(os.homedir(), "swarmifyx-test-db"),
+      dataDir: path.resolve(os.homedir(), "papertape-test-db"),
       port: 55444,
       source: "embedded-postgres@55444",
     });

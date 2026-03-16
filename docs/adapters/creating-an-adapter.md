@@ -3,7 +3,7 @@ title: 创建适配器
 summary: 构建自定义适配器的指南
 ---
 
-构建自定义适配器，把 Swarmifyx 接入任意代理运行时。
+构建自定义适配器，把 Papertape 接入任意代理运行时。
 
 <Tip>
 如果你在使用 Claude Code，可以借助 `.agents/skills/create-agent-adapter` 这个 skill 以交互方式完成整个适配器创建流程。只要让 Claude 帮你创建一个新适配器，它就会一步步带你走完。
@@ -55,7 +55,7 @@ Core fields: ...
 核心职责包括：
 
 1. 使用安全辅助函数读取配置，例如 `asString`、`asNumber`
-2. 用 `buildSwarmifyxEnv(agent)` 和上下文变量构建环境
+2. 用 `buildPapertapeEnv(agent)` 和上下文变量构建环境
 3. 从 `runtime.sessionParams` 中恢复会话状态
 4. 用 `renderTemplate(template, data)` 渲染提示词
 5. 使用 `runChildProcess()` 拉起进程，或通过 `fetch()` 调用外部服务
@@ -80,7 +80,7 @@ Core fields: ...
 
 ## 第五步：CLI 模块
 
-`format-event.ts` 使用 `picocolors` 为 `swarmifyx run --watch` 美化终端输出。
+`format-event.ts` 使用 `picocolors` 为 `papertape run --watch` 美化终端输出。
 
 ## 第六步：注册
 
@@ -92,7 +92,7 @@ Core fields: ...
 
 ## 技能注入
 
-在不写入代理工作目录的前提下，让代理运行时能够发现 Swarmifyx 技能：
+在不写入代理工作目录的前提下，让代理运行时能够发现 Papertape 技能：
 
 1. **最佳方案：临时目录 + 启动参数**，创建临时目录，挂载技能符号链接，通过 CLI 参数传入，执行后清理
 2. **可接受方案：全局配置目录**，把技能链接到该运行时的全局插件目录

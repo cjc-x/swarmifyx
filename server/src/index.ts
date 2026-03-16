@@ -19,7 +19,7 @@ import {
   companies,
   companyMemberships,
   instanceUserRoles,
-} from "@swarmifyx/db";
+} from "@papertape/db";
 import detectPort from "detect-port";
 import { createApp } from "./app.js";
 import { loadConfig } from "./config.js";
@@ -69,14 +69,14 @@ export interface StartedServer {
 
 export async function startServer(): Promise<StartedServer> {
   const config = loadConfig();
-  if (process.env.SWARMIFYX_SECRETS_PROVIDER === undefined) {
-    process.env.SWARMIFYX_SECRETS_PROVIDER = config.secretsProvider;
+  if (process.env.PAPERTAPE_SECRETS_PROVIDER === undefined) {
+    process.env.PAPERTAPE_SECRETS_PROVIDER = config.secretsProvider;
   }
-  if (process.env.SWARMIFYX_SECRETS_STRICT_MODE === undefined) {
-    process.env.SWARMIFYX_SECRETS_STRICT_MODE = config.secretsStrictMode ? "true" : "false";
+  if (process.env.PAPERTAPE_SECRETS_STRICT_MODE === undefined) {
+    process.env.PAPERTAPE_SECRETS_STRICT_MODE = config.secretsStrictMode ? "true" : "false";
   }
-  if (process.env.SWARMIFYX_SECRETS_MASTER_KEY_FILE === undefined) {
-    process.env.SWARMIFYX_SECRETS_MASTER_KEY_FILE = config.secretsMasterKeyFilePath;
+  if (process.env.PAPERTAPE_SECRETS_MASTER_KEY_FILE === undefined) {
+    process.env.PAPERTAPE_SECRETS_MASTER_KEY_FILE = config.secretsMasterKeyFilePath;
   }
 
   type MigrationSummary =
@@ -94,8 +94,8 @@ export async function startServer(): Promise<StartedServer> {
   }
 
   async function promptApplyMigrations(migrations: string[]): Promise<boolean> {
-    if (process.env.SWARMIFYX_MIGRATION_PROMPT === "never") return false;
-    if (process.env.SWARMIFYX_MIGRATION_AUTO_APPLY === "true") return true;
+    if (process.env.PAPERTAPE_MIGRATION_PROMPT === "never") return false;
+    if (process.env.PAPERTAPE_MIGRATION_AUTO_APPLY === "true") return true;
     if (!stdin.isTTY || !stdout.isTTY) return true;
 
     const prompt = createInterface({ input: stdin, output: stdout });
@@ -171,11 +171,11 @@ export async function startServer(): Promise<StartedServer> {
   }
 
   function buildEmbeddedPostgresConnectionString(port: number, databaseName: string): string {
-    return `postgres://${encodeURIComponent("swarmifyx")}:${encodeURIComponent("swarmifyx")}@127.0.0.1:${port}/${databaseName}`;
+    return `postgres://${encodeURIComponent("papertape")}:${encodeURIComponent("papertape")}@127.0.0.1:${port}/${databaseName}`;
   }
 
   const LOCAL_BOARD_USER_ID = "local-board";
-  const LOCAL_BOARD_USER_EMAIL = "local@swarmifyx.local";
+  const LOCAL_BOARD_USER_EMAIL = "local@papertape.local";
   const LOCAL_BOARD_USER_NAME = "Board";
 
   async function ensureLocalTrustedBoardPrincipal(db: any): Promise<void> {
@@ -266,7 +266,7 @@ export async function startServer(): Promise<StartedServer> {
     let port = configuredPort;
     const embeddedPostgresLogBuffer: string[] = [];
     const EMBEDDED_POSTGRES_LOG_BUFFER_LIMIT = 120;
-    const verboseEmbeddedPostgresLogs = process.env.SWARMIFYX_EMBEDDED_POSTGRES_VERBOSE === "true";
+    const verboseEmbeddedPostgresLogs = process.env.PAPERTAPE_EMBEDDED_POSTGRES_VERBOSE === "true";
     const appendEmbeddedPostgresLog = (message: unknown) => {
       const text = typeof message === "string" ? message : message instanceof Error ? message.message : String(message ?? "");
       for (const lineRaw of text.split(/\r?\n/)) {
@@ -335,8 +335,8 @@ export async function startServer(): Promise<StartedServer> {
       logger.info(`Using embedded PostgreSQL because no DATABASE_URL set (dataDir=${dataDir}, port=${port})`);
       embeddedPostgres = new EmbeddedPostgres({
         databaseDir: dataDir,
-        user: "swarmifyx",
-        password: "swarmifyx",
+        user: "papertape",
+        password: "papertape",
         port,
         persistent: true,
         initdbFlags: ["--encoding=UTF8", "--locale=C"],
@@ -371,13 +371,13 @@ export async function startServer(): Promise<StartedServer> {
     const embeddedAdminConnectionString = buildEmbeddedPostgresConnectionString(port, "postgres");
     const databaseStatus = await ensurePostgresDatabase(
       embeddedAdminConnectionString,
-      "swarmifyx",
+      "papertape",
     );
     if (databaseStatus === "created") {
-      logger.info("Created embedded PostgreSQL database: swarmifyx");
+      logger.info("Created embedded PostgreSQL database: papertape");
     }
 
-    const embeddedConnectionString = buildEmbeddedPostgresConnectionString(port, "swarmifyx");
+    const embeddedConnectionString = buildEmbeddedPostgresConnectionString(port, "papertape");
     const shouldAutoApplyFirstRunMigrations =
       !clusterAlreadyInitialized || databaseStatus === "created";
     if (shouldAutoApplyFirstRunMigrations) {
@@ -438,10 +438,10 @@ export async function startServer(): Promise<StartedServer> {
       resolveBetterAuthSessionFromHeaders,
     } = await import("./auth/better-auth.js");
     const betterAuthSecret =
-      process.env.BETTER_AUTH_SECRET?.trim() ?? process.env.SWARMIFYX_AGENT_JWT_SECRET?.trim();
+      process.env.BETTER_AUTH_SECRET?.trim() ?? process.env.PAPERTAPE_AGENT_JWT_SECRET?.trim();
     if (!betterAuthSecret) {
       throw new Error(
-        "authenticated mode requires BETTER_AUTH_SECRET (or SWARMIFYX_AGENT_JWT_SECRET) to be set",
+        "authenticated mode requires BETTER_AUTH_SECRET (or PAPERTAPE_AGENT_JWT_SECRET) to be set",
       );
     }
     const derivedTrustedOrigins = deriveAuthTrustedOrigins(config);
@@ -497,9 +497,9 @@ export async function startServer(): Promise<StartedServer> {
     runtimeListenHost === "0.0.0.0" || runtimeListenHost === "::"
       ? "localhost"
       : runtimeListenHost;
-  process.env.SWARMIFYX_LISTEN_HOST = runtimeListenHost;
-  process.env.SWARMIFYX_LISTEN_PORT = String(listenPort);
-  process.env.SWARMIFYX_API_URL = `http://${runtimeApiHost}:${listenPort}`;
+  process.env.PAPERTAPE_LISTEN_HOST = runtimeListenHost;
+  process.env.PAPERTAPE_LISTEN_PORT = String(listenPort);
+  process.env.PAPERTAPE_API_URL = `http://${runtimeApiHost}:${listenPort}`;
 
   setupLiveEventsWebSocketServer(server, db as any, {
     deploymentMode: config.deploymentMode,
@@ -569,7 +569,7 @@ export async function startServer(): Promise<StartedServer> {
           connectionString: activeDatabaseConnectionString,
           backupDir: config.databaseBackupDir,
           retentionDays: config.databaseBackupRetentionDays,
-          filenamePrefix: "swarmifyx",
+          filenamePrefix: "papertape",
         });
         logger.info(
           {
@@ -611,7 +611,7 @@ export async function startServer(): Promise<StartedServer> {
     server.listen(listenPort, config.host, () => {
       server.off("error", onError);
       logger.info(`Server listening on ${config.host}:${listenPort}`);
-      if (process.env.SWARMIFYX_OPEN_ON_LISTEN === "true") {
+      if (process.env.PAPERTAPE_OPEN_ON_LISTEN === "true") {
         const openHost = config.host === "0.0.0.0" || config.host === "::" ? "127.0.0.1" : config.host;
         const url = `http://${openHost}:${listenPort}`;
         void import("open")
@@ -685,7 +685,7 @@ export async function startServer(): Promise<StartedServer> {
     server,
     host: config.host,
     listenPort,
-    apiUrl: process.env.SWARMIFYX_API_URL ?? `http://${runtimeApiHost}:${listenPort}`,
+    apiUrl: process.env.PAPERTAPE_API_URL ?? `http://${runtimeApiHost}:${listenPort}`,
     databaseUrl: activeDatabaseConnectionString,
   };
 }
@@ -702,7 +702,7 @@ function isMainModule(metaUrl: string): boolean {
 
 if (isMainModule(import.meta.url)) {
   void startServer().catch((err) => {
-    logger.error({ err }, "Swarmifyx server failed to start");
+    logger.error({ err }, "Papertape server failed to start");
     process.exit(1);
   });
 }

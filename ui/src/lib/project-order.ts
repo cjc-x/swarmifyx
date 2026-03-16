@@ -1,7 +1,7 @@
-import type { Project } from "@swarmifyx/shared";
+import type { Project } from "@papertape/shared";
 
-export const PROJECT_ORDER_UPDATED_EVENT = "swarmifyx:project-order-updated";
-const PROJECT_ORDER_STORAGE_PREFIX = "swarmifyx.projectOrder";
+export const PROJECT_ORDER_UPDATED_EVENT = "papertape:project-order-updated";
+const PROJECT_ORDER_STORAGE_PREFIX = "papertape.projectOrder";
 const ANONYMOUS_USER_ID = "anonymous";
 
 type ProjectOrderUpdatedDetail = {

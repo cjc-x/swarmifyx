@@ -1,7 +1,7 @@
 import { randomBytes } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
-import type { SwarmifyxConfig } from "../config/schema.js";
+import type { PapertapeConfig } from "../config/schema.js";
 import { publicCliCommand } from "../config/branding.js";
 import type { CheckResult } from "./index.js";
 import { resolveRuntimeLikePath } from "./path-resolver.js";
@@ -29,7 +29,7 @@ function decodeMasterKey(raw: string): Buffer | null {
 
 function withStrictModeNote(
   base: Pick<CheckResult, "name" | "status" | "message" | "canRepair" | "repair" | "repairHint">,
-  config: SwarmifyxConfig,
+  config: PapertapeConfig,
 ): CheckResult {
   const strictModeDisabledInDeployedSetup =
     config.database.mode === "postgres" && config.secrets.strictMode === false;
@@ -46,7 +46,7 @@ function withStrictModeNote(
   };
 }
 
-export function secretsCheck(config: SwarmifyxConfig, configPath?: string): CheckResult {
+export function secretsCheck(config: PapertapeConfig, configPath?: string): CheckResult {
   const provider = config.secrets.provider;
   if (provider !== "local_encrypted") {
     return {
@@ -58,16 +58,16 @@ export function secretsCheck(config: SwarmifyxConfig, configPath?: string): Chec
     };
   }
 
-  const envMasterKey = process.env.SWARMIFYX_SECRETS_MASTER_KEY;
+  const envMasterKey = process.env.PAPERTAPE_SECRETS_MASTER_KEY;
   if (envMasterKey && envMasterKey.trim().length > 0) {
     if (!decodeMasterKey(envMasterKey)) {
       return {
         name: "Secrets adapter",
         status: "fail",
         message:
-          "SWARMIFYX_SECRETS_MASTER_KEY is invalid (expected 32-byte base64, 64-char hex, or raw 32-char string)",
+          "PAPERTAPE_SECRETS_MASTER_KEY is invalid (expected 32-byte base64, 64-char hex, or raw 32-char string)",
         canRepair: false,
-        repairHint: "Set SWARMIFYX_SECRETS_MASTER_KEY to a valid key or unset it to use a key file",
+        repairHint: "Set PAPERTAPE_SECRETS_MASTER_KEY to a valid key or unset it to use a key file",
       };
     }
 
@@ -75,13 +75,13 @@ export function secretsCheck(config: SwarmifyxConfig, configPath?: string): Chec
       {
         name: "Secrets adapter",
         status: "pass",
-        message: "Local encrypted provider configured via SWARMIFYX_SECRETS_MASTER_KEY",
+        message: "Local encrypted provider configured via PAPERTAPE_SECRETS_MASTER_KEY",
       },
       config,
     );
   }
 
-  const keyFileOverride = process.env.SWARMIFYX_SECRETS_MASTER_KEY_FILE;
+  const keyFileOverride = process.env.PAPERTAPE_SECRETS_MASTER_KEY_FILE;
   const configuredPath =
     keyFileOverride && keyFileOverride.trim().length > 0
       ? keyFileOverride.trim()
@@ -122,7 +122,7 @@ export function secretsCheck(config: SwarmifyxConfig, configPath?: string): Chec
       status: "fail",
       message: `Could not read secrets key file: ${err instanceof Error ? err.message : String(err)}`,
       canRepair: false,
-      repairHint: "Check file permissions or set SWARMIFYX_SECRETS_MASTER_KEY",
+      repairHint: "Check file permissions or set PAPERTAPE_SECRETS_MASTER_KEY",
     };
   }
 

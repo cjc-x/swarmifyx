@@ -1,4 +1,4 @@
-import type { Company } from "@swarmifyx/shared";
+import type { Company } from "@papertape/shared";
 
 const BOARD_ROUTE_ROOTS = new Set([
   "dashboard",

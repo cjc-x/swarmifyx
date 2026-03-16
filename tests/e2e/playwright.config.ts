@@ -1,10 +1,10 @@
 import path from "node:path";
 import { defineConfig } from "@playwright/test";
 
-const PORT = Number(process.env.SWARMIFYX_E2E_PORT ?? 3100);
+const PORT = Number(process.env.PAPERTAPE_E2E_PORT ?? 3100);
 const BASE_URL = `http://127.0.0.1:${PORT}`;
 const DATA_DIR =
-  process.env.SWARMIFYX_E2E_DATA_DIR ??
+  process.env.PAPERTAPE_E2E_DATA_DIR ??
   path.resolve(process.cwd(), "test-results", `e2e-data-${PORT}-${Date.now()}`);
 
 export default defineConfig({
@@ -35,7 +35,7 @@ export default defineConfig({
     env: {
       ...process.env,
       PORT: String(PORT),
-      SWARMIFYX_HOME: DATA_DIR,
+      PAPERTAPE_HOME: DATA_DIR,
     },
   },
   outputDir: "./test-results",

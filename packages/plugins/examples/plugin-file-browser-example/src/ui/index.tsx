@@ -3,8 +3,8 @@ import type {
   PluginDetailTabProps,
   PluginCommentAnnotationProps,
   PluginCommentContextMenuItemProps,
-} from "@swarmifyx/plugin-sdk/ui";
-import { usePluginAction, usePluginData } from "@swarmifyx/plugin-sdk/ui";
+} from "@papertape/plugin-sdk/ui";
+import { usePluginAction, usePluginData } from "@papertape/plugin-sdk/ui";
 import { useMemo, useState, useEffect, useRef, type MouseEvent, type RefObject } from "react";
 import { EditorView } from "@codemirror/view";
 import { basicSetup } from "codemirror";
@@ -12,7 +12,7 @@ import { javascript } from "@codemirror/lang-javascript";
 import { HighlightStyle, syntaxHighlighting } from "@codemirror/language";
 import { tags } from "@lezer/highlight";
 
-const PLUGIN_KEY = "swarmifyx-file-browser-example";
+const PLUGIN_KEY = "papertape-file-browser-example";
 const FILES_TAB_SLOT_ID = "files-tab";
 
 const editorBaseTheme = {

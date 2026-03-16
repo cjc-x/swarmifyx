@@ -1,4 +1,4 @@
-import type { CompanySecret, SecretProviderDescriptor, SecretProvider } from "@swarmifyx/shared";
+import type { CompanySecret, SecretProviderDescriptor, SecretProvider } from "@papertape/shared";
 import { api } from "./client";
 
 export const secretsApi = {

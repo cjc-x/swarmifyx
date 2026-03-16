@@ -8,16 +8,16 @@ import { resolveCommandContext } from "../commands/client/common.js";
 const ORIGINAL_ENV = { ...process.env };
 
 function createTempPath(name: string): string {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "swarmifyx-cli-common-"));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "papertape-cli-common-"));
   return path.join(dir, name);
 }
 
 describe("resolveCommandContext", () => {
   beforeEach(() => {
     process.env = { ...ORIGINAL_ENV };
-    delete process.env.SWARMIFYX_API_URL;
-    delete process.env.SWARMIFYX_API_KEY;
-    delete process.env.SWARMIFYX_COMPANY_ID;
+    delete process.env.PAPERTAPE_API_URL;
+    delete process.env.PAPERTAPE_API_KEY;
+    delete process.env.PAPERTAPE_COMPANY_ID;
   });
 
   afterEach(() => {

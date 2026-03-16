@@ -1,4 +1,4 @@
-import { definePlugin, runWorker } from "@swarmifyx/plugin-sdk";
+import { definePlugin, runWorker } from "@papertape/plugin-sdk";
 
 const plugin = definePlugin({
   async setup(ctx) {

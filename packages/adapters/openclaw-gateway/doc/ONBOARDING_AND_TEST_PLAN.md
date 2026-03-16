@@ -1,7 +1,7 @@
 # OpenClaw Gateway Onboarding and Test Plan
 
 ## Scope
-This plan is now **gateway-only**. Swarmifyx supports OpenClaw through `openclaw_gateway` only.
+This plan is now **gateway-only**. Papertape supports OpenClaw through `openclaw_gateway` only.
 
 - Removed path: legacy `openclaw` adapter (`/v1/responses`, `/hooks/*`, SSE/webhook transport switching)
 - Supported path: `openclaw_gateway` over WebSocket (`ws://` or `wss://`)
@@ -24,7 +24,7 @@ This plan is now **gateway-only**. Swarmifyx supports OpenClaw through `openclaw
 - `agentDefaultsPayload.url: ws://... | wss://...`
 - `agentDefaultsPayload.headers["x-openclaw-token"]`
 5. Board approves join request.
-6. OpenClaw claims API key and installs/uses Swarmifyx skill.
+6. OpenClaw claims API key and installs/uses Papertape skill.
 7. First task run may trigger pairing approval once; after approval, pairing persists via stored device key.
 
 ## Technical Contract (Gateway)
@@ -39,7 +39,7 @@ This plan is now **gateway-only**. Swarmifyx supports OpenClaw through `openclaw
 Recommended fields:
 ```json
 {
-  "swarmifyxApiUrl": "http://host.docker.internal:3100",
+  "papertapeApiUrl": "http://host.docker.internal:3100",
   "waitTimeoutMs": 120000,
   "sessionKeyStrategy": "issue",
   "role": "operator",
@@ -64,7 +64,7 @@ docker image rm openclaw:local || true
 OPENCLAW_RESET_STATE=1 OPENCLAW_BUILD=1 ./scripts/smoke/openclaw-docker-ui.sh
 ```
 
-### 1) Start Swarmifyx
+### 1) Start Papertape
 ```bash
 pnpm dev --tailscale-auth
 curl -fsS http://127.0.0.1:3100/api/health
@@ -87,7 +87,7 @@ curl -fsS http://127.0.0.1:3100/api/health
 ### 4) Functional E2E assertions
 1. Task assigned to OpenClaw is completed and closed.
 2. Task asking OpenClaw to send main-webchat message succeeds (message visible in main chat).
-3. In `/new` OpenClaw session, OpenClaw can still create a Swarmifyx task.
+3. In `/new` OpenClaw session, OpenClaw can still create a Papertape task.
 
 ## Manual Smoke Checklist
 Use [doc/OPENCLAW_ONBOARDING.md](../../../../doc/OPENCLAW_ONBOARDING.md) as the operator runbook.
@@ -102,8 +102,8 @@ pnpm build
 
 If full suite is too heavy locally, run at least:
 ```bash
-pnpm --filter @swarmifyx/server test:run -- openclaw-gateway
-pnpm --filter @swarmifyx/server typecheck
-pnpm --filter @swarmifyx/ui typecheck
-pnpm --filter swarmifyx typecheck
+pnpm --filter @papertape/server test:run -- openclaw-gateway
+pnpm --filter @papertape/server typecheck
+pnpm --filter @papertape/ui typecheck
+pnpm --filter papertape typecheck
 ```

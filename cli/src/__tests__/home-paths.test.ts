@@ -5,8 +5,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   describeLocalInstancePaths,
   expandHomePrefix,
-  resolveSwarmifyxHomeDir,
-  resolveSwarmifyxInstanceId,
+  resolvePapertapeHomeDir,
+  resolvePapertapeInstanceId,
 } from "../config/home.js";
 
 const ORIGINAL_ENV = { ...process.env };
@@ -17,28 +17,28 @@ describe("home path resolution", () => {
     vi.restoreAllMocks();
   });
 
-  it("defaults to ~/.swarmifyx and default instance", () => {
-    delete process.env.SWARMIFYX_HOME;
-    delete process.env.SWARMIFYX_INSTANCE_ID;
-    const fakeHome = fs.mkdtempSync(path.join(os.tmpdir(), "swarmifyx-home-"));
+  it("defaults to ~/.papertape and default instance", () => {
+    delete process.env.PAPERTAPE_HOME;
+    delete process.env.PAPERTAPE_INSTANCE_ID;
+    const fakeHome = fs.mkdtempSync(path.join(os.tmpdir(), "papertape-home-"));
     vi.spyOn(os, "homedir").mockReturnValue(fakeHome);
 
     const paths = describeLocalInstancePaths();
-    expect(paths.homeDir).toBe(path.resolve(fakeHome, ".swarmifyx"));
+    expect(paths.homeDir).toBe(path.resolve(fakeHome, ".papertape"));
     expect(paths.instanceId).toBe("default");
-    expect(paths.configPath).toBe(path.resolve(fakeHome, ".swarmifyx", "instances", "default", "config.json"));
+    expect(paths.configPath).toBe(path.resolve(fakeHome, ".papertape", "instances", "default", "config.json"));
   });
 
-  it("supports SWARMIFYX_HOME and explicit instance ids", () => {
-    process.env.SWARMIFYX_HOME = "~/swarmifyx-home";
+  it("supports PAPERTAPE_HOME and explicit instance ids", () => {
+    process.env.PAPERTAPE_HOME = "~/papertape-home";
 
-    const home = resolveSwarmifyxHomeDir();
-    expect(home).toBe(path.resolve(os.homedir(), "swarmifyx-home"));
-    expect(resolveSwarmifyxInstanceId("dev_1")).toBe("dev_1");
+    const home = resolvePapertapeHomeDir();
+    expect(home).toBe(path.resolve(os.homedir(), "papertape-home"));
+    expect(resolvePapertapeInstanceId("dev_1")).toBe("dev_1");
   });
 
   it("rejects invalid instance ids", () => {
-    expect(() => resolveSwarmifyxInstanceId("bad/id")).toThrow(/Invalid instance id/);
+    expect(() => resolvePapertapeInstanceId("bad/id")).toThrow(/Invalid instance id/);
   });
 
   it("expands ~ prefixes", () => {

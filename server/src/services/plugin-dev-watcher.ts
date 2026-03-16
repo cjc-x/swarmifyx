@@ -51,7 +51,7 @@ type PluginWatchTarget = {
 };
 
 type PluginPackageJson = {
-  swarmifyxPlugin?: {
+  papertapePlugin?: {
     manifest?: string;
     worker?: string;
     ui?: string;
@@ -67,7 +67,7 @@ function shouldIgnorePath(filename: string | null | undefined): boolean {
       segment === "node_modules" ||
       segment === ".git" ||
       segment === ".vite" ||
-      segment === ".swarmifyx-sdk" ||
+      segment === ".papertape-sdk" ||
       segment.startsWith("."),
   );
 }
@@ -127,9 +127,9 @@ export function resolvePluginWatchTargets(
   }
 
   const entrypointPaths = [
-    packageJson?.swarmifyxPlugin?.manifest,
-    packageJson?.swarmifyxPlugin?.worker,
-    packageJson?.swarmifyxPlugin?.ui,
+    packageJson?.papertapePlugin?.manifest,
+    packageJson?.papertapePlugin?.worker,
+    packageJson?.papertapePlugin?.ui,
   ].filter((value): value is string => typeof value === "string" && value.length > 0);
 
   if (entrypointPaths.length === 0) {

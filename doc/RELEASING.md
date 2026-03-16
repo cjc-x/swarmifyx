@@ -1,6 +1,6 @@
-# Releasing Swarmifyx
+# Releasing Papertape
 
-Maintainer runbook for shipping a full Swarmifyx release across npm, GitHub, and the website-facing changelog surface.
+Maintainer runbook for shipping a full Papertape release across npm, GitHub, and the website-facing changelog surface.
 
 Windows note: everyday `pnpm` developer entrypoints are supported in PowerShell and `cmd.exe`, but the release/smoke helpers in `scripts/*.sh` still expect a POSIX shell such as Git Bash.
 
@@ -19,7 +19,7 @@ The release model is branch-driven:
 Every release has four separate surfaces:
 
 1. **Verification** — the exact git SHA passes typecheck, tests, and build
-2. **npm** — `swarmifyx` and public workspace packages are published
+2. **npm** — `papertape` and public workspace packages are published
 3. **GitHub** — the stable release gets a git tag and GitHub Release
 4. **Website / announcements** — the stable changelog is published externally and announced
 
@@ -60,7 +60,7 @@ From the release worktree:
 
 ```bash
 VERSION=X.Y.Z
-claude --print --output-format stream-json --verbose --dangerously-skip-permissions --model claude-opus-4-6 "Use the release-changelog skill to draft or update releases/v${VERSION}.md for Swarmifyx. Read doc/RELEASING.md and .agents/skills/release-changelog/SKILL.md, then generate the stable changelog for v${VERSION} from commits since the last stable tag. Do not create a canary changelog."
+claude --print --output-format stream-json --verbose --dangerously-skip-permissions --model claude-opus-4-6 "Use the release-changelog skill to draft or update releases/v${VERSION}.md for Papertape. Read doc/RELEASING.md and .agents/skills/release-changelog/SKILL.md, then generate the stable changelog for v${VERSION} from commits since the last stable tag. Do not create a canary changelog."
 ```
 
 ### 3. Verify and publish a canary
@@ -69,13 +69,13 @@ claude --print --output-format stream-json --verbose --dangerously-skip-permissi
 ./scripts/release-preflight.sh canary patch
 ./scripts/release.sh patch --canary --dry-run
 ./scripts/release.sh patch --canary
-SWARMIFYX_VERSION=canary ./scripts/docker-onboard-smoke.sh
+PAPERTAPE_VERSION=canary ./scripts/docker-onboard-smoke.sh
 ```
 
 Users install canaries with:
 
 ```bash
-npx swarmifyx@canary onboard
+npx papertape@canary onboard
 ```
 
 ### 4. Publish stable
@@ -92,7 +92,7 @@ Then open a PR from `release/X.Y.Z` to `master` and merge without squash or reba
 
 ## Release Branches
 
-Swarmifyx uses one release branch per target stable version:
+Papertape uses one release branch per target stable version:
 
 - `release/0.3.0`
 - `release/0.3.1`
@@ -122,7 +122,7 @@ Useful options:
 
 ```bash
 ./scripts/release-start.sh patch --dry-run
-./scripts/release-start.sh minor --worktree-dir ../swarmifyx-release-0.4.0
+./scripts/release-start.sh minor --worktree-dir ../papertape-release-0.4.0
 ./scripts/release-start.sh patch --no-push
 ```
 
@@ -214,27 +214,27 @@ Concrete example:
 Run the actual install path in Docker:
 
 ```bash
-SWARMIFYX_VERSION=canary ./scripts/docker-onboard-smoke.sh
+PAPERTAPE_VERSION=canary ./scripts/docker-onboard-smoke.sh
 ```
 
 Useful isolated variants:
 
 ```bash
-HOST_PORT=3232 DATA_DIR=./data/release-smoke-canary SWARMIFYX_VERSION=canary ./scripts/docker-onboard-smoke.sh
-HOST_PORT=3233 DATA_DIR=./data/release-smoke-stable SWARMIFYX_VERSION=latest ./scripts/docker-onboard-smoke.sh
+HOST_PORT=3232 DATA_DIR=./data/release-smoke-canary PAPERTAPE_VERSION=canary ./scripts/docker-onboard-smoke.sh
+HOST_PORT=3233 DATA_DIR=./data/release-smoke-stable PAPERTAPE_VERSION=latest ./scripts/docker-onboard-smoke.sh
 ```
 
 If you want to exercise onboarding from the current committed ref instead of npm, use:
 
 ```bash
 ./scripts/clean-onboard-ref.sh
-SWARMIFYX_PORT=3234 ./scripts/clean-onboard-ref.sh
+PAPERTAPE_PORT=3234 ./scripts/clean-onboard-ref.sh
 ./scripts/clean-onboard-ref.sh HEAD
 ```
 
 Minimum checks:
 
-- `npx swarmifyx@canary onboard` installs
+- `npx papertape@canary onboard` installs
 - onboarding completes without crashes
 - the server boots
 - the UI loads
@@ -358,7 +358,7 @@ It does not merge the release branch back to `master` for you.
 
 ### After a stable
 
-- [ ] `npm view swarmifyx@latest version` matches the new stable version
+- [ ] `npm view papertape@latest version` matches the new stable version
 - [ ] The git tag exists on GitHub
 - [ ] The GitHub Release exists and uses `releases/vX.Y.Z.md`
 - [ ] `vX.Y.Z` is reachable from `master`

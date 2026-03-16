@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, realpathSync } from "node:fs";
 import path from "node:path";
 import vm from "node:vm";
-import type { SwarmifyxPluginManifestV1 } from "@swarmifyx/shared";
+import type { PapertapePluginManifestV1 } from "@papertape/shared";
 import type { PluginCapabilityValidator } from "./plugin-capability-validator.js";
 
 export class PluginSandboxError extends Error {
@@ -54,7 +54,7 @@ const DEFAULT_GLOBALS: Record<string, unknown> = {
 };
 
 export function createCapabilityScopedInvoker(
-  manifest: SwarmifyxPluginManifestV1,
+  manifest: PapertapePluginManifestV1,
   validator: PluginCapabilityValidator,
 ): CapabilityScopedInvoker {
   return {
@@ -144,15 +144,15 @@ export async function loadPluginModuleInSandbox(
     // `(fn)(exports, module, ...)` in the script text, the timeout also covers
     // the actual module body execution — preventing infinite loops from hanging.
     const sandboxArgs = {
-      __swarmifyx_exports: module.exports,
-      __swarmifyx_module: module,
-      __swarmifyx_require: requireInSandbox,
-      __swarmifyx_filename: realPath,
-      __swarmifyx_dirname: path.dirname(realPath),
+      __papertape_exports: module.exports,
+      __papertape_module: module,
+      __papertape_require: requireInSandbox,
+      __papertape_filename: realPath,
+      __papertape_dirname: path.dirname(realPath),
     };
     // Temporarily inject args into the context, run, then remove to avoid pollution.
     Object.assign(context, sandboxArgs);
-    const wrapped = `(function (exports, module, require, __filename, __dirname) {\n${code}\n})(__swarmifyx_exports, __swarmifyx_module, __swarmifyx_require, __swarmifyx_filename, __swarmifyx_dirname)`;
+    const wrapped = `(function (exports, module, require, __filename, __dirname) {\n${code}\n})(__papertape_exports, __papertape_module, __papertape_require, __papertape_filename, __papertape_dirname)`;
     const script = new vm.Script(wrapped, { filename: realPath });
     try {
       script.runInContext(context, { timeout: timeoutMs });

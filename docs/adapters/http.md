@@ -3,7 +3,7 @@ title: HTTP 适配器
 summary: HTTP webhook 适配器
 ---
 
-`http` 适配器会向外部代理服务发送 webhook 请求。代理在外部运行，而 Swarmifyx 只负责触发它。
+`http` 适配器会向外部代理服务发送 webhook 请求。代理在外部运行，而 Papertape 只负责触发它。
 
 ## 适用场景
 
@@ -26,9 +26,9 @@ summary: HTTP webhook 适配器
 
 ## 工作方式
 
-1. Swarmifyx 向配置的 URL 发送 POST 请求
+1. Papertape 向配置的 URL 发送 POST 请求
 2. 请求体中包含执行上下文（代理 ID、任务信息、唤醒原因）
-3. 外部代理处理请求后，再回调 Swarmifyx API
+3. 外部代理处理请求后，再回调 Papertape API
 4. Webhook 的响应会作为运行结果被记录
 
 ## 请求体
@@ -48,4 +48,4 @@ webhook 接收到的 JSON 负载如下：
 }
 ```
 
-外部代理会使用 `SWARMIFYX_API_URL` 和 API key 回调到 Swarmifyx。
+外部代理会使用 `PAPERTAPE_API_URL` 和 API key 回调到 Papertape。

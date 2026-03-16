@@ -22,7 +22,7 @@ import type {
 export type JsonSchema = Record<string, unknown>;
 
 // ---------------------------------------------------------------------------
-// Manifest sub-types — nested declarations within SwarmifyxPluginManifestV1
+// Manifest sub-types — nested declarations within PapertapePluginManifestV1
 // ---------------------------------------------------------------------------
 
 /**
@@ -172,7 +172,7 @@ export interface PluginLauncherDeclaration {
 }
 
 /**
- * Lower-bound semver requirement for the Swarmifyx host.
+ * Lower-bound semver requirement for the Papertape host.
  *
  * The host should reject installation when its running version is lower than
  * the declared minimum.
@@ -198,7 +198,7 @@ export interface PluginUiDeclaration {
  * The manifest shape every plugin package must export.
  * See PLUGIN_SPEC.md §10.1 for the normative definition.
  */
-export interface SwarmifyxPluginManifestV1 {
+export interface PapertapePluginManifestV1 {
   /** Globally unique plugin identifier (e.g. `"acme.linear-sync"`). Must be lowercase alphanumeric with dots, hyphens, or underscores. */
   id: string;
   /** Plugin API version. Must be `1` for the current spec. */
@@ -222,7 +222,7 @@ export interface SwarmifyxPluginManifestV1 {
    * Legacy alias for `minimumHostVersion`.
    * Kept for backwards compatibility with existing manifests and docs.
    */
-  minimumSwarmifyxVersion?: PluginMinimumHostVersion;
+  minimumPapertapeVersion?: PluginMinimumHostVersion;
   /** Capabilities this plugin requires from the host. Enforced at runtime. */
   capabilities: PluginCapability[];
   /** Entrypoint paths relative to the package root. */
@@ -271,7 +271,7 @@ export interface PluginRecord {
   /** Plugin categories from the manifest. */
   categories: PluginCategory[];
   /** Full manifest snapshot persisted at install/upgrade time. */
-  manifestJson: SwarmifyxPluginManifestV1;
+  manifestJson: PapertapePluginManifestV1;
   /** Current lifecycle status. */
   status: PluginStatus;
   /** Deterministic load order (null if not yet assigned). */

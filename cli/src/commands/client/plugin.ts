@@ -137,9 +137,9 @@ export function registerPluginCommands(program: Command): void {
       .description(
         "Install a plugin from a local path or npm package.\n" +
           "  Examples:\n" +
-          "    swarmifyx plugin install ./my-plugin              # local path\n" +
-          "    swarmifyx plugin install @acme/plugin-linear      # npm package\n" +
-          "    swarmifyx plugin install @acme/plugin-linear@1.2  # pinned version",
+          "    papertape plugin install ./my-plugin              # local path\n" +
+          "    papertape plugin install @acme/plugin-linear      # npm package\n" +
+          "    papertape plugin install @acme/plugin-linear@1.2  # pinned version",
       )
       .option("-l, --local", "Treat <package> as a local filesystem path", false)
       .option("--version <version>", "Specific npm version to install (npm packages only)")
@@ -363,7 +363,7 @@ export function registerPluginCommands(program: Command): void {
             console.log(
               `${pc.bold(ex.displayName)}  ${pc.dim(ex.pluginKey)}\n` +
                 `  ${ex.description}\n` +
-                `  ${pc.cyan(`swarmifyx plugin install ${ex.localPath}`)}`,
+                `  ${pc.cyan(`papertape plugin install ${ex.localPath}`)}`,
             );
           }
         } catch (err) {

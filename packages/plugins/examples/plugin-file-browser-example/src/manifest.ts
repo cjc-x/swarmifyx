@@ -1,18 +1,18 @@
-import type { SwarmifyxPluginManifestV1 } from "@swarmifyx/plugin-sdk";
+import type { PapertapePluginManifestV1 } from "@papertape/plugin-sdk";
 
-const PLUGIN_ID = "swarmifyx-file-browser-example";
+const PLUGIN_ID = "papertape-file-browser-example";
 const FILES_SIDEBAR_SLOT_ID = "files-link";
 const FILES_TAB_SLOT_ID = "files-tab";
 const COMMENT_FILE_LINKS_SLOT_ID = "comment-file-links";
 const COMMENT_OPEN_FILES_SLOT_ID = "comment-open-files";
 
-const manifest: SwarmifyxPluginManifestV1 = {
+const manifest: PapertapePluginManifestV1 = {
   id: PLUGIN_ID,
   apiVersion: 1,
   version: "0.2.0",
   displayName: "File Browser (Example)",
   description: "Example plugin that adds a Files link under each project in the sidebar, a file browser + editor tab on the project detail page, and per-comment file link annotations with a context menu action to open referenced files.",
-  author: "Swarmifyx",
+  author: "Papertape",
   categories: ["workspace", "ui"],
   capabilities: [
     "ui.sidebar.register",

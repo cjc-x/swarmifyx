@@ -1,4 +1,4 @@
-import type { SwarmifyxPluginManifestV1 } from "@swarmifyx/plugin-sdk";
+import type { PapertapePluginManifestV1 } from "@papertape/plugin-sdk";
 import {
   DEFAULT_CONFIG,
   EXPORT_NAMES,
@@ -11,13 +11,13 @@ import {
   WEBHOOK_KEYS,
 } from "./constants.js";
 
-const manifest: SwarmifyxPluginManifestV1 = {
+const manifest: PapertapePluginManifestV1 = {
   id: PLUGIN_ID,
   apiVersion: 1,
   version: PLUGIN_VERSION,
   displayName: "Kitchen Sink (Example)",
-  description: "Reference plugin that demonstrates the current Swarmifyx plugin API surface, UI surfaces, bridge actions, events, jobs, webhooks, tools, local workspace access, and runtime diagnostics in one place.",
-  author: "Swarmifyx",
+  description: "Reference plugin that demonstrates the current Papertape plugin API surface, UI surfaces, bridge actions, events, jobs, webhooks, tools, local workspace access, and runtime diagnostics in one place.",
+  author: "Papertape",
   categories: ["ui", "automation", "workspace", "connector"],
   capabilities: [
     "companies.read",
@@ -158,7 +158,7 @@ const manifest: SwarmifyxPluginManifestV1 = {
     {
       name: TOOL_NAMES.companySummary,
       displayName: "Kitchen Sink Company Summary",
-      description: "Summarizes the current company using the Swarmifyx domain APIs.",
+      description: "Summarizes the current company using the Papertape domain APIs.",
       parametersSchema: {
         type: "object",
         properties: {},

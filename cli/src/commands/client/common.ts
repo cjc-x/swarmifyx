@@ -3,7 +3,7 @@ import type { Command } from "commander";
 import { PUBLIC_PRODUCT_NAME, publicCliCommand } from "../../config/branding.js";
 import { readConfig } from "../../config/store.js";
 import { readContext, resolveProfile, type ClientContextProfile } from "../../client/context.js";
-import { ApiRequestError, SwarmifyxApiClient } from "../../client/http.js";
+import { ApiRequestError, PapertapeApiClient } from "../../client/http.js";
 
 export interface BaseClientOptions {
   config?: string;
@@ -17,7 +17,7 @@ export interface BaseClientOptions {
 }
 
 export interface ResolvedClientContext {
-  api: SwarmifyxApiClient;
+  api: PapertapeApiClient;
   companyId?: string;
   profileName: string;
   profile: ClientContextProfile;
@@ -27,7 +27,7 @@ export interface ResolvedClientContext {
 export function addCommonClientOptions(command: Command, opts?: { includeCompany?: boolean }): Command {
   command
     .option("-c, --config <path>", `Path to ${PUBLIC_PRODUCT_NAME} config file`)
-    .option("-d, --data-dir <path>", `${PUBLIC_PRODUCT_NAME} data directory root (isolates state from ~/.swarmifyx)`)
+    .option("-d, --data-dir <path>", `${PUBLIC_PRODUCT_NAME} data directory root (isolates state from ~/.papertape)`)
     .option("--context <path>", "Path to CLI context file")
     .option("--profile <name>", "CLI context profile name")
     .option("--api-base <url>", `Base URL for the ${PUBLIC_PRODUCT_NAME} API`)
@@ -50,28 +50,28 @@ export function resolveCommandContext(
 
   const apiBase =
     options.apiBase?.trim() ||
-    process.env.SWARMIFYX_API_URL?.trim() ||
+    process.env.PAPERTAPE_API_URL?.trim() ||
     profile.apiBase ||
     inferApiBaseFromConfig(options.config);
 
   const apiKey =
     options.apiKey?.trim() ||
-    process.env.SWARMIFYX_API_KEY?.trim() ||
+    process.env.PAPERTAPE_API_KEY?.trim() ||
     readKeyFromProfileEnv(profile);
 
   const companyId =
     options.companyId?.trim() ||
-    process.env.SWARMIFYX_COMPANY_ID?.trim() ||
+    process.env.PAPERTAPE_COMPANY_ID?.trim() ||
     profile.companyId;
 
   if (opts?.requireCompany && !companyId) {
     throw new Error(
-      "Company ID is required. Pass --company-id, set SWARMIFYX_COMPANY_ID, " +
+      "Company ID is required. Pass --company-id, set PAPERTAPE_COMPANY_ID, " +
       `or set context profile companyId via \`${publicCliCommand("context set")}\`.`,
     );
   }
 
-  const api = new SwarmifyxApiClient({ apiBase, apiKey });
+  const api = new PapertapeApiClient({ apiBase, apiKey });
   return {
     api,
     companyId,
@@ -152,8 +152,8 @@ function renderValue(value: unknown): string {
 }
 
 function inferApiBaseFromConfig(configPath?: string): string {
-  const envHost = process.env.SWARMIFYX_SERVER_HOST?.trim() || "localhost";
-  let port = Number(process.env.SWARMIFYX_SERVER_PORT || "");
+  const envHost = process.env.PAPERTAPE_SERVER_HOST?.trim() || "localhost";
+  let port = Number(process.env.PAPERTAPE_SERVER_PORT || "");
 
   if (!Number.isFinite(port) || port <= 0) {
     try {

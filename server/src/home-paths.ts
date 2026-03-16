@@ -4,7 +4,7 @@ import path from "node:path";
 const DEFAULT_INSTANCE_ID = "default";
 const INSTANCE_ID_RE = /^[a-zA-Z0-9_-]+$/;
 const PATH_SEGMENT_RE = /^[a-zA-Z0-9_-]+$/;
-const DEFAULT_HOME_BASENAME = ".swarmifyx";
+const DEFAULT_HOME_BASENAME = ".papertape";
 
 function expandHomePrefix(value: string): string {
   if (value === "~") return os.homedir();
@@ -12,46 +12,46 @@ function expandHomePrefix(value: string): string {
   return value;
 }
 
-export function resolveSwarmifyxHomeDir(): string {
-  const envHome = process.env.SWARMIFYX_HOME?.trim();
+export function resolvePapertapeHomeDir(): string {
+  const envHome = process.env.PAPERTAPE_HOME?.trim();
   if (envHome) return path.resolve(expandHomePrefix(envHome));
   return path.resolve(os.homedir(), DEFAULT_HOME_BASENAME);
 }
 
-export function resolveSwarmifyxInstanceId(): string {
-  const raw = process.env.SWARMIFYX_INSTANCE_ID?.trim() || DEFAULT_INSTANCE_ID;
+export function resolvePapertapeInstanceId(): string {
+  const raw = process.env.PAPERTAPE_INSTANCE_ID?.trim() || DEFAULT_INSTANCE_ID;
   if (!INSTANCE_ID_RE.test(raw)) {
-    throw new Error(`Invalid SWARMIFYX_INSTANCE_ID '${raw}'.`);
+    throw new Error(`Invalid PAPERTAPE_INSTANCE_ID '${raw}'.`);
   }
   return raw;
 }
 
-export function resolveSwarmifyxInstanceRoot(): string {
-  return path.resolve(resolveSwarmifyxHomeDir(), "instances", resolveSwarmifyxInstanceId());
+export function resolvePapertapeInstanceRoot(): string {
+  return path.resolve(resolvePapertapeHomeDir(), "instances", resolvePapertapeInstanceId());
 }
 
 export function resolveDefaultConfigPath(): string {
-  return path.resolve(resolveSwarmifyxInstanceRoot(), "config.json");
+  return path.resolve(resolvePapertapeInstanceRoot(), "config.json");
 }
 
 export function resolveDefaultEmbeddedPostgresDir(): string {
-  return path.resolve(resolveSwarmifyxInstanceRoot(), "db");
+  return path.resolve(resolvePapertapeInstanceRoot(), "db");
 }
 
 export function resolveDefaultLogsDir(): string {
-  return path.resolve(resolveSwarmifyxInstanceRoot(), "logs");
+  return path.resolve(resolvePapertapeInstanceRoot(), "logs");
 }
 
 export function resolveDefaultSecretsKeyFilePath(): string {
-  return path.resolve(resolveSwarmifyxInstanceRoot(), "secrets", "master.key");
+  return path.resolve(resolvePapertapeInstanceRoot(), "secrets", "master.key");
 }
 
 export function resolveDefaultStorageDir(): string {
-  return path.resolve(resolveSwarmifyxInstanceRoot(), "data", "storage");
+  return path.resolve(resolvePapertapeInstanceRoot(), "data", "storage");
 }
 
 export function resolveDefaultBackupDir(): string {
-  return path.resolve(resolveSwarmifyxInstanceRoot(), "data", "backups");
+  return path.resolve(resolvePapertapeInstanceRoot(), "data", "backups");
 }
 
 export function resolveDefaultAgentWorkspaceDir(agentId: string): string {
@@ -59,7 +59,7 @@ export function resolveDefaultAgentWorkspaceDir(agentId: string): string {
   if (!PATH_SEGMENT_RE.test(trimmed)) {
     throw new Error(`Invalid agent id for workspace path '${agentId}'.`);
   }
-  return path.resolve(resolveSwarmifyxInstanceRoot(), "workspaces", trimmed);
+  return path.resolve(resolvePapertapeInstanceRoot(), "workspaces", trimmed);
 }
 
 export function resolveHomeAwarePath(value: string): string {

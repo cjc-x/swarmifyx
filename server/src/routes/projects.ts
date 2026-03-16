@@ -1,12 +1,12 @@
 import { Router, type Request } from "express";
-import type { Db } from "@swarmifyx/db";
+import type { Db } from "@papertape/db";
 import {
   createProjectSchema,
   createProjectWorkspaceSchema,
   isUuidLike,
   updateProjectSchema,
   updateProjectWorkspaceSchema,
-} from "@swarmifyx/shared";
+} from "@papertape/shared";
 import { validate } from "../middleware/validate.js";
 import { projectService, logActivity } from "../services/index.js";
 import { conflict } from "../errors.js";

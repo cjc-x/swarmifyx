@@ -1,8 +1,8 @@
-# Swarmifyx Module System
+# Papertape Module System
 
 ## Overview
 
-Swarmifyx's module system lets you extend the control plane with new capabilities — revenue tracking, observability, notifications, dashboards — without forking core. Modules are self-contained packages that register routes, UI pages, database tables, and lifecycle hooks.
+Papertape's module system lets you extend the control plane with new capabilities — revenue tracking, observability, notifications, dashboards — without forking core. Modules are self-contained packages that register routes, UI pages, database tables, and lifecycle hooks.
 
 Separately, **Company Templates** are code-free data packages (agent teams, org charts, goal hierarchies) that you can import to bootstrap a new company.
 
@@ -14,7 +14,7 @@ Both are discoverable through the **Company Store**.
 
 | Concept | What it is | Contains code? |
 |---------|-----------|----------------|
-| **Module** | A package that extends Swarmifyx's API, UI, and data model | Yes |
+| **Module** | A package that extends Papertape's API, UI, and data model | Yes |
 | **Company Template** | A data snapshot — agents, projects, goals, org structure | No (JSON only) |
 | **Company Store** | Registry for browsing/installing modules and templates | — |
 | **Hook** | A named event in the core that modules can subscribe to | — |
@@ -29,7 +29,7 @@ Both are discoverable through the **Company Store**.
 ```
 modules/
   observability/
-    swarmifyx.module.json     # manifest (required)
+    papertape.module.json     # manifest (required)
     src/
       index.ts                # entry point — exports register function
       routes.ts               # Express router
@@ -43,7 +43,7 @@ modules/
 
 Modules live in a top-level `modules/` directory. Each module is a pnpm workspace package.
 
-### Manifest (`swarmifyx.module.json`)
+### Manifest (`papertape.module.json`)
 
 ```json
 {
@@ -51,7 +51,7 @@ Modules live in a top-level `modules/` directory. Each module is a pnpm workspac
   "name": "Observability",
   "description": "Token tracking, cost metrics, and agent performance instrumentation",
   "version": "0.1.0",
-  "author": "swarmifyx",
+  "author": "papertape",
 
   "slot": "observability",
 
@@ -104,7 +104,7 @@ Modules live in a top-level `modules/` directory. Each module is a pnpm workspac
 
 Key fields:
 
-- **`id`**: Unique identifier, used as the npm package name suffix (`@swarmifyx/mod-observability`)
+- **`id`**: Unique identifier, used as the npm package name suffix (`@papertape/mod-observability`)
 - **`slot`**: Optional exclusive category. If set, only one module with this slot can be active. Omit for modules that can coexist freely.
 - **`hooks`**: Which core events this module subscribes to. Declared upfront so the core knows what to emit.
 - **`routes.prefix`**: Mounted under `/api/modules/<prefix>`. The module owns this namespace.
@@ -118,7 +118,7 @@ Key fields:
 The module's `src/index.ts` exports a `register` function that receives the module API:
 
 ```typescript
-import type { ModuleAPI } from "@swarmifyx/core";
+import type { ModuleAPI } from "@papertape/core";
 import { createRouter } from "./routes.js";
 import { onHeartbeat, onBudgetThreshold } from "./hooks.js";
 
@@ -236,7 +236,7 @@ This keeps the core fast and resilient. If you need pre-commit validation (e.g.,
 
 ```typescript
 // modules/observability/src/hooks.ts
-import type { Db } from "@swarmifyx/db";
+import type { Db } from "@papertape/db";
 import { tokenMetrics } from "./schema.js";
 
 export function createHeartbeatHandler(db: Db) {
@@ -313,7 +313,7 @@ Modules can reference core tables via foreign keys (e.g., `agent_id → agents.i
 On server startup:
 
 ```
-1. Scan modules/ directory for swarmifyx.module.json manifests
+1. Scan modules/ directory for papertape.module.json manifests
 2. Validate each manifest (JSON Schema check on configSchema, required fields)
 3. Check slot conflicts (error if two active modules claim the same slot)
 4. Topological sort by dependencies (if module A requires module B)
@@ -331,7 +331,7 @@ On server startup:
 Module config lives in the server's environment or a config file:
 
 ```jsonc
-// swarmifyx.config.json (or env vars)
+// papertape.config.json (or env vars)
 {
   "modules": {
     "enabled": ["observability", "revenue", "notifications"],
@@ -382,7 +382,7 @@ export const modulePages = [
   {
     path: "/observability",
     label: "Observability",
-    component: lazy(() => import("@swarmifyx/mod-observability/ui")),
+    component: lazy(() => import("@papertape/mod-observability/ui")),
   },
 ];
 
@@ -391,7 +391,7 @@ export const dashboardWidgets = [
     id: "token-burn-rate",
     label: "Token Burn Rate",
     placement: "dashboard",
-    component: lazy(() => import("@swarmifyx/mod-observability/ui").then(m => ({ default: m.TokenBurnRateWidget }))),
+    component: lazy(() => import("@papertape/mod-observability/ui").then(m => ({ default: m.TokenBurnRateWidget }))),
   },
 ];
 ```
@@ -437,7 +437,7 @@ A company template is a JSON file describing a full company structure:
   "name": "Startup in a Box",
   "description": "A 5-agent startup team with engineering, product, and ops",
   "version": "1.0.0",
-  "author": "swarmifyx",
+  "author": "papertape",
 
   "agents": [
     {
@@ -567,7 +567,7 @@ The Company Store is a registry for discovering and installing modules and templ
       "id": "observability",
       "name": "Observability",
       "description": "Token tracking, cost metrics, and agent performance",
-      "repo": "github:swarmifyx/mod-observability",
+      "repo": "github:papertape/mod-observability",
       "version": "0.1.0",
       "tags": ["metrics", "monitoring", "tokens"]
     }
@@ -577,7 +577,7 @@ The Company Store is a registry for discovering and installing modules and templ
       "id": "startup-in-a-box",
       "name": "Startup in a Box",
       "description": "5-agent startup team",
-      "url": "https://store.swarmifyx.ing/templates/startup-in-a-box.json",
+      "url": "__KEEP_STORE_PAPERTAPE__/templates/startup-in-a-box.json",
       "tags": ["startup", "team"]
     }
   ]
@@ -587,10 +587,10 @@ The Company Store is a registry for discovering and installing modules and templ
 ### CLI Commands
 
 ```bash
-pnpm swarmifyx store list                    # browse available modules and templates
-pnpm swarmifyx store install <module-id>     # install a module
-pnpm swarmifyx store import <template-id>    # import a company template
-pnpm swarmifyx store export                  # export current company as template
+pnpm papertape store list                    # browse available modules and templates
+pnpm papertape store install <module-id>     # install a module
+pnpm papertape store import <template-id>    # import a company template
+pnpm papertape store export                  # export current company as template
 ```
 
 ---
@@ -619,7 +619,7 @@ pnpm swarmifyx store export                  # export current company as templat
 |--------|-------------|-----------|
 | **Audit & Compliance** | Immutable audit trail, approval workflows, spend authorization | All write hooks |
 | **Agent Logs / Replay** | Full execution traces per agent, token-by-token replay | `agent:heartbeat` |
-| **Multi-tenant** | Separate companies/orgs within one Swarmifyx instance | `server:started` |
+| **Multi-tenant** | Separate companies/orgs within one Papertape instance | `server:started` |
 
 ---
 
@@ -627,16 +627,16 @@ pnpm swarmifyx store export                  # export current company as templat
 
 ### Phase 1: Core infrastructure
 
-Add to `@swarmifyx/server`:
+Add to `@papertape/server`:
 
 1. **HookBus** — Event emitter with `register()` and `emit()`, using `Promise.allSettled`
 2. **Module loader** — Scans `modules/`, validates manifests, calls `register(api)`
 3. **Module API object** — `registerRoutes()`, `on()`, `registerService()`, logger, core service access
-4. **Module config** — `swarmifyx.config.json` with per-module config, env var interpolation
+4. **Module config** — `papertape.config.json` with per-module config, env var interpolation
 5. **Module migration runner** — Extends `db:migrate` to discover and run module migrations
 6. **Emit hooks from core services** — Add `hookBus.emit()` calls to existing CRUD operations
 
-Add to `@swarmifyx/ui`:
+Add to `@papertape/ui`:
 
 7. **Module page loader** — Reads module manifests, generates lazy routes
 8. **Dashboard widget slots** — Render module-contributed widgets on the Dashboard page
@@ -644,7 +644,7 @@ Add to `@swarmifyx/ui`:
 
 Add new package:
 
-10. **`@swarmifyx/module-sdk`** — TypeScript types for `ModuleAPI`, `HookEvent`, `HookHandler`, manifest schema
+10. **`@papertape/module-sdk`** — TypeScript types for `ModuleAPI`, `HookEvent`, `HookHandler`, manifest schema
 
 ### Phase 2: First module (observability)
 

@@ -17,13 +17,13 @@ import { registerActivityCommands } from "./commands/client/activity.js";
 import { registerDashboardCommands } from "./commands/client/dashboard.js";
 import { applyDataDirOverride, type DataDirOptionLike } from "./config/data-dir.js";
 import { PUBLIC_CLI_NAME, PUBLIC_PRODUCT_NAME } from "./config/branding.js";
-import { loadSwarmifyxEnvFile } from "./config/env.js";
+import { loadPapertapeEnvFile } from "./config/env.js";
 import { registerWorktreeCommands } from "./commands/worktree.js";
 import { registerPluginCommands } from "./commands/client/plugin.js";
 
 const program = new Command();
 const DATA_DIR_OPTION_HELP =
-  `${PUBLIC_PRODUCT_NAME} data directory root (isolates state from ~/.swarmifyx)`;
+  `${PUBLIC_PRODUCT_NAME} data directory root (isolates state from ~/.papertape)`;
 
 program
   .name(PUBLIC_CLI_NAME)
@@ -37,7 +37,7 @@ program.hook("preAction", (_thisCommand, actionCommand) => {
     hasConfigOption: optionNames.has("config"),
     hasContextOption: optionNames.has("context"),
   });
-  loadSwarmifyxEnvFile(options.config);
+  loadPapertapeEnvFile(options.config);
 });
 
 program
@@ -83,7 +83,7 @@ program
   .option("-d, --data-dir <path>", DATA_DIR_OPTION_HELP)
   .option("--dir <path>", "Backup output directory (overrides config)")
   .option("--retention-days <days>", "Retention window used for pruning", (value) => Number(value))
-  .option("--filename-prefix <prefix>", "Backup filename prefix", "swarmifyx")
+  .option("--filename-prefix <prefix>", "Backup filename prefix", "papertape")
   .option("--json", "Print backup metadata as JSON")
   .action(async (opts) => {
     await dbBackupCommand(opts);

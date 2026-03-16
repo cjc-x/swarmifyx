@@ -61,7 +61,7 @@ OPENCLAW_IMAGE="${OPENCLAW_IMAGE:-openclaw:local}"
 OPENCLAW_TMP_DIR="${OPENCLAW_TMP_DIR:-${TMPDIR:-/tmp}}"
 OPENCLAW_TMP_DIR="${OPENCLAW_TMP_DIR%/}"
 OPENCLAW_TMP_DIR="${OPENCLAW_TMP_DIR:-/tmp}"
-OPENCLAW_CONFIG_DIR="${OPENCLAW_CONFIG_DIR:-$OPENCLAW_TMP_DIR/openclaw-swarmifyx-smoke}"
+OPENCLAW_CONFIG_DIR="${OPENCLAW_CONFIG_DIR:-$OPENCLAW_TMP_DIR/openclaw-papertape-smoke}"
 OPENCLAW_WORKSPACE_DIR="${OPENCLAW_WORKSPACE_DIR:-$OPENCLAW_CONFIG_DIR/workspace}"
 OPENCLAW_GATEWAY_PORT="${OPENCLAW_GATEWAY_PORT:-18789}"
 OPENCLAW_BRIDGE_PORT="${OPENCLAW_BRIDGE_PORT:-18790}"
@@ -76,8 +76,8 @@ OPENCLAW_DISABLE_DEVICE_AUTH="${OPENCLAW_DISABLE_DEVICE_AUTH:-1}"
 OPENCLAW_MODEL_PRIMARY="${OPENCLAW_MODEL_PRIMARY:-openai/gpt-5.2}"
 OPENCLAW_MODEL_FALLBACK="${OPENCLAW_MODEL_FALLBACK:-openai/gpt-5.2-chat-latest}"
 OPENCLAW_RESET_STATE="${OPENCLAW_RESET_STATE:-1}"
-SWARMIFYX_HOST_PORT="${SWARMIFYX_HOST_PORT:-3100}"
-SWARMIFYX_HOST_FROM_CONTAINER="${SWARMIFYX_HOST_FROM_CONTAINER:-host.docker.internal}"
+PAPERTAPE_HOST_PORT="${PAPERTAPE_HOST_PORT:-3100}"
+PAPERTAPE_HOST_FROM_CONTAINER="${PAPERTAPE_HOST_FROM_CONTAINER:-host.docker.internal}"
 
 case "$OPENCLAW_DISABLE_DEVICE_AUTH" in
   1|true|TRUE|True|yes|YES|Yes)
@@ -189,7 +189,7 @@ OPENCLAW_IMAGE=$OPENCLAW_IMAGE
 OPENAI_API_KEY=$OPENAI_API_KEY
 EOF
 
-COMPOSE_OVERRIDE="${OPENCLAW_DOCKER_DIR}/.swarmifyx-openclaw.override.yml"
+COMPOSE_OVERRIDE="${OPENCLAW_DOCKER_DIR}/.papertape-openclaw.override.yml"
 cat > "$COMPOSE_OVERRIDE" <<EOF
 services:
   openclaw-gateway:
@@ -209,14 +209,14 @@ compose() {
     "$@"
 }
 
-detect_swarmifyx_base_url() {
+detect_papertape_base_url() {
   local bridge_gateway candidate health_url
   bridge_gateway="$(docker network inspect openclaw-docker_default --format '{{(index .IPAM.Config 0).Gateway}}' 2>/dev/null || true)"
-  for candidate in "$SWARMIFYX_HOST_FROM_CONTAINER" "$bridge_gateway"; do
+  for candidate in "$PAPERTAPE_HOST_FROM_CONTAINER" "$bridge_gateway"; do
     [[ -n "$candidate" ]] || continue
-    health_url="http://${candidate}:${SWARMIFYX_HOST_PORT}/api/health"
+    health_url="http://${candidate}:${PAPERTAPE_HOST_PORT}/api/health"
     if compose exec -T openclaw-gateway node -e "fetch('${health_url}').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))" >/dev/null 2>&1; then
-      echo "http://${candidate}:${SWARMIFYX_HOST_PORT}"
+      echo "http://${candidate}:${PAPERTAPE_HOST_PORT}"
       return 0
     fi
   done
@@ -241,7 +241,7 @@ if [[ "$READY" != "1" ]]; then
   fail "gateway did not become healthy in ${OPENCLAW_WAIT_SECONDS}s"
 fi
 
-swarmifyx_base_url="$(detect_swarmifyx_base_url || true)"
+papertape_base_url="$(detect_papertape_base_url || true)"
 dashboard_output="$(compose run --rm openclaw-cli dashboard --no-open)"
 dashboard_url="$(grep -Eo 'https?://[^[:space:]]+#token=[^[:space:]]+' <<<"$dashboard_output" | head -n1 || true)"
 if [[ -z "$dashboard_url" ]]; then
@@ -266,20 +266,20 @@ Model:
   ${OPENCLAW_MODEL_PRIMARY} (fallback: ${OPENCLAW_MODEL_FALLBACK})
 State:
   OPENCLAW_RESET_STATE=$OPENCLAW_RESET_STATE
-Swarmifyx URL for OpenClaw container:
+Papertape URL for OpenClaw container:
 EOF
-  if [[ -n "$swarmifyx_base_url" ]]; then
+  if [[ -n "$papertape_base_url" ]]; then
     cat <<EOF
-  $swarmifyx_base_url
+  $papertape_base_url
   (Use this base URL for invite/onboarding links from inside OpenClaw Docker.)
 EOF
   else
     cat <<EOF
-  Auto-detect failed. Try: http://host.docker.internal:${SWARMIFYX_HOST_PORT}
-  (Do not use http://127.0.0.1:${SWARMIFYX_HOST_PORT} inside the container.)
-  If Swarmifyx rejects the host, run on host machine:
-    pnpm swarmifyx allowed-hostname host.docker.internal
-  Then restart Swarmifyx and re-run this script.
+  Auto-detect failed. Try: http://host.docker.internal:${PAPERTAPE_HOST_PORT}
+  (Do not use http://127.0.0.1:${PAPERTAPE_HOST_PORT} inside the container.)
+  If Papertape rejects the host, run on host machine:
+    pnpm papertape allowed-hostname host.docker.internal
+  Then restart Papertape and re-run this script.
 EOF
   fi
   cat <<EOF
@@ -299,20 +299,20 @@ Model:
   ${OPENCLAW_MODEL_PRIMARY} (fallback: ${OPENCLAW_MODEL_FALLBACK})
 State:
   OPENCLAW_RESET_STATE=$OPENCLAW_RESET_STATE
-Swarmifyx URL for OpenClaw container:
+Papertape URL for OpenClaw container:
 EOF
-  if [[ -n "$swarmifyx_base_url" ]]; then
+  if [[ -n "$papertape_base_url" ]]; then
     cat <<EOF
-  $swarmifyx_base_url
+  $papertape_base_url
   (Use this base URL for invite/onboarding links from inside OpenClaw Docker.)
 EOF
   else
     cat <<EOF
-  Auto-detect failed. Try: http://host.docker.internal:${SWARMIFYX_HOST_PORT}
-  (Do not use http://127.0.0.1:${SWARMIFYX_HOST_PORT} inside the container.)
-  If Swarmifyx rejects the host, run on host machine:
-    pnpm swarmifyx allowed-hostname host.docker.internal
-  Then restart Swarmifyx and re-run this script.
+  Auto-detect failed. Try: http://host.docker.internal:${PAPERTAPE_HOST_PORT}
+  (Do not use http://127.0.0.1:${PAPERTAPE_HOST_PORT} inside the container.)
+  If Papertape rejects the host, run on host machine:
+    pnpm papertape allowed-hostname host.docker.internal
+  Then restart Papertape and re-run this script.
 EOF
   fi
   cat <<EOF

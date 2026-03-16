@@ -3,13 +3,13 @@ import type { IncomingHttpHeaders } from "node:http";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { toNodeHandler } from "better-auth/node";
-import type { Db } from "@swarmifyx/db";
+import type { Db } from "@papertape/db";
 import {
   authAccounts,
   authSessions,
   authUsers,
   authVerifications,
-} from "@swarmifyx/db";
+} from "@papertape/db";
 import type { Config } from "../config.js";
 
 export type BetterAuthSessionUser = {
@@ -67,10 +67,10 @@ export function deriveAuthTrustedOrigins(config: Config): string[] {
 
 export function createBetterAuthInstance(db: Db, config: Config, trustedOrigins?: string[]): BetterAuthInstance {
   const baseUrl = config.authBaseUrlMode === "explicit" ? config.authPublicBaseUrl : undefined;
-  const secret = process.env.BETTER_AUTH_SECRET ?? process.env.SWARMIFYX_AGENT_JWT_SECRET ?? "swarmifyx-dev-secret";
+  const secret = process.env.BETTER_AUTH_SECRET ?? process.env.PAPERTAPE_AGENT_JWT_SECRET ?? "papertape-dev-secret";
   const effectiveTrustedOrigins = trustedOrigins ?? deriveAuthTrustedOrigins(config);
 
-  const publicUrl = process.env.SWARMIFYX_PUBLIC_URL ?? baseUrl;
+  const publicUrl = process.env.PAPERTAPE_PUBLIC_URL ?? baseUrl;
   const isHttpOnly = publicUrl ? publicUrl.startsWith("http://") : false;
 
   const authConfig = {

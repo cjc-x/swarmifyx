@@ -1,4 +1,4 @@
-import type { Project, ProjectWorkspace } from "@swarmifyx/shared";
+import type { Project, ProjectWorkspace } from "@papertape/shared";
 import { api } from "./client";
 
 function withCompanyScope(path: string, companyId?: string) {

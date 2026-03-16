@@ -31,14 +31,14 @@
  */
 
 import { and, desc, eq } from "drizzle-orm";
-import type { Db } from "@swarmifyx/db";
-import { plugins, pluginJobs, pluginJobRuns } from "@swarmifyx/db";
+import type { Db } from "@papertape/db";
+import { plugins, pluginJobs, pluginJobRuns } from "@papertape/db";
 import type {
   PluginJobDeclaration,
   PluginJobRunStatus,
   PluginJobRunTrigger,
   PluginJobRecord,
-} from "@swarmifyx/shared";
+} from "@papertape/shared";
 import { notFound } from "../errors.js";
 
 /**

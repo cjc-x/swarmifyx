@@ -18,7 +18,7 @@ await esbuild.build({
     "react",
     "react-dom",
     "react/jsx-runtime",
-    "@swarmifyx/plugin-sdk/ui",
+    "@papertape/plugin-sdk/ui",
   ],
   logLevel: "info",
 });

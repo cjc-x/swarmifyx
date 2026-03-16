@@ -6,16 +6,16 @@ type PluginBridgeRegistry = {
 };
 
 type GlobalBridge = typeof globalThis & {
-  __swarmifyxPluginBridge__?: PluginBridgeRegistry;
+  __papertapePluginBridge__?: PluginBridgeRegistry;
 };
 
 function getBridgeRegistry(): PluginBridgeRegistry | undefined {
-  return (globalThis as GlobalBridge).__swarmifyxPluginBridge__;
+  return (globalThis as GlobalBridge).__papertapePluginBridge__;
 }
 
 function missingBridgeValueError(name: string): Error {
   return new Error(
-    `Swarmifyx plugin UI runtime is not initialized for "${name}". ` +
+    `Papertape plugin UI runtime is not initialized for "${name}". ` +
       'Ensure the host loaded the plugin bridge before rendering this UI module.',
   );
 }
@@ -47,5 +47,5 @@ export function renderSdkUiComponent<TProps>(
     return component(props);
   }
 
-  throw new Error(`Swarmifyx plugin UI component "${name}" is not callable`);
+  throw new Error(`Papertape plugin UI component "${name}" is not callable`);
 }

@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { execute } from "@swarmifyx/adapter-codex-local/server";
+import { execute } from "@papertape/adapter-codex-local/server";
 
 async function writeFakeCodexCommand(root: string, baseName: string): Promise<string> {
   const scriptPath = path.join(root, `${baseName}.cjs`);
@@ -13,13 +13,13 @@ async function writeFakeCodexCommand(root: string, baseName: string): Promise<st
   const script = `#!/usr/bin/env node
 const fs = require("node:fs");
 
-const capturePath = process.env.SWARMIFYX_TEST_CAPTURE_PATH;
+const capturePath = process.env.PAPERTAPE_TEST_CAPTURE_PATH;
 const payload = {
   argv: process.argv.slice(2),
   prompt: fs.readFileSync(0, "utf8"),
   codexHome: process.env.CODEX_HOME || null,
-  swarmifyxEnvKeys: Object.keys(process.env)
-    .filter((key) => key.startsWith("SWARMIFYX_"))
+  papertapeEnvKeys: Object.keys(process.env)
+    .filter((key) => key.startsWith("PAPERTAPE_"))
     .sort(),
 };
 if (capturePath) {
@@ -44,16 +44,16 @@ type CapturePayload = {
   argv: string[];
   prompt: string;
   codexHome: string | null;
-  swarmifyxEnvKeys: string[];
+  papertapeEnvKeys: string[];
 };
 
 describe("codex execute", () => {
   it("preserves the configured CODEX_HOME while injecting shared auth, config, and skills", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "swarmifyx-codex-execute-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "papertape-codex-execute-"));
     const workspace = path.join(root, "workspace");
     const capturePath = path.join(root, "capture.json");
     const sharedCodexHome = path.join(root, "shared-codex-home");
-    const swarmifyxHome = path.join(root, "swarmifyx-home");
+    const papertapeHome = path.join(root, "papertape-home");
     await fs.mkdir(workspace, { recursive: true });
     await fs.mkdir(sharedCodexHome, { recursive: true });
     await fs.writeFile(path.join(sharedCodexHome, "auth.json"), '{"token":"shared"}\n', "utf8");
@@ -61,14 +61,14 @@ describe("codex execute", () => {
     const commandPath = await writeFakeCodexCommand(root, "codex");
 
     const previousHome = process.env.HOME;
-    const previousSwamifyxHome = process.env.SWARMIFYX_HOME;
-    const previousSwamifyxInstanceId = process.env.SWARMIFYX_INSTANCE_ID;
-    const previousSwamifyxInWorktree = process.env.SWARMIFYX_IN_WORKTREE;
+    const previousPapertapeHome = process.env.PAPERTAPE_HOME;
+    const previousPapertapeInstanceId = process.env.PAPERTAPE_INSTANCE_ID;
+    const previousPapertapeInWorktree = process.env.PAPERTAPE_IN_WORKTREE;
     const previousCodexHome = process.env.CODEX_HOME;
     process.env.HOME = root;
-    process.env.SWARMIFYX_HOME = swarmifyxHome;
-    process.env.SWARMIFYX_INSTANCE_ID = "worktree-1";
-    process.env.SWARMIFYX_IN_WORKTREE = "true";
+    process.env.PAPERTAPE_HOME = papertapeHome;
+    process.env.PAPERTAPE_INSTANCE_ID = "worktree-1";
+    process.env.PAPERTAPE_IN_WORKTREE = "true";
     process.env.CODEX_HOME = sharedCodexHome;
 
     try {
@@ -91,9 +91,9 @@ describe("codex execute", () => {
           command: commandPath,
           cwd: workspace,
           env: {
-            SWARMIFYX_TEST_CAPTURE_PATH: capturePath,
+            PAPERTAPE_TEST_CAPTURE_PATH: capturePath,
           },
-          promptTemplate: "Follow the swarmifyx heartbeat.",
+          promptTemplate: "Follow the papertape heartbeat.",
         },
         context: {},
         authToken: "run-jwt-token",
@@ -106,20 +106,20 @@ describe("codex execute", () => {
       const capture = JSON.parse(await fs.readFile(capturePath, "utf8")) as CapturePayload;
       expect(capture.codexHome).toBe(sharedCodexHome);
       expect(capture.argv).toEqual(expect.arrayContaining(["exec", "--json", "-"]));
-      expect(capture.prompt).toContain("Follow the swarmifyx heartbeat.");
-      expect(capture.swarmifyxEnvKeys).toEqual(
+      expect(capture.prompt).toContain("Follow the papertape heartbeat.");
+      expect(capture.papertapeEnvKeys).toEqual(
         expect.arrayContaining([
-          "SWARMIFYX_AGENT_ID",
-          "SWARMIFYX_API_KEY",
-          "SWARMIFYX_API_URL",
-          "SWARMIFYX_COMPANY_ID",
-          "SWARMIFYX_RUN_ID",
+          "PAPERTAPE_AGENT_ID",
+          "PAPERTAPE_API_KEY",
+          "PAPERTAPE_API_URL",
+          "PAPERTAPE_COMPANY_ID",
+          "PAPERTAPE_RUN_ID",
         ]),
       );
 
       const sharedAuth = path.join(sharedCodexHome, "auth.json");
       const sharedConfig = path.join(sharedCodexHome, "config.toml");
-      const sharedSkill = path.join(sharedCodexHome, "skills", "swarmifyx");
+      const sharedSkill = path.join(sharedCodexHome, "skills", "papertape");
 
       expect((await fs.lstat(sharedAuth)).isFile()).toBe(true);
       expect(await fs.readFile(sharedConfig, "utf8")).toBe('model = "codex-mini-latest"\n');
@@ -127,12 +127,12 @@ describe("codex execute", () => {
     } finally {
       if (previousHome === undefined) delete process.env.HOME;
       else process.env.HOME = previousHome;
-      if (previousSwamifyxHome === undefined) delete process.env.SWARMIFYX_HOME;
-      else process.env.SWARMIFYX_HOME = previousSwamifyxHome;
-      if (previousSwamifyxInstanceId === undefined) delete process.env.SWARMIFYX_INSTANCE_ID;
-      else process.env.SWARMIFYX_INSTANCE_ID = previousSwamifyxInstanceId;
-      if (previousSwamifyxInWorktree === undefined) delete process.env.SWARMIFYX_IN_WORKTREE;
-      else process.env.SWARMIFYX_IN_WORKTREE = previousSwamifyxInWorktree;
+      if (previousPapertapeHome === undefined) delete process.env.PAPERTAPE_HOME;
+      else process.env.PAPERTAPE_HOME = previousPapertapeHome;
+      if (previousPapertapeInstanceId === undefined) delete process.env.PAPERTAPE_INSTANCE_ID;
+      else process.env.PAPERTAPE_INSTANCE_ID = previousPapertapeInstanceId;
+      if (previousPapertapeInWorktree === undefined) delete process.env.PAPERTAPE_IN_WORKTREE;
+      else process.env.PAPERTAPE_IN_WORKTREE = previousPapertapeInWorktree;
       if (previousCodexHome === undefined) delete process.env.CODEX_HOME;
       else process.env.CODEX_HOME = previousCodexHome;
       await fs.rm(root, { recursive: true, force: true });
@@ -140,26 +140,26 @@ describe("codex execute", () => {
   });
 
   it("respects an explicit CODEX_HOME config override even in worktree mode", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "swamifyx-codex-execute-explicit-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "papertape-codex-execute-explicit-"));
     const workspace = path.join(root, "workspace");
     const capturePath = path.join(root, "capture.json");
     const sharedCodexHome = path.join(root, "shared-codex-home");
     const explicitCodexHome = path.join(root, "explicit-codex-home");
-    const swarmifyxHome = path.join(root, "swarmifyx-home");
+    const papertapeHome = path.join(root, "papertape-home");
     await fs.mkdir(workspace, { recursive: true });
     await fs.mkdir(sharedCodexHome, { recursive: true });
     await fs.writeFile(path.join(sharedCodexHome, "auth.json"), '{"token":"shared"}\n', "utf8");
     const commandPath = await writeFakeCodexCommand(root, "codex");
 
     const previousHome = process.env.HOME;
-    const previousSwamifyxHome = process.env.SWARMIFYX_HOME;
-    const previousSwamifyxInstanceId = process.env.SWARMIFYX_INSTANCE_ID;
-    const previousSwamifyxInWorktree = process.env.SWARMIFYX_IN_WORKTREE;
+    const previousPapertapeHome = process.env.PAPERTAPE_HOME;
+    const previousPapertapeInstanceId = process.env.PAPERTAPE_INSTANCE_ID;
+    const previousPapertapeInWorktree = process.env.PAPERTAPE_IN_WORKTREE;
     const previousCodexHome = process.env.CODEX_HOME;
     process.env.HOME = root;
-    process.env.SWARMIFYX_HOME = swarmifyxHome;
-    process.env.SWARMIFYX_INSTANCE_ID = "worktree-1";
-    process.env.SWARMIFYX_IN_WORKTREE = "true";
+    process.env.PAPERTAPE_HOME = papertapeHome;
+    process.env.PAPERTAPE_INSTANCE_ID = "worktree-1";
+    process.env.PAPERTAPE_IN_WORKTREE = "true";
     process.env.CODEX_HOME = sharedCodexHome;
 
     try {
@@ -182,10 +182,10 @@ describe("codex execute", () => {
           command: commandPath,
           cwd: workspace,
           env: {
-            SWARMIFYX_TEST_CAPTURE_PATH: capturePath,
+            PAPERTAPE_TEST_CAPTURE_PATH: capturePath,
             CODEX_HOME: explicitCodexHome,
           },
-          promptTemplate: "Follow the swarmifyx heartbeat.",
+          promptTemplate: "Follow the papertape heartbeat.",
         },
         context: {},
         authToken: "run-jwt-token",
@@ -197,16 +197,16 @@ describe("codex execute", () => {
 
       const capture = JSON.parse(await fs.readFile(capturePath, "utf8")) as CapturePayload;
       expect(capture.codexHome).toBe(explicitCodexHome);
-      await expect(fs.lstat(path.join(swarmifyxHome, "instances", "worktree-1", "codex-home"))).rejects.toThrow();
+      await expect(fs.lstat(path.join(papertapeHome, "instances", "worktree-1", "codex-home"))).rejects.toThrow();
     } finally {
       if (previousHome === undefined) delete process.env.HOME;
       else process.env.HOME = previousHome;
-      if (previousSwamifyxHome === undefined) delete process.env.SWARMIFYX_HOME;
-      else process.env.SWARMIFYX_HOME = previousSwamifyxHome;
-      if (previousSwamifyxInstanceId === undefined) delete process.env.SWARMIFYX_INSTANCE_ID;
-      else process.env.SWARMIFYX_INSTANCE_ID = previousSwamifyxInstanceId;
-      if (previousSwamifyxInWorktree === undefined) delete process.env.SWARMIFYX_IN_WORKTREE;
-      else process.env.SWARMIFYX_IN_WORKTREE = previousSwamifyxInWorktree;
+      if (previousPapertapeHome === undefined) delete process.env.PAPERTAPE_HOME;
+      else process.env.PAPERTAPE_HOME = previousPapertapeHome;
+      if (previousPapertapeInstanceId === undefined) delete process.env.PAPERTAPE_INSTANCE_ID;
+      else process.env.PAPERTAPE_INSTANCE_ID = previousPapertapeInstanceId;
+      if (previousPapertapeInWorktree === undefined) delete process.env.PAPERTAPE_IN_WORKTREE;
+      else process.env.PAPERTAPE_IN_WORKTREE = previousPapertapeInWorktree;
       if (previousCodexHome === undefined) delete process.env.CODEX_HOME;
       else process.env.CODEX_HOME = previousCodexHome;
       await fs.rm(root, { recursive: true, force: true });

@@ -1,11 +1,11 @@
 import { and, eq, isNull } from "drizzle-orm";
-import type { Db } from "@swarmifyx/db";
-import { plugins, pluginState } from "@swarmifyx/db";
+import type { Db } from "@papertape/db";
+import { plugins, pluginState } from "@papertape/db";
 import type {
   PluginStateScopeKind,
   SetPluginState,
   ListPluginState,
-} from "@swarmifyx/shared";
+} from "@papertape/shared";
 import { notFound } from "../errors.js";
 
 // ---------------------------------------------------------------------------

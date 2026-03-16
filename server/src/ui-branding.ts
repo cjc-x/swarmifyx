@@ -1,5 +1,5 @@
-const FAVICON_BLOCK_START = "<!-- SWARMIFYX_FAVICON_START -->";
-const FAVICON_BLOCK_END = "<!-- SWARMIFYX_FAVICON_END -->";
+const FAVICON_BLOCK_START = "<!-- PAPERTAPE_FAVICON_START -->";
+const FAVICON_BLOCK_END = "<!-- PAPERTAPE_FAVICON_END -->";
 
 const DEFAULT_FAVICON_LINKS = [
   '<link rel="icon" href="/favicon.ico" sizes="48x48" />',
@@ -22,7 +22,7 @@ function isTruthyEnvValue(value: string | undefined): boolean {
 }
 
 export function isWorktreeUiBrandingEnabled(env: NodeJS.ProcessEnv = process.env): boolean {
-  return isTruthyEnvValue(env.SWARMIFYX_IN_WORKTREE);
+  return isTruthyEnvValue(env.PAPERTAPE_IN_WORKTREE);
 }
 
 export function renderFaviconLinks(worktree: boolean): string {

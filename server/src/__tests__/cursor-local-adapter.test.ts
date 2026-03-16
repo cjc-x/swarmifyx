@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
-import { isCursorUnknownSessionError, parseCursorJsonl } from "@swarmifyx/adapter-cursor-local/server";
-import { parseCursorStdoutLine } from "@swarmifyx/adapter-cursor-local/ui";
-import { printCursorStreamEvent } from "@swarmifyx/adapter-cursor-local/cli";
+import { isCursorUnknownSessionError, parseCursorJsonl } from "@papertape/adapter-cursor-local/server";
+import { parseCursorStdoutLine } from "@papertape/adapter-cursor-local/ui";
+import { printCursorStreamEvent } from "@papertape/adapter-cursor-local/cli";
 
 describe("cursor parser", () => {
   it("extracts session, summary, usage, cost, and terminal error message", () => {
@@ -139,7 +139,7 @@ describe("cursor ui stdout parser", () => {
 
   it("compacts shellToolCall and shell tool result for run log", () => {
     const ts = "2026-03-05T00:00:00.000Z";
-    const longCommand = "curl -s -X POST \"$SWARMIFYX_API_URL/api/issues/abc/checkout\" -H \"Authorization: Bearer $SWARMIFYX_API_KEY\"";
+    const longCommand = "curl -s -X POST \"$PAPERTAPE_API_URL/api/issues/abc/checkout\" -H \"Authorization: Bearer $PAPERTAPE_API_KEY\"";
 
     expect(
       parseCursorStdoutLine(

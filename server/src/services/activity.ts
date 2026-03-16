@@ -1,6 +1,6 @@
 import { and, desc, eq, isNull, or, sql } from "drizzle-orm";
-import type { Db } from "@swarmifyx/db";
-import { activityLog, heartbeatRuns, issues } from "@swarmifyx/db";
+import type { Db } from "@papertape/db";
+import { activityLog, heartbeatRuns, issues } from "@papertape/db";
 
 export interface ActivityFilters {
   companyId: string;

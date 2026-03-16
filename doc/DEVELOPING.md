@@ -34,7 +34,7 @@ pnpm dev
 
 Windows native shell support:
 
-- `pnpm dev`, `pnpm swarmifyx ...`, `pnpm db:backup`, and `pnpm build:npm` are supported from PowerShell and `cmd.exe`
+- `pnpm dev`, `pnpm papertape ...`, `pnpm db:backup`, and `pnpm build:npm` are supported from PowerShell and `cmd.exe`
 - release and smoke helpers under `scripts/*.sh` still expect a POSIX shell such as Git Bash
 
 This starts:
@@ -55,7 +55,7 @@ This runs dev as `authenticated/private` and binds the server to `0.0.0.0` for p
 Allow additional private hostnames (for example custom Tailscale hostnames):
 
 ```sh
-pnpm swarmifyx allowed-hostname dotta-macbook-pro
+pnpm papertape allowed-hostname dotta-macbook-pro
 ```
 
 ## One-Command Local Run
@@ -63,27 +63,27 @@ pnpm swarmifyx allowed-hostname dotta-macbook-pro
 For a first-time local install, you can bootstrap and run in one command:
 
 ```sh
-pnpm swarmifyx run
+pnpm papertape run
 ```
 
-`swarmifyx run` does:
+`papertape run` does:
 
 1. auto-onboard if config is missing
-2. `swarmifyx doctor` with repair enabled
+2. `papertape doctor` with repair enabled
 3. starts the server when checks pass
 
 ## Docker Quickstart (No local Node install)
 
-Build and run Swarmifyx in Docker:
+Build and run Papertape in Docker:
 
 ```sh
-docker build -t swarmifyx-local .
-docker run --name swarmifyx \
+docker build -t papertape-local .
+docker run --name papertape \
   -p 3100:3100 \
   -e HOST=0.0.0.0 \
-  -e SWARMIFYX_HOME=/swarmifyx \
-  -v "$(pwd)/data/docker-swarmifyx:/swarmifyx" \
-  swarmifyx-local
+  -e PAPERTAPE_HOME=/papertape \
+  -v "$(pwd)/data/docker-papertape:/papertape" \
+  papertape-local
 ```
 
 Or use Compose:
@@ -99,15 +99,15 @@ See `doc/DOCKER.md` for API key wiring (`OPENAI_API_KEY` / `ANTHROPIC_API_KEY`) 
 For local development, leave `DATABASE_URL` unset.
 The server will automatically use embedded PostgreSQL and persist data at:
 
-- `~/.swarmifyx/instances/default/db`
+- `~/.papertape/instances/default/db`
 
 Override home and instance:
 
 ```sh
-SWARMIFYX_HOME=/custom/path SWARMIFYX_INSTANCE_ID=dev pnpm swarmifyx run
+PAPERTAPE_HOME=/custom/path PAPERTAPE_INSTANCE_ID=dev pnpm papertape run
 ```
 
-Swarmifyx uses `~/.swarmifyx` as the default local home. Set `SWARMIFYX_HOME` explicitly if you want a different location.
+Papertape uses `~/.papertape` as the default local home. Set `PAPERTAPE_HOME` explicitly if you want a different location.
 
 No Docker or external database is required for this mode.
 
@@ -115,38 +115,38 @@ No Docker or external database is required for this mode.
 
 For local development, the default storage provider is `local_disk`, which persists uploaded images/attachments at:
 
-- `~/.swarmifyx/instances/default/data/storage`
+- `~/.papertape/instances/default/data/storage`
 
 Configure storage provider/settings:
 
 ```sh
-pnpm swarmifyx configure --section storage
+pnpm papertape configure --section storage
 ```
 
 ## Default Agent Workspaces
 
-When a local agent run has no resolved project/session workspace, Swarmifyx falls back to an agent home workspace under the instance root:
+When a local agent run has no resolved project/session workspace, Papertape falls back to an agent home workspace under the instance root:
 
-- `~/.swarmifyx/instances/default/workspaces/<agent-id>`
+- `~/.papertape/instances/default/workspaces/<agent-id>`
 
-This path honors `SWARMIFYX_HOME` and `SWARMIFYX_INSTANCE_ID` in non-default setups.
+This path honors `PAPERTAPE_HOME` and `PAPERTAPE_INSTANCE_ID` in non-default setups.
 
 ## Worktree-local Instances
 
-When developing from multiple git worktrees, do not point two Swarmifyx servers at the same embedded PostgreSQL data directory.
+When developing from multiple git worktrees, do not point two Papertape servers at the same embedded PostgreSQL data directory.
 
-Instead, create a repo-local Swarmifyx config plus an isolated instance for the worktree:
+Instead, create a repo-local Papertape config plus an isolated instance for the worktree:
 
 ```sh
-swarmifyx worktree init
+papertape worktree init
 # or create the git worktree and initialize it in one step:
-pnpm swarmifyx worktree:make swarmifyx-pr-432
+pnpm papertape worktree:make papertape-pr-432
 ```
 
 This command:
 
-- writes repo-local files at `.swarmifyx/config.json` and `.swarmifyx/.env`
-- creates an isolated instance under `~/.swarmifyx-worktrees/instances/<worktree-id>/`
+- writes repo-local files at `.papertape/config.json` and `.papertape/.env`
+- creates an isolated instance under `~/.papertape-worktrees/instances/<worktree-id>/`
 - when run inside a linked git worktree, mirrors the effective git hooks into that worktree's private git dir
 - picks a free app port and embedded PostgreSQL port
 - by default seeds the isolated DB in `minimal` mode from your main instance via a logical SQL snapshot
@@ -157,29 +157,29 @@ Seed modes:
 - `full` makes a full logical clone of the source instance
 - `--no-seed` creates an empty isolated instance
 
-After `worktree init`, both the server and the CLI auto-load the repo-local `.swarmifyx/.env` when run inside that worktree, so normal commands like `pnpm dev`, `swarmifyx doctor`, and `swarmifyx db:backup` stay scoped to the worktree instance.
+After `worktree init`, both the server and the CLI auto-load the repo-local `.papertape/.env` when run inside that worktree, so normal commands like `pnpm dev`, `papertape doctor`, and `papertape db:backup` stay scoped to the worktree instance.
 
-That repo-local env also sets `SWARMIFYX_IN_WORKTREE=true`, which the server can use for worktree-specific UI behavior such as an alternate favicon.
+That repo-local env also sets `PAPERTAPE_IN_WORKTREE=true`, which the server can use for worktree-specific UI behavior such as an alternate favicon.
 
 Print shell exports explicitly when needed:
 
 ```sh
-swarmifyx worktree env
+papertape worktree env
 # or:
-eval "$(swarmifyx worktree env)"
+eval "$(papertape worktree env)"
 ```
 
 ### Worktree CLI Reference
 
-**`pnpm swarmifyx worktree init [options]`** — Create repo-local config/env and an isolated instance for the current worktree.
+**`pnpm papertape worktree init [options]`** — Create repo-local config/env and an isolated instance for the current worktree.
 
 | Option | Description |
 |---|---|
 | `--name <name>` | Display name used to derive the instance id |
 | `--instance <id>` | Explicit isolated instance id |
-| `--home <path>` | Home root for worktree instances (default: `~/.swarmifyx-worktrees`) |
+| `--home <path>` | Home root for worktree instances (default: `~/.papertape-worktrees`) |
 | `--from-config <path>` | Source config.json to seed from |
-| `--from-data-dir <path>` | Source SWARMIFYX_HOME used when deriving the source config |
+| `--from-data-dir <path>` | Source PAPERTAPE_HOME used when deriving the source config |
 | `--from-instance <id>` | Source instance id (default: `default`) |
 | `--server-port <port>` | Preferred server port |
 | `--db-port <port>` | Preferred embedded Postgres port |
@@ -190,22 +190,22 @@ eval "$(swarmifyx worktree env)"
 Examples:
 
 ```sh
-swarmifyx worktree init --no-seed
-swarmifyx worktree init --seed-mode full
-swarmifyx worktree init --from-instance default
-swarmifyx worktree init --from-data-dir ~/.swarmifyx
-swarmifyx worktree init --force
+papertape worktree init --no-seed
+papertape worktree init --seed-mode full
+papertape worktree init --from-instance default
+papertape worktree init --from-data-dir ~/.papertape
+papertape worktree init --force
 ```
 
-**`pnpm swarmifyx worktree:make <name> [options]`** — Create `~/NAME` as a git worktree, then initialize an isolated SwarmifyX instance inside it. This combines `git worktree add` with `worktree init` in a single step.
+**`pnpm papertape worktree:make <name> [options]`** — Create `~/NAME` as a git worktree, then initialize an isolated Papertape instance inside it. This combines `git worktree add` with `worktree init` in a single step.
 
 | Option | Description |
 |---|---|
 | `--start-point <ref>` | Remote ref to base the new branch on (e.g. `origin/main`) |
 | `--instance <id>` | Explicit isolated instance id |
-| `--home <path>` | Home root for worktree instances (default: `~/.swarmifyx-worktrees`) |
+| `--home <path>` | Home root for worktree instances (default: `~/.papertape-worktrees`) |
 | `--from-config <path>` | Source config.json to seed from |
-| `--from-data-dir <path>` | Source SWARMIFYX_HOME used when deriving the source config |
+| `--from-data-dir <path>` | Source PAPERTAPE_HOME used when deriving the source config |
 | `--from-instance <id>` | Source instance id (default: `default`) |
 | `--server-port <port>` | Preferred server port |
 | `--db-port <port>` | Preferred embedded Postgres port |
@@ -216,12 +216,12 @@ swarmifyx worktree init --force
 Examples:
 
 ```sh
-pnpm swarmifyx worktree:make swarmifyx-pr-432
-pnpm swarmifyx worktree:make my-feature --start-point origin/main
-pnpm swarmifyx worktree:make experiment --no-seed
+pnpm papertape worktree:make papertape-pr-432
+pnpm papertape worktree:make my-feature --start-point origin/main
+pnpm papertape worktree:make experiment --no-seed
 ```
 
-**`pnpm swarmifyx worktree env [options]`** — Print shell exports for the current worktree-local Swarmifyx instance.
+**`pnpm papertape worktree env [options]`** — Print shell exports for the current worktree-local Papertape instance.
 
 | Option | Description |
 |---|---|
@@ -231,14 +231,14 @@ pnpm swarmifyx worktree:make experiment --no-seed
 Examples:
 
 ```sh
-pnpm swarmifyx worktree env
-pnpm swarmifyx worktree env --json
-eval "$(pnpm swarmifyx worktree env)"
+pnpm papertape worktree env
+pnpm papertape worktree env --json
+eval "$(pnpm papertape worktree env)"
 ```
 
-For project execution worktrees, Swarmifyx can also run a project-defined provision command after it creates or reuses an isolated git worktree. Configure this on the project's execution workspace policy (`workspaceStrategy.provisionCommand`). The command runs inside the derived worktree and receives `SWARMIFYX_WORKSPACE_*`, `SWARMIFYX_PROJECT_ID`, `SWARMIFYX_AGENT_ID`, and `SWARMIFYX_ISSUE_*` environment variables so each repo can bootstrap itself however it wants.
+For project execution worktrees, Papertape can also run a project-defined provision command after it creates or reuses an isolated git worktree. Configure this on the project's execution workspace policy (`workspaceStrategy.provisionCommand`). The command runs inside the derived worktree and receives `PAPERTAPE_WORKSPACE_*`, `PAPERTAPE_PROJECT_ID`, `PAPERTAPE_AGENT_ID`, and `PAPERTAPE_ISSUE_*` environment variables so each repo can bootstrap itself however it wants.
 
-Default execution worktrees live under `.swarmifyx/worktrees`. If branch creation is blocked by an existing checkout, remove the stale worktree or set `workspaceStrategy.worktreeParentDir` explicitly.
+Default execution worktrees live under `.papertape/worktrees`. If branch creation is blocked by an existing checkout, remove the stale worktree or set `workspaceStrategy.worktreeParentDir` explicitly.
 
 ## Quick Health Checks
 
@@ -259,7 +259,7 @@ Expected:
 To wipe local dev data and start fresh:
 
 ```sh
-rm -rf ~/.swarmifyx/instances/default/db
+rm -rf ~/.papertape/instances/default/db
 pnpm dev
 ```
 
@@ -269,55 +269,55 @@ If you set `DATABASE_URL`, the server will use that instead of embedded PostgreS
 
 ## Automatic DB Backups
 
-Swarmifyx can run automatic DB backups on a timer. Defaults:
+Papertape can run automatic DB backups on a timer. Defaults:
 
 - enabled
 - every 60 minutes
 - retain 30 days
-- backup dir: `~/.swarmifyx/instances/default/data/backups`
+- backup dir: `~/.papertape/instances/default/data/backups`
 
 Configure these in:
 
 ```sh
-pnpm swarmifyx configure --section database
+pnpm papertape configure --section database
 ```
 
 Run a one-off backup manually:
 
 ```sh
-pnpm swarmifyx db:backup
+pnpm papertape db:backup
 # or:
 pnpm db:backup
 ```
 
 Environment overrides:
 
-- `SWARMIFYX_DB_BACKUP_ENABLED=true|false`
-- `SWARMIFYX_DB_BACKUP_INTERVAL_MINUTES=<minutes>`
-- `SWARMIFYX_DB_BACKUP_RETENTION_DAYS=<days>`
-- `SWARMIFYX_DB_BACKUP_DIR=/absolute/or/~/path`
+- `PAPERTAPE_DB_BACKUP_ENABLED=true|false`
+- `PAPERTAPE_DB_BACKUP_INTERVAL_MINUTES=<minutes>`
+- `PAPERTAPE_DB_BACKUP_RETENTION_DAYS=<days>`
+- `PAPERTAPE_DB_BACKUP_DIR=/absolute/or/~/path`
 
 ## Secrets in Dev
 
 Agent env vars now support secret references. By default, secret values are stored with local encryption and only secret refs are persisted in agent config.
 
-- Default local key path: `~/.swarmifyx/instances/default/secrets/master.key`
-- Override key material directly: `SWARMIFYX_SECRETS_MASTER_KEY`
-- Override key file path: `SWARMIFYX_SECRETS_MASTER_KEY_FILE`
+- Default local key path: `~/.papertape/instances/default/secrets/master.key`
+- Override key material directly: `PAPERTAPE_SECRETS_MASTER_KEY`
+- Override key file path: `PAPERTAPE_SECRETS_MASTER_KEY_FILE`
 
 Strict mode (recommended outside local trusted machines):
 
 ```sh
-SWARMIFYX_SECRETS_STRICT_MODE=true
+PAPERTAPE_SECRETS_STRICT_MODE=true
 ```
 
 When strict mode is enabled, sensitive env keys (for example `*_API_KEY`, `*_TOKEN`, `*_SECRET`) must use secret references instead of inline plain values.
 
 CLI configuration support:
 
-- `pnpm swarmifyx onboard` writes a default `secrets` config section (`local_encrypted`, strict mode off, key file path set) and creates a local key file when needed.
-- `pnpm swarmifyx configure --section secrets` lets you update provider/strict mode/key path and creates the local key file when needed.
-- `pnpm swarmifyx doctor` validates secrets adapter configuration and can create a missing local key file with `--repair`.
+- `pnpm papertape onboard` writes a default `secrets` config section (`local_encrypted`, strict mode off, key file path set) and creates a local key file when needed.
+- `pnpm papertape configure --section secrets` lets you update provider/strict mode/key path and creates the local key file when needed.
+- `pnpm papertape doctor` validates secrets adapter configuration and can create a missing local key file with `--repair`.
 
 Migration helper for existing inline env secrets:
 
@@ -331,7 +331,7 @@ pnpm secrets:migrate-inline-env --apply # apply migration
 Company deletion is intended as a dev/debug capability and can be disabled at runtime:
 
 ```sh
-SWARMIFYX_ENABLE_COMPANY_DELETION=false
+PAPERTAPE_ENABLE_COMPANY_DELETION=false
 ```
 
 Default behavior:
@@ -341,27 +341,27 @@ Default behavior:
 
 ## CLI Client Operations
 
-Swarmifyx CLI now includes client-side control-plane commands in addition to setup commands.
+Papertape CLI now includes client-side control-plane commands in addition to setup commands.
 
 Quick examples:
 
 ```sh
-pnpm swarmifyx issue list --company-id <company-id>
-pnpm swarmifyx issue create --company-id <company-id> --title "Investigate checkout conflict"
-pnpm swarmifyx issue update <issue-id> --status in_progress --comment "Started triage"
+pnpm papertape issue list --company-id <company-id>
+pnpm papertape issue create --company-id <company-id> --title "Investigate checkout conflict"
+pnpm papertape issue update <issue-id> --status in_progress --comment "Started triage"
 ```
 
 Set defaults once with context profiles:
 
 ```sh
-pnpm swarmifyx context set --api-base http://localhost:3100 --company-id <company-id>
+pnpm papertape context set --api-base http://localhost:3100 --company-id <company-id>
 ```
 
 Then run commands without repeating flags:
 
 ```sh
-pnpm swarmifyx issue list
-pnpm swarmifyx dashboard get
+pnpm papertape issue list
+pnpm papertape dashboard get
 ```
 
 See full command reference in `doc/CLI.md`.
@@ -374,7 +374,7 @@ Agent-oriented invite onboarding now exposes machine-readable API docs:
 - `GET /api/invites/:token/onboarding` returns onboarding manifest details (registration endpoint, claim endpoint template, skill install hints).
 - `GET /api/invites/:token/onboarding.txt` returns a plain-text onboarding doc intended for both human operators and agents (llm.txt-style handoff), including optional inviter message and suggested network host candidates.
 - `GET /api/skills/index` lists available skill documents.
-- `GET /api/skills/swarmifyx` returns the Swarmifyx heartbeat skill markdown.
+- `GET /api/skills/papertape` returns the Papertape heartbeat skill markdown.
 
 ## OpenClaw Join Smoke Test
 
@@ -394,12 +394,12 @@ What it validates:
 Required permissions:
 
 - This script performs board-governed actions (create invite, approve join, wakeup another agent).
-- In authenticated mode, run with board auth via `SWARMIFYX_AUTH_HEADER` or `SWARMIFYX_COOKIE`.
+- In authenticated mode, run with board auth via `PAPERTAPE_AUTH_HEADER` or `PAPERTAPE_COOKIE`.
 
 Optional auth flags (for authenticated mode):
 
-- `SWARMIFYX_AUTH_HEADER` (for example `Bearer ...`)
-- `SWARMIFYX_COOKIE` (session cookie header value)
+- `PAPERTAPE_AUTH_HEADER` (for example `Bearer ...`)
+- `PAPERTAPE_COOKIE` (session cookie header value)
 
 ## OpenClaw Docker UI One-Command Script
 
@@ -422,11 +422,11 @@ Model behavior for this smoke script:
 
 State behavior for this smoke script:
 
-- defaults to isolated config dir `~/.openclaw-swarmifyx-smoke`
+- defaults to isolated config dir `~/.openclaw-papertape-smoke`
 - resets smoke agent state each run by default (`OPENCLAW_RESET_STATE=1`) to avoid stale provider/auth drift
 
 Networking behavior for this smoke script:
 
-- auto-detects and prints a Swarmifyx host URL reachable from inside OpenClaw Docker
-- default container-side host alias is `host.docker.internal` (override with `SWARMIFYX_HOST_FROM_CONTAINER` / `SWARMIFYX_HOST_PORT`)
-- if Swarmifyx rejects container hostnames in authenticated/private mode, allow `host.docker.internal` via `pnpm swarmifyx allowed-hostname host.docker.internal` and restart Swarmifyx
+- auto-detects and prints a Papertape host URL reachable from inside OpenClaw Docker
+- default container-side host alias is `host.docker.internal` (override with `PAPERTAPE_HOST_FROM_CONTAINER` / `PAPERTAPE_HOST_PORT`)
+- if Papertape rejects container hostnames in authenticated/private mode, allow `host.docker.internal` via `pnpm papertape allowed-hostname host.docker.internal` and restart Papertape

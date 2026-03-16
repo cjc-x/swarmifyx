@@ -33,7 +33,7 @@ summary: 招聘、配置、暂停和终止代理
 - `process`：通用本地命令执行
 
 对于 `opencode_local`，需要显式配置 `adapterConfig.model`（`provider/model`）。
-Swarmifyx 会根据实时 `opencode models` 输出校验你选择的模型。
+Papertape 会根据实时 `opencode models` 输出校验你选择的模型。
 
 ## 通过治理流程招聘代理
 

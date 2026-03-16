@@ -32,12 +32,12 @@ export const runningProcesses = new Map<string, RunningProcess>();
 export const MAX_CAPTURE_BYTES = 4 * 1024 * 1024;
 export const MAX_EXCERPT_BYTES = 32 * 1024;
 const SENSITIVE_ENV_KEY = /(key|token|secret|password|passwd|authorization|cookie)/i;
-const SWARMIFYX_SKILL_ROOT_RELATIVE_CANDIDATES = [
+const PAPERTAPE_SKILL_ROOT_RELATIVE_CANDIDATES = [
   "../../skills",
   "../../../../../skills",
 ];
 
-export interface SwamifyxSkillEntry {
+export interface PapertapeSkillEntry {
   name: string;
   source: string;
 }
@@ -130,7 +130,7 @@ export function redactEnvForLogs(env: Record<string, string>): Record<string, st
   return redacted;
 }
 
-export function buildSwarmifyxEnv(agent: { id: string; companyId: string }): Record<string, string> {
+export function buildPapertapeEnv(agent: { id: string; companyId: string }): Record<string, string> {
   const resolveHostForUrl = (rawHost: string): string => {
     const host = rawHost.trim();
     if (!host || host === "0.0.0.0" || host === "::") return "localhost";
@@ -138,15 +138,15 @@ export function buildSwarmifyxEnv(agent: { id: string; companyId: string }): Rec
     return host;
   };
   const vars: Record<string, string> = {
-    SWARMIFYX_AGENT_ID: agent.id,
-    SWARMIFYX_COMPANY_ID: agent.companyId,
+    PAPERTAPE_AGENT_ID: agent.id,
+    PAPERTAPE_COMPANY_ID: agent.companyId,
   };
   const runtimeHost = resolveHostForUrl(
-    process.env.SWARMIFYX_LISTEN_HOST ?? process.env.HOST ?? "localhost",
+    process.env.PAPERTAPE_LISTEN_HOST ?? process.env.HOST ?? "localhost",
   );
-  const runtimePort = process.env.SWARMIFYX_LISTEN_PORT ?? process.env.PORT ?? "3100";
-  const apiUrl = process.env.SWARMIFYX_API_URL ?? `http://${runtimeHost}:${runtimePort}`;
-  vars.SWARMIFYX_API_URL = apiUrl;
+  const runtimePort = process.env.PAPERTAPE_LISTEN_PORT ?? process.env.PORT ?? "3100";
+  const apiUrl = process.env.PAPERTAPE_API_URL ?? `http://${runtimeHost}:${runtimePort}`;
+  vars.PAPERTAPE_API_URL = apiUrl;
   return vars;
 }
 
@@ -272,12 +272,12 @@ export async function ensureAbsoluteDirectory(
   }
 }
 
-export async function resolveSwamifyxSkillsDir(
+export async function resolvePapertapeSkillsDir(
   moduleDir: string,
   additionalCandidates: string[] = [],
 ): Promise<string | null> {
   const candidates = [
-    ...SWARMIFYX_SKILL_ROOT_RELATIVE_CANDIDATES.map((relativePath) => path.resolve(moduleDir, relativePath)),
+    ...PAPERTAPE_SKILL_ROOT_RELATIVE_CANDIDATES.map((relativePath) => path.resolve(moduleDir, relativePath)),
     ...additionalCandidates.map((candidate) => path.resolve(candidate)),
   ];
   const seenRoots = new Set<string>();
@@ -292,11 +292,11 @@ export async function resolveSwamifyxSkillsDir(
   return null;
 }
 
-export async function listSwamifyxSkillEntries(
+export async function listPapertapeSkillEntries(
   moduleDir: string,
   additionalCandidates: string[] = [],
-): Promise<SwamifyxSkillEntry[]> {
-  const root = await resolveSwamifyxSkillsDir(moduleDir, additionalCandidates);
+): Promise<PapertapeSkillEntry[]> {
+  const root = await resolvePapertapeSkillsDir(moduleDir, additionalCandidates);
   if (!root) return [];
 
   try {
@@ -312,14 +312,14 @@ export async function listSwamifyxSkillEntries(
   }
 }
 
-export async function readSwamifyxSkillMarkdown(
+export async function readPapertapeSkillMarkdown(
   moduleDir: string,
   skillName: string,
 ): Promise<string | null> {
   const normalized = skillName.trim().toLowerCase();
   if (!normalized) return null;
 
-  const entries = await listSwamifyxSkillEntries(moduleDir);
+  const entries = await listPapertapeSkillEntries(moduleDir);
   const match = entries.find((entry) => entry.name === normalized);
   if (!match) return null;
 
@@ -330,7 +330,7 @@ export async function readSwamifyxSkillMarkdown(
   }
 }
 
-export async function ensureSwamifyxSkillSymlink(
+export async function ensurePapertapeSkillSymlink(
   source: string,
   target: string,
   linkSkill: (source: string, target: string) => Promise<void> = (linkSource, linkTarget) =>
@@ -433,8 +433,8 @@ export async function runChildProcess(
 
     // Strip Claude Code nesting-guard env vars so spawned `claude` processes
     // don't refuse to start with "cannot be launched inside another session".
-    // These vars leak in when the Swarmifyx server itself is started from
-    // within a Claude Code session (e.g. `npx swarmifyx run` in a terminal
+    // These vars leak in when the Papertape server itself is started from
+    // within a Claude Code session (e.g. `npx papertape run` in a terminal
     // owned by Claude Code) or when cron inherits a contaminated shell env.
     const CLAUDE_CODE_NESTING_VARS = [
       "CLAUDECODE",

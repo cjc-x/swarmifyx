@@ -1,7 +1,7 @@
 import type { UIAdapterModule } from "../types";
-import { parseOpenCodeStdoutLine } from "@swarmifyx/adapter-opencode-local/ui";
+import { parseOpenCodeStdoutLine } from "@papertape/adapter-opencode-local/ui";
 import { OpenCodeLocalConfigFields } from "./config-fields";
-import { buildOpenCodeLocalConfig } from "@swarmifyx/adapter-opencode-local/ui";
+import { buildOpenCodeLocalConfig } from "@papertape/adapter-opencode-local/ui";
 
 export const openCodeLocalUIAdapter: UIAdapterModule = {
   type: "opencode_local",

@@ -3,7 +3,7 @@ title: Companies
 summary: Company CRUD endpoints
 ---
 
-Manage companies within your Swarmifyx instance.
+Manage companies within your Papertape instance.
 
 ## List Companies
 

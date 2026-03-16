@@ -3,7 +3,7 @@ import {
   isCodeBuddyUnknownSessionError,
   parseCodeBuddyJsonl,
   sessionCodec as codeBuddySessionCodec,
-} from "@swarmifyx/adapter-codebuddy-local/server";
+} from "@papertape/adapter-codebuddy-local/server";
 
 describe("codebuddy adapter", () => {
   it("parses successful stream-json output", () => {

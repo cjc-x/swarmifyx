@@ -1,17 +1,17 @@
 ---
 title: 快速开始
-summary: 在几分钟内启动 Swarmifyx
+summary: 在几分钟内启动 Papertape
 ---
 
-在 5 分钟内把 Swarmifyx 跑起来。
+在 5 分钟内把 Papertape 跑起来。
 
 ## 快速启动（推荐）
 
 ```sh
-npx swarmifyx onboard --yes
+npx papertape onboard --yes
 ```
 
-这个命令会引导你完成初始化、配置环境，并启动 Swarmifyx。
+这个命令会引导你完成初始化、配置环境，并启动 Papertape。
 
 ## 本地开发
 
@@ -24,19 +24,19 @@ pnpm dev
 
 这会在 [http://localhost:3100](http://localhost:3100) 启动 API 服务和 UI。
 
-不需要额外数据库。Swarmifyx 默认使用内嵌 PostgreSQL 实例。
+不需要额外数据库。Papertape 默认使用内嵌 PostgreSQL 实例。
 
 ## 单命令引导
 
 ```sh
-pnpm swarmifyx run
+pnpm papertape run
 ```
 
 如果缺少配置，这个命令会自动完成引导、执行带自动修复的健康检查，并启动服务。
 
 ## 接下来做什么
 
-Swarmifyx 运行起来后，可以按下面顺序继续：
+Papertape 运行起来后，可以按下面顺序继续：
 
 1. 在 Web UI 中创建第一家公司
 2. 定义公司的顶层目标
@@ -46,5 +46,5 @@ Swarmifyx 运行起来后，可以按下面顺序继续：
 6. 点击开始，代理会进入心跳循环，公司就能运转起来
 
 <Card title="核心概念" href="/start/core-concepts">
-  了解 Swarmifyx 背后的关键概念
+  了解 Papertape 背后的关键概念
 </Card>

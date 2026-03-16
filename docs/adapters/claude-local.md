@@ -45,15 +45,15 @@ summary: Claude Code 本地适配器的安装与配置
 
 ## 技能注入
 
-该适配器会创建一个临时目录，把 Swarmifyx 技能以符号链接形式放进去，并通过 `--add-dir` 传给 Claude。这样既能让技能可发现，又不会污染代理自己的工作目录。
+该适配器会创建一个临时目录，把 Papertape 技能以符号链接形式放进去，并通过 `--add-dir` 传给 Claude。这样既能让技能可发现，又不会污染代理自己的工作目录。
 
 如果想在心跳运行之外手动以本地 CLI 方式使用它（例如直接以 `claudecoder` 身份运行），可以执行：
 
 ```sh
-pnpm swarmifyx agent local-cli claudecoder --company-id <company-id>
+pnpm papertape agent local-cli claudecoder --company-id <company-id>
 ```
 
-这个命令会把 Swarmifyx 技能安装到 `~/.claude/skills`，创建一个代理 API key，并输出以该代理身份运行所需的 shell 环境变量。
+这个命令会把 Papertape 技能安装到 `~/.claude/skills`，创建一个代理 API key，并输出以该代理身份运行所需的 shell 环境变量。
 
 ## 环境测试
 

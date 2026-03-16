@@ -17,7 +17,7 @@ So even though the CEO has hire permission, the route still enforces old self-on
 
 ## 1.2 Why comment quality felt wrong
 
-- `skills/swarmifyx/SKILL.md` and `skills/swarmifyx/references/api-reference.md` do not currently require markdown formatting quality for status comments (links, structure, readable updates).
+- `skills/papertape/SKILL.md` and `skills/papertape/references/api-reference.md` do not currently require markdown formatting quality for status comments (links, structure, readable updates).
 - Agents therefore produce plain prose comments with raw IDs, not linked entities.
 
 ## 1.3 Issue↔Approval linkage gap
@@ -190,7 +190,7 @@ No hard editor enforcement initially; update helper text and templates to encour
 
 ## 6. Skill Updates
 
-## 6.1 `skills/swarmifyx/SKILL.md`
+## 6.1 `skills/papertape/SKILL.md`
 
 Add comment standard:
 
@@ -200,7 +200,7 @@ Add comment standard:
   - agent: `/agents/{id}`
   - issue: `/issues/{id}`
 
-## 6.2 `skills/swarmifyx-create-agent/SKILL.md`
+## 6.2 `skills/papertape-create-agent/SKILL.md`
 
 Require:
 

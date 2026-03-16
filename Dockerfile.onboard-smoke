@@ -1,20 +1,20 @@
 FROM ubuntu:24.04
 
 ARG NODE_MAJOR=20
-ARG SWARMIFYX_VERSION=latest
+ARG PAPERTAPE_VERSION=latest
 ARG HOST_UID=10001
 
 ENV DEBIAN_FRONTEND=noninteractive \
-  SWARMIFYX_HOME=/swarmifyx \
-  SWARMIFYX_OPEN_ON_LISTEN=false \
+  PAPERTAPE_HOME=/papertape \
+  PAPERTAPE_OPEN_ON_LISTEN=false \
   HOST=0.0.0.0 \
   PORT=3100 \
-  HOME=/home/swarmifyx \
+  HOME=/home/papertape \
   LANG=en_US.UTF-8 \
   LC_ALL=en_US.UTF-8 \
   NPM_CONFIG_UPDATE_NOTIFIER=false \
   NODE_MAJOR=${NODE_MAJOR} \
-  SWARMIFYX_VERSION=${SWARMIFYX_VERSION}
+  PAPERTAPE_VERSION=${PAPERTAPE_VERSION}
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends ca-certificates curl gnupg locales \
@@ -26,15 +26,15 @@ RUN apt-get update \
   && apt-get update \
   && apt-get install -y --no-install-recommends nodejs \
   && locale-gen en_US.UTF-8 \
-  && groupadd --gid 10001 swarmifyx \
-  && useradd --create-home --shell /bin/bash --uid "${HOST_UID}" --gid 10001 swarmifyx \
-  && mkdir -p /swarmifyx /home/swarmifyx/workspace \
-  && chown -R swarmifyx:swarmifyx /swarmifyx /home/swarmifyx \
+  && groupadd --gid 10001 papertape \
+  && useradd --create-home --shell /bin/bash --uid "${HOST_UID}" --gid 10001 papertape \
+  && mkdir -p /papertape /home/papertape/workspace \
+  && chown -R papertape:papertape /papertape /home/papertape \
   && rm -rf /var/lib/apt/lists/*
 
-VOLUME ["/swarmifyx"]
-WORKDIR /home/swarmifyx/workspace
+VOLUME ["/papertape"]
+WORKDIR /home/papertape/workspace
 EXPOSE 3100
-USER swarmifyx
+USER papertape
 
-CMD ["bash", "-lc", "set -euo pipefail; mkdir -p \"$SWARMIFYX_HOME\"; npx --yes \"swarmifyx@${SWARMIFYX_VERSION}\" onboard --yes --data-dir \"$SWARMIFYX_HOME\""]
+CMD ["bash", "-lc", "set -euo pipefail; mkdir -p \"$PAPERTAPE_HOME\"; npx --yes \"papertape@${PAPERTAPE_VERSION}\" onboard --yes --data-dir \"$PAPERTAPE_HOME\""]

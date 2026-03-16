@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import type { AdapterExecutionContext } from "@swarmifyx/adapter-utils";
+import type { AdapterExecutionContext } from "@papertape/adapter-utils";
 
 const TRUTHY_ENV_RE = /^(1|true|yes|on)$/i;
 const COPIED_SHARED_FILES = ["config.json", "config.toml", "instructions.md"] as const;
@@ -22,19 +22,19 @@ export function resolveCodexHomeDir(env: NodeJS.ProcessEnv = process.env): strin
 }
 
 function isWorktreeMode(env: NodeJS.ProcessEnv): boolean {
-  const marker = env.SWARMIFYX_IN_WORKTREE ?? env.SWARMIFYX_IN_WORKTREE ?? "";
+  const marker = env.PAPERTAPE_IN_WORKTREE ?? env.PAPERTAPE_IN_WORKTREE ?? "";
   return TRUTHY_ENV_RE.test(marker);
 }
 
 function resolveWorktreeCodexHomeDir(env: NodeJS.ProcessEnv): string | null {
   if (!isWorktreeMode(env)) return null;
-  const swarmifyxHome = nonEmpty(env.SWARMIFYX_HOME ?? env.SWARMIFYX_HOME);
-  if (!swarmifyxHome) return null;
-  const instanceId = nonEmpty(env.SWARMIFYX_INSTANCE_ID ?? env.SWARMIFYX_INSTANCE_ID);
+  const papertapeHome = nonEmpty(env.PAPERTAPE_HOME ?? env.PAPERTAPE_HOME);
+  if (!papertapeHome) return null;
+  const instanceId = nonEmpty(env.PAPERTAPE_INSTANCE_ID ?? env.PAPERTAPE_INSTANCE_ID);
   if (instanceId) {
-    return path.resolve(swarmifyxHome, "instances", instanceId, "codex-home");
+    return path.resolve(papertapeHome, "instances", instanceId, "codex-home");
   }
-  return path.resolve(swarmifyxHome, "codex-home");
+  return path.resolve(papertapeHome, "codex-home");
 }
 
 async function ensureParentDir(target: string): Promise<void> {
@@ -96,7 +96,7 @@ export async function prepareWorktreeCodexHome(
 
   await onLog(
     "stderr",
-    `[swarmifyx] Using worktree-isolated Codex home "${targetHome}" (seeded from "${sourceHome}").\n`,
+    `[papertape] Using worktree-isolated Codex home "${targetHome}" (seeded from "${sourceHome}").\n`,
   );
   return targetHome;
 }

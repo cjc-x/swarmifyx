@@ -2,11 +2,11 @@ services:
   db:
     image: postgres:17-alpine
     environment:
-      POSTGRES_USER: swarmifyx
-      POSTGRES_PASSWORD: swarmifyx
-      POSTGRES_DB: swarmifyx
+      POSTGRES_USER: papertape
+      POSTGRES_PASSWORD: papertape
+      POSTGRES_DB: papertape
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U swarmifyx -d swarmifyx"]
+      test: ["CMD-SHELL", "pg_isready -U papertape -d papertape"]
       interval: 2s
       timeout: 5s
       retries: 30
@@ -20,19 +20,19 @@ services:
     ports:
       - "3100:3100"
     environment:
-      DATABASE_URL: postgres://swarmifyx:swarmifyx@db:5432/swarmifyx
+      DATABASE_URL: postgres://papertape:papertape@db:5432/papertape
       PORT: "3100"
       SERVE_UI: "true"
-      SWARMIFYX_DEPLOYMENT_MODE: "authenticated"
-      SWARMIFYX_DEPLOYMENT_EXPOSURE: "private"
-      SWARMIFYX_PUBLIC_URL: "${SWARMIFYX_PUBLIC_URL:-http://localhost:3100}"
+      PAPERTAPE_DEPLOYMENT_MODE: "authenticated"
+      PAPERTAPE_DEPLOYMENT_EXPOSURE: "private"
+      PAPERTAPE_PUBLIC_URL: "${PAPERTAPE_PUBLIC_URL:-http://localhost:3100}"
       BETTER_AUTH_SECRET: "${BETTER_AUTH_SECRET:?BETTER_AUTH_SECRET must be set}"
     volumes:
-      - swarmifyx-data:/swarmifyx
+      - papertape-data:/papertape
     depends_on:
       db:
         condition: service_healthy
 
 volumes:
   pgdata:
-  swarmifyx-data:
+  papertape-data:

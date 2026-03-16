@@ -1,9 +1,9 @@
 ---
 title: 本地开发
-summary: 为本地开发配置 Swarmifyx
+summary: 为本地开发配置 Papertape
 ---
 
-在几乎零外部依赖的前提下本地运行 Swarmifyx。
+在几乎零外部依赖的前提下本地运行 Papertape。
 
 ## 前置条件
 
@@ -22,20 +22,20 @@ pnpm dev
 - **API 服务**：`http://localhost:3100`
 - **UI**：由 API 服务以 dev middleware 模式托管（同源）
 
-不需要 Docker，也不需要外部数据库。Swarmifyx 会自动启用内嵌 PostgreSQL。
+不需要 Docker，也不需要外部数据库。Papertape 会自动启用内嵌 PostgreSQL。
 
 ## 单命令引导
 
 首次安装时可以执行：
 
 ```sh
-pnpm swarmifyx run
+pnpm papertape run
 ```
 
 这个命令会：
 
 1. 在缺少配置时自动完成引导
-2. 运行带修复能力的 `swarmifyx doctor`
+2. 运行带修复能力的 `papertape doctor`
 3. 在检查通过后启动服务
 
 ## Tailscale / 私网认证开发模式
@@ -57,7 +57,7 @@ pnpm dev --authenticated-private
 允许额外的私有主机名：
 
 ```sh
-pnpm swarmifyx allowed-hostname dotta-macbook-pro
+pnpm papertape allowed-hostname dotta-macbook-pro
 ```
 
 完整配置和排障见 [Tailscale 私网访问](/deploy/tailscale-private-access)。
@@ -77,7 +77,7 @@ curl http://localhost:3100/api/companies
 如果要清空本地数据并重新开始：
 
 ```sh
-rm -rf ~/.swarmifyx/instances/default/db
+rm -rf ~/.papertape/instances/default/db
 pnpm dev
 ```
 
@@ -85,16 +85,16 @@ pnpm dev
 
 | Data | Path |
 |------|------|
-| 配置 | `~/.swarmifyx/instances/default/config.json` |
-| 数据库 | `~/.swarmifyx/instances/default/db` |
-| 存储 | `~/.swarmifyx/instances/default/data/storage` |
-| Secrets key | `~/.swarmifyx/instances/default/secrets/master.key` |
-| 日志 | `~/.swarmifyx/instances/default/logs` |
+| 配置 | `~/.papertape/instances/default/config.json` |
+| 数据库 | `~/.papertape/instances/default/db` |
+| 存储 | `~/.papertape/instances/default/data/storage` |
+| Secrets key | `~/.papertape/instances/default/secrets/master.key` |
+| 日志 | `~/.papertape/instances/default/logs` |
 
 可以通过环境变量覆盖：
 
 ```sh
-SWARMIFYX_HOME=/custom/path SWARMIFYX_INSTANCE_ID=dev pnpm swarmifyx run
+PAPERTAPE_HOME=/custom/path PAPERTAPE_INSTANCE_ID=dev pnpm papertape run
 ```
 
-兼容性说明：`~/.swarmifyx` 现在是唯一默认的本地 home。旧路径不会再被自动探测；迁移时请把目录移动到 `~/.swarmifyx`，或者显式设置 `SWARMIFYX_HOME`。
+兼容性说明：`~/.papertape` 现在是唯一默认的本地 home。旧路径不会再被自动探测；迁移时请把目录移动到 `~/.papertape`，或者显式设置 `PAPERTAPE_HOME`。

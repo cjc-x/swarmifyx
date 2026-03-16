@@ -1,32 +1,32 @@
 {
-  "name": "@swarmifyx/plugin-authoring-smoke-example",
+  "name": "@papertape/plugin-authoring-smoke-example",
   "version": "0.1.0",
   "type": "module",
   "private": true,
-  "description": "A Swarmifyx plugin",
+  "description": "A Papertape plugin",
   "scripts": {
     "prebuild": "node ../../../../scripts/ensure-plugin-build-deps.mjs",
     "build": "node ./esbuild.config.mjs",
     "build:rollup": "rollup -c",
     "dev": "node ./esbuild.config.mjs --watch",
-    "dev:ui": "swarmifyx-plugin-dev-server --root . --ui-dir dist/ui --port 4177",
+    "dev:ui": "papertape-plugin-dev-server --root . --ui-dir dist/ui --port 4177",
     "test": "vitest run --config ./vitest.config.ts",
-    "typecheck": "pnpm --filter @swarmifyx/plugin-sdk build && tsc --noEmit"
+    "typecheck": "pnpm --filter @papertape/plugin-sdk build && tsc --noEmit"
   },
-  "swarmifyxPlugin": {
+  "papertapePlugin": {
     "manifest": "./dist/manifest.js",
     "worker": "./dist/worker.js",
     "ui": "./dist/ui/"
   },
   "keywords": [
-    "swarmifyx",
+    "papertape",
     "plugin",
     "connector"
   ],
   "author": "Plugin Author",
   "license": "MIT",
   "dependencies": {
-    "@swarmifyx/plugin-sdk": "workspace:*"
+    "@papertape/plugin-sdk": "workspace:*"
   },
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^16.0.1",

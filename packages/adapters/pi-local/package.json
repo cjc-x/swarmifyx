@@ -1,5 +1,5 @@
 {
-  "name": "@swarmifyx/adapter-pi-local",
+  "name": "@papertape/adapter-pi-local",
   "version": "0.3.1",
   "type": "module",
   "exports": {
@@ -40,7 +40,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@swarmifyx/adapter-utils": "workspace:*",
+    "@papertape/adapter-utils": "workspace:*",
     "picocolors": "^1.1.1"
   },
   "devDependencies": {

@@ -16,4 +16,4 @@ export type {
   AdapterSessionCodec,
   AdapterModel,
   ServerAdapterModule,
-} from "@swarmifyx/adapter-utils";
+} from "@papertape/adapter-utils";

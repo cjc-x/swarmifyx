@@ -2,7 +2,7 @@ import type {
   AdapterEnvironmentCheck,
   AdapterEnvironmentTestContext,
   AdapterEnvironmentTestResult,
-} from "@swarmifyx/adapter-utils";
+} from "@papertape/adapter-utils";
 import {
   asBoolean,
   asNumber,
@@ -13,7 +13,7 @@ import {
   ensurePathInEnv,
   parseObject,
   runChildProcess,
-} from "@swarmifyx/adapter-utils/server-utils";
+} from "@papertape/adapter-utils/server-utils";
 import {
   DEFAULT_CODEBUDDY_LOCAL_MODEL,
   DEFAULT_CODEBUDDY_LOCAL_SKIP_PERMISSIONS,

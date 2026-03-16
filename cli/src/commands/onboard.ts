@@ -12,9 +12,9 @@ import {
   type DeploymentMode,
   type SecretProvider,
   type StorageProvider,
-} from "@swarmifyx/shared";
+} from "@papertape/shared";
 import { configExists, readConfig, resolveConfigPath, writeConfig } from "../config/store.js";
-import type { SwarmifyxConfig } from "../config/schema.js";
+import type { PapertapeConfig } from "../config/schema.js";
 import { ensureAgentJwtSecret, resolveAgentJwtEnvFile } from "../config/env.js";
 import { ensureLocalSecretsKeyFile } from "../config/secrets-key.js";
 import { promptDatabase } from "../prompts/database.js";
@@ -29,11 +29,11 @@ import {
   resolveDefaultBackupDir,
   resolveDefaultEmbeddedPostgresDir,
   resolveDefaultLogsDir,
-  resolveSwarmifyxInstanceId,
+  resolvePapertapeInstanceId,
 } from "../config/home.js";
 import { publicCliCommand } from "../config/branding.js";
 import { bootstrapCeoInvite } from "./auth-bootstrap-ceo.js";
-import { printSwarmifyxCliBanner } from "../utils/banner.js";
+import { printPapertapeCliBanner } from "../utils/banner.js";
 
 type SetupMode = "quickstart" | "advanced";
 
@@ -44,35 +44,35 @@ type OnboardOptions = {
   invokedByRun?: boolean;
 };
 
-type OnboardDefaults = Pick<SwarmifyxConfig, "database" | "logging" | "server" | "auth" | "storage" | "secrets">;
+type OnboardDefaults = Pick<PapertapeConfig, "database" | "logging" | "server" | "auth" | "storage" | "secrets">;
 
 const ONBOARD_ENV_KEYS = [
-  "SWARMIFYX_PUBLIC_URL",
+  "PAPERTAPE_PUBLIC_URL",
   "DATABASE_URL",
-  "SWARMIFYX_DB_BACKUP_ENABLED",
-  "SWARMIFYX_DB_BACKUP_INTERVAL_MINUTES",
-  "SWARMIFYX_DB_BACKUP_RETENTION_DAYS",
-  "SWARMIFYX_DB_BACKUP_DIR",
-  "SWARMIFYX_DEPLOYMENT_MODE",
-  "SWARMIFYX_DEPLOYMENT_EXPOSURE",
+  "PAPERTAPE_DB_BACKUP_ENABLED",
+  "PAPERTAPE_DB_BACKUP_INTERVAL_MINUTES",
+  "PAPERTAPE_DB_BACKUP_RETENTION_DAYS",
+  "PAPERTAPE_DB_BACKUP_DIR",
+  "PAPERTAPE_DEPLOYMENT_MODE",
+  "PAPERTAPE_DEPLOYMENT_EXPOSURE",
   "HOST",
   "PORT",
   "SERVE_UI",
-  "SWARMIFYX_ALLOWED_HOSTNAMES",
-  "SWARMIFYX_AUTH_BASE_URL_MODE",
-  "SWARMIFYX_AUTH_PUBLIC_BASE_URL",
+  "PAPERTAPE_ALLOWED_HOSTNAMES",
+  "PAPERTAPE_AUTH_BASE_URL_MODE",
+  "PAPERTAPE_AUTH_PUBLIC_BASE_URL",
   "BETTER_AUTH_URL",
   "BETTER_AUTH_BASE_URL",
-  "SWARMIFYX_STORAGE_PROVIDER",
-  "SWARMIFYX_STORAGE_LOCAL_DIR",
-  "SWARMIFYX_STORAGE_S3_BUCKET",
-  "SWARMIFYX_STORAGE_S3_REGION",
-  "SWARMIFYX_STORAGE_S3_ENDPOINT",
-  "SWARMIFYX_STORAGE_S3_PREFIX",
-  "SWARMIFYX_STORAGE_S3_FORCE_PATH_STYLE",
-  "SWARMIFYX_SECRETS_PROVIDER",
-  "SWARMIFYX_SECRETS_STRICT_MODE",
-  "SWARMIFYX_SECRETS_MASTER_KEY_FILE",
+  "PAPERTAPE_STORAGE_PROVIDER",
+  "PAPERTAPE_STORAGE_LOCAL_DIR",
+  "PAPERTAPE_STORAGE_S3_BUCKET",
+  "PAPERTAPE_STORAGE_S3_REGION",
+  "PAPERTAPE_STORAGE_S3_ENDPOINT",
+  "PAPERTAPE_STORAGE_S3_PREFIX",
+  "PAPERTAPE_STORAGE_S3_FORCE_PATH_STYLE",
+  "PAPERTAPE_SECRETS_PROVIDER",
+  "PAPERTAPE_SECRETS_STRICT_MODE",
+  "PAPERTAPE_SECRETS_MASTER_KEY_FILE",
 ] as const;
 
 function parseBooleanFromEnv(rawValue: string | undefined): boolean | null {
@@ -105,32 +105,32 @@ function quickstartDefaultsFromEnv(): {
   usedEnvKeys: string[];
   ignoredEnvKeys: Array<{ key: string; reason: string }>;
 } {
-  const instanceId = resolveSwarmifyxInstanceId();
+  const instanceId = resolvePapertapeInstanceId();
   const defaultStorage = defaultStorageConfig();
   const defaultSecrets = defaultSecretsConfig();
   const databaseUrl = process.env.DATABASE_URL?.trim() || undefined;
   const publicUrl =
-    process.env.SWARMIFYX_PUBLIC_URL?.trim() ||
-    process.env.SWARMIFYX_AUTH_PUBLIC_BASE_URL?.trim() ||
+    process.env.PAPERTAPE_PUBLIC_URL?.trim() ||
+    process.env.PAPERTAPE_AUTH_PUBLIC_BASE_URL?.trim() ||
     process.env.BETTER_AUTH_URL?.trim() ||
     process.env.BETTER_AUTH_BASE_URL?.trim() ||
     undefined;
   const deploymentMode =
-    parseEnumFromEnv<DeploymentMode>(process.env.SWARMIFYX_DEPLOYMENT_MODE, DEPLOYMENT_MODES) ?? "local_trusted";
+    parseEnumFromEnv<DeploymentMode>(process.env.PAPERTAPE_DEPLOYMENT_MODE, DEPLOYMENT_MODES) ?? "local_trusted";
   const deploymentExposureFromEnv = parseEnumFromEnv<DeploymentExposure>(
-    process.env.SWARMIFYX_DEPLOYMENT_EXPOSURE,
+    process.env.PAPERTAPE_DEPLOYMENT_EXPOSURE,
     DEPLOYMENT_EXPOSURES,
   );
   const deploymentExposure =
     deploymentMode === "local_trusted" ? "private" : (deploymentExposureFromEnv ?? "private");
   const authPublicBaseUrl = publicUrl;
   const authBaseUrlModeFromEnv = parseEnumFromEnv<AuthBaseUrlMode>(
-    process.env.SWARMIFYX_AUTH_BASE_URL_MODE,
+    process.env.PAPERTAPE_AUTH_BASE_URL_MODE,
     AUTH_BASE_URL_MODES,
   );
   const authBaseUrlMode = authBaseUrlModeFromEnv ?? (authPublicBaseUrl ? "explicit" : "auto");
-  const allowedHostnamesFromEnv = process.env.SWARMIFYX_ALLOWED_HOSTNAMES
-    ? process.env.SWARMIFYX_ALLOWED_HOSTNAMES
+  const allowedHostnamesFromEnv = process.env.PAPERTAPE_ALLOWED_HOSTNAMES
+    ? process.env.PAPERTAPE_ALLOWED_HOSTNAMES
       .split(",")
       .map((value) => value.trim().toLowerCase())
       .filter((value) => value.length > 0)
@@ -145,19 +145,19 @@ function quickstartDefaultsFromEnv(): {
     })()
     : null;
   const storageProvider =
-    parseEnumFromEnv<StorageProvider>(process.env.SWARMIFYX_STORAGE_PROVIDER, STORAGE_PROVIDERS) ??
+    parseEnumFromEnv<StorageProvider>(process.env.PAPERTAPE_STORAGE_PROVIDER, STORAGE_PROVIDERS) ??
     defaultStorage.provider;
   const secretsProvider =
-    parseEnumFromEnv<SecretProvider>(process.env.SWARMIFYX_SECRETS_PROVIDER, SECRET_PROVIDERS) ??
+    parseEnumFromEnv<SecretProvider>(process.env.PAPERTAPE_SECRETS_PROVIDER, SECRET_PROVIDERS) ??
     defaultSecrets.provider;
-  const databaseBackupEnabled = parseBooleanFromEnv(process.env.SWARMIFYX_DB_BACKUP_ENABLED) ?? true;
+  const databaseBackupEnabled = parseBooleanFromEnv(process.env.PAPERTAPE_DB_BACKUP_ENABLED) ?? true;
   const databaseBackupIntervalMinutes = Math.max(
     1,
-    parseNumberFromEnv(process.env.SWARMIFYX_DB_BACKUP_INTERVAL_MINUTES) ?? 60,
+    parseNumberFromEnv(process.env.PAPERTAPE_DB_BACKUP_INTERVAL_MINUTES) ?? 60,
   );
   const databaseBackupRetentionDays = Math.max(
     1,
-    parseNumberFromEnv(process.env.SWARMIFYX_DB_BACKUP_RETENTION_DAYS) ?? 30,
+    parseNumberFromEnv(process.env.PAPERTAPE_DB_BACKUP_RETENTION_DAYS) ?? 30,
   );
   const defaults: OnboardDefaults = {
     database: {
@@ -169,7 +169,7 @@ function quickstartDefaultsFromEnv(): {
         enabled: databaseBackupEnabled,
         intervalMinutes: databaseBackupIntervalMinutes,
         retentionDays: databaseBackupRetentionDays,
-        dir: resolvePathFromEnv(process.env.SWARMIFYX_DB_BACKUP_DIR) ?? resolveDefaultBackupDir(instanceId),
+        dir: resolvePathFromEnv(process.env.PAPERTAPE_DB_BACKUP_DIR) ?? resolveDefaultBackupDir(instanceId),
       },
     },
     logging: {
@@ -193,32 +193,32 @@ function quickstartDefaultsFromEnv(): {
       provider: storageProvider,
       localDisk: {
         baseDir:
-          resolvePathFromEnv(process.env.SWARMIFYX_STORAGE_LOCAL_DIR) ?? defaultStorage.localDisk.baseDir,
+          resolvePathFromEnv(process.env.PAPERTAPE_STORAGE_LOCAL_DIR) ?? defaultStorage.localDisk.baseDir,
       },
       s3: {
-        bucket: process.env.SWARMIFYX_STORAGE_S3_BUCKET ?? defaultStorage.s3.bucket,
-        region: process.env.SWARMIFYX_STORAGE_S3_REGION ?? defaultStorage.s3.region,
-        endpoint: process.env.SWARMIFYX_STORAGE_S3_ENDPOINT ?? defaultStorage.s3.endpoint,
-        prefix: process.env.SWARMIFYX_STORAGE_S3_PREFIX ?? defaultStorage.s3.prefix,
+        bucket: process.env.PAPERTAPE_STORAGE_S3_BUCKET ?? defaultStorage.s3.bucket,
+        region: process.env.PAPERTAPE_STORAGE_S3_REGION ?? defaultStorage.s3.region,
+        endpoint: process.env.PAPERTAPE_STORAGE_S3_ENDPOINT ?? defaultStorage.s3.endpoint,
+        prefix: process.env.PAPERTAPE_STORAGE_S3_PREFIX ?? defaultStorage.s3.prefix,
         forcePathStyle:
-          parseBooleanFromEnv(process.env.SWARMIFYX_STORAGE_S3_FORCE_PATH_STYLE) ??
+          parseBooleanFromEnv(process.env.PAPERTAPE_STORAGE_S3_FORCE_PATH_STYLE) ??
           defaultStorage.s3.forcePathStyle,
       },
     },
     secrets: {
       provider: secretsProvider,
-      strictMode: parseBooleanFromEnv(process.env.SWARMIFYX_SECRETS_STRICT_MODE) ?? defaultSecrets.strictMode,
+      strictMode: parseBooleanFromEnv(process.env.PAPERTAPE_SECRETS_STRICT_MODE) ?? defaultSecrets.strictMode,
       localEncrypted: {
         keyFilePath:
-          resolvePathFromEnv(process.env.SWARMIFYX_SECRETS_MASTER_KEY_FILE) ??
+          resolvePathFromEnv(process.env.PAPERTAPE_SECRETS_MASTER_KEY_FILE) ??
           defaultSecrets.localEncrypted.keyFilePath,
       },
     },
   };
   const ignoredEnvKeys: Array<{ key: string; reason: string }> = [];
-  if (deploymentMode === "local_trusted" && process.env.SWARMIFYX_DEPLOYMENT_EXPOSURE !== undefined) {
+  if (deploymentMode === "local_trusted" && process.env.PAPERTAPE_DEPLOYMENT_EXPOSURE !== undefined) {
     ignoredEnvKeys.push({
-      key: "SWARMIFYX_DEPLOYMENT_EXPOSURE",
+      key: "PAPERTAPE_DEPLOYMENT_EXPOSURE",
       reason: "Ignored because deployment mode local_trusted always forces private exposure",
     });
   }
@@ -230,15 +230,15 @@ function quickstartDefaultsFromEnv(): {
   return { defaults, usedEnvKeys, ignoredEnvKeys };
 }
 
-function canCreateBootstrapInviteImmediately(config: Pick<SwarmifyxConfig, "database" | "server">): boolean {
+function canCreateBootstrapInviteImmediately(config: Pick<PapertapeConfig, "database" | "server">): boolean {
   return config.server.deploymentMode === "authenticated" && config.database.mode !== "embedded-postgres";
 }
 
 export async function onboard(opts: OnboardOptions): Promise<void> {
-  printSwarmifyxCliBanner();
+  printPapertapeCliBanner();
   p.intro(pc.bgCyan(pc.black(` ${publicCliCommand("onboard")} `)));
   const configPath = resolveConfigPath(opts.config);
-  const instance = describeLocalInstancePaths(resolveSwarmifyxInstanceId());
+  const instance = describeLocalInstancePaths(resolvePapertapeInstanceId());
   p.log.message(
     pc.dim(
       `Local home: ${instance.homeDir} | instance: ${instance.instanceId} | config: ${configPath}`,
@@ -286,7 +286,7 @@ export async function onboard(opts: OnboardOptions): Promise<void> {
     setupMode = setupModeChoice as SetupMode;
   }
 
-  let llm: SwarmifyxConfig["llm"] | undefined;
+  let llm: PapertapeConfig["llm"] | undefined;
   const { defaults: derivedDefaults, usedEnvKeys, ignoredEnvKeys } = quickstartDefaultsFromEnv();
   let {
     database,
@@ -305,7 +305,7 @@ export async function onboard(opts: OnboardOptions): Promise<void> {
       const s = p.spinner();
       s.start("Testing database connection...");
       try {
-        const { createDb } = await import("@swarmifyx/db");
+        const { createDb } = await import("@papertape/db");
         const db = createDb(database.connectionString);
         await db.execute("SELECT 1");
         s.stop("Database connection successful");
@@ -404,14 +404,14 @@ export async function onboard(opts: OnboardOptions): Promise<void> {
   const jwtSecret = ensureAgentJwtSecret(configPath);
   const envFilePath = resolveAgentJwtEnvFile(configPath);
   if (jwtSecret.created) {
-    p.log.success(`Created ${pc.cyan("SWARMIFYX_AGENT_JWT_SECRET")} in ${pc.dim(envFilePath)}`);
-  } else if (process.env.SWARMIFYX_AGENT_JWT_SECRET?.trim()) {
-    p.log.info(`Using existing ${pc.cyan("SWARMIFYX_AGENT_JWT_SECRET")} from environment`);
+    p.log.success(`Created ${pc.cyan("PAPERTAPE_AGENT_JWT_SECRET")} in ${pc.dim(envFilePath)}`);
+  } else if (process.env.PAPERTAPE_AGENT_JWT_SECRET?.trim()) {
+    p.log.info(`Using existing ${pc.cyan("PAPERTAPE_AGENT_JWT_SECRET")} from environment`);
   } else {
-    p.log.info(`Using existing ${pc.cyan("SWARMIFYX_AGENT_JWT_SECRET")} in ${pc.dim(envFilePath)}`);
+    p.log.info(`Using existing ${pc.cyan("PAPERTAPE_AGENT_JWT_SECRET")} in ${pc.dim(envFilePath)}`);
   }
 
-  const config: SwarmifyxConfig = {
+  const config: PapertapeConfig = {
     $meta: {
       version: 1,
       updatedAt: new Date().toISOString(),
@@ -445,7 +445,7 @@ export async function onboard(opts: OnboardOptions): Promise<void> {
       `Auth URL mode: ${auth.baseUrlMode}${auth.publicBaseUrl ? ` (${auth.publicBaseUrl})` : ""}`,
       `Storage: ${storage.provider}`,
       `Secrets: ${secrets.provider} (strict mode ${secrets.strictMode ? "on" : "off"})`,
-      "Agent auth: SWARMIFYX_AGENT_JWT_SECRET configured",
+      "Agent auth: PAPERTAPE_AGENT_JWT_SECRET configured",
     ].join("\n"),
     "Configuration saved",
   );
@@ -467,7 +467,7 @@ export async function onboard(opts: OnboardOptions): Promise<void> {
   let shouldRunNow = opts.run === true || opts.yes === true;
   if (!shouldRunNow && !opts.invokedByRun && process.stdin.isTTY && process.stdout.isTTY) {
     const answer = await p.confirm({
-      message: "Start SwarmifyX now?",
+      message: "Start Papertape now?",
       initialValue: true,
     });
     if (!p.isCancel(answer)) {
@@ -476,7 +476,7 @@ export async function onboard(opts: OnboardOptions): Promise<void> {
   }
 
   if (shouldRunNow && !opts.invokedByRun) {
-    process.env.SWARMIFYX_OPEN_ON_LISTEN = "true";
+    process.env.PAPERTAPE_OPEN_ON_LISTEN = "true";
     const { runCommand } = await import("./run.js");
     await runCommand({ config: configPath, repair: true, yes: true });
     return;

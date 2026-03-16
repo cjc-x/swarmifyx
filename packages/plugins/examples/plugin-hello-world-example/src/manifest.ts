@@ -1,9 +1,9 @@
-import type { SwarmifyxPluginManifestV1 } from "@swarmifyx/plugin-sdk";
+import type { PapertapePluginManifestV1 } from "@papertape/plugin-sdk";
 
 /**
  * Stable plugin ID used by host registration and namespacing.
  */
-const PLUGIN_ID = "swarmifyx.hello-world-example";
+const PLUGIN_ID = "papertape.hello-world-example";
 const PLUGIN_VERSION = "0.1.0";
 const DASHBOARD_WIDGET_SLOT_ID = "hello-world-dashboard-widget";
 const DASHBOARD_WIDGET_EXPORT_NAME = "HelloWorldDashboardWidget";
@@ -11,13 +11,13 @@ const DASHBOARD_WIDGET_EXPORT_NAME = "HelloWorldDashboardWidget";
 /**
  * Minimal manifest demonstrating a UI-only plugin with one dashboard widget slot.
  */
-const manifest: SwarmifyxPluginManifestV1 = {
+const manifest: PapertapePluginManifestV1 = {
   id: PLUGIN_ID,
   apiVersion: 1,
   version: PLUGIN_VERSION,
   displayName: "Hello World Widget (Example)",
-  description: "Reference UI plugin that adds a simple Hello World widget to the Swarmifyx dashboard.",
-  author: "Swarmifyx",
+  description: "Reference UI plugin that adds a simple Hello World widget to the Papertape dashboard.",
+  author: "Papertape",
   categories: ["ui"],
   capabilities: ["ui.dashboardWidget.register"],
   entrypoints: {

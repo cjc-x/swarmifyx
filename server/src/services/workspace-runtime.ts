@@ -4,9 +4,9 @@ import net from "node:net";
 import { createHash, randomUUID } from "node:crypto";
 import path from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
-import type { AdapterRuntimeServiceReport } from "@swarmifyx/adapter-utils";
-import type { Db } from "@swarmifyx/db";
-import { workspaceRuntimeServices } from "@swarmifyx/db";
+import type { AdapterRuntimeServiceReport } from "@papertape/adapter-utils";
+import type { Db } from "@papertape/db";
+import { workspaceRuntimeServices } from "@papertape/db";
 import { and, desc, eq, inArray } from "drizzle-orm";
 import { asNumber, asString, parseObject, renderTemplate } from "../adapters/utils.js";
 import { resolveHomeAwarePath } from "../home-paths.js";
@@ -210,7 +210,7 @@ function sanitizeBranchName(value: string): string {
     .replace(/[^A-Za-z0-9._/-]+/g, "-")
     .replace(/-+/g, "-")
     .replace(/^[-/.]+|[-/.]+$/g, "")
-    .slice(0, 120) || "swarmifyx-work";
+    .slice(0, 120) || "papertape-work";
 }
 
 function isAbsolutePath(value: string) {
@@ -333,24 +333,24 @@ function buildWorkspaceCommandEnv(input: {
   created: boolean;
 }) {
   const env: NodeJS.ProcessEnv = { ...process.env };
-  env.SWARMIFYX_WORKSPACE_CWD = input.worktreePath;
-  env.SWARMIFYX_WORKSPACE_PATH = input.worktreePath;
-  env.SWARMIFYX_WORKSPACE_WORKTREE_PATH = input.worktreePath;
-  env.SWARMIFYX_WORKSPACE_BRANCH = input.branchName;
-  env.SWARMIFYX_WORKSPACE_BASE_CWD = input.base.baseCwd;
-  env.SWARMIFYX_WORKSPACE_REPO_ROOT = input.repoRoot;
-  env.SWARMIFYX_WORKSPACE_SOURCE = input.base.source;
-  env.SWARMIFYX_WORKSPACE_REPO_REF = input.base.repoRef ?? "";
-  env.SWARMIFYX_WORKSPACE_REPO_URL = input.base.repoUrl ?? "";
-  env.SWARMIFYX_WORKSPACE_CREATED = input.created ? "true" : "false";
-  env.SWARMIFYX_PROJECT_ID = input.base.projectId ?? "";
-  env.SWARMIFYX_PROJECT_WORKSPACE_ID = input.base.workspaceId ?? "";
-  env.SWARMIFYX_AGENT_ID = input.agent.id;
-  env.SWARMIFYX_AGENT_NAME = input.agent.name;
-  env.SWARMIFYX_COMPANY_ID = input.agent.companyId;
-  env.SWARMIFYX_ISSUE_ID = input.issue?.id ?? "";
-  env.SWARMIFYX_ISSUE_IDENTIFIER = input.issue?.identifier ?? "";
-  env.SWARMIFYX_ISSUE_TITLE = input.issue?.title ?? "";
+  env.PAPERTAPE_WORKSPACE_CWD = input.worktreePath;
+  env.PAPERTAPE_WORKSPACE_PATH = input.worktreePath;
+  env.PAPERTAPE_WORKSPACE_WORKTREE_PATH = input.worktreePath;
+  env.PAPERTAPE_WORKSPACE_BRANCH = input.branchName;
+  env.PAPERTAPE_WORKSPACE_BASE_CWD = input.base.baseCwd;
+  env.PAPERTAPE_WORKSPACE_REPO_ROOT = input.repoRoot;
+  env.PAPERTAPE_WORKSPACE_SOURCE = input.base.source;
+  env.PAPERTAPE_WORKSPACE_REPO_REF = input.base.repoRef ?? "";
+  env.PAPERTAPE_WORKSPACE_REPO_URL = input.base.repoUrl ?? "";
+  env.PAPERTAPE_WORKSPACE_CREATED = input.created ? "true" : "false";
+  env.PAPERTAPE_PROJECT_ID = input.base.projectId ?? "";
+  env.PAPERTAPE_PROJECT_WORKSPACE_ID = input.base.workspaceId ?? "";
+  env.PAPERTAPE_AGENT_ID = input.agent.id;
+  env.PAPERTAPE_AGENT_NAME = input.agent.name;
+  env.PAPERTAPE_COMPANY_ID = input.agent.companyId;
+  env.PAPERTAPE_ISSUE_ID = input.issue?.id ?? "";
+  env.PAPERTAPE_ISSUE_IDENTIFIER = input.issue?.identifier ?? "";
+  env.PAPERTAPE_ISSUE_TITLE = input.issue?.title ?? "";
   return env;
 }
 
@@ -447,7 +447,7 @@ export async function realizeExecutionWorkspace(input: {
   });
   const branchName = sanitizeBranchName(renderedBranch);
   const configuredParentDir = asString(rawStrategy.worktreeParentDir, "");
-  const defaultWorktreeParentDir = path.join(repoRoot, ".swarmifyx", "worktrees");
+  const defaultWorktreeParentDir = path.join(repoRoot, ".papertape", "worktrees");
   const worktreeParentDir = configuredParentDir
     ? resolveConfiguredPath(configuredParentDir, repoRoot)
     : defaultWorktreeParentDir;
@@ -491,7 +491,7 @@ export async function realizeExecutionWorkspace(input: {
   if (conflictingWorktreePath) {
     if (!configuredParentDir) {
       throw new Error(
-        `Execution worktree branch "${branchName}" is already checked out at ${conflictingWorktreePath}. SwarmifyX now uses ${defaultWorktreeParentDir} as the default worktree root; remove or migrate the existing worktree before retrying, or set workspaceStrategy.worktreeParentDir explicitly.`,
+        `Execution worktree branch "${branchName}" is already checked out at ${conflictingWorktreePath}. Papertape now uses ${defaultWorktreeParentDir} as the default worktree root; remove or migrate the existing worktree before retrying, or set workspaceStrategy.worktreeParentDir explicitly.`,
       );
     }
     throw new Error(

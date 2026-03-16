@@ -5,7 +5,7 @@ import { useCompany } from "../context/CompanyContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { agentsApi } from "../api/agents";
 import { queryKeys } from "../lib/queryKeys";
-import { AGENT_ROLES } from "@swarmifyx/shared";
+import { AGENT_ROLES } from "@papertape/shared";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -20,13 +20,13 @@ import { defaultCreateValues } from "../components/agent-config-defaults";
 import { getUIAdapter } from "../adapters";
 import { AgentIcon } from "../components/AgentIconPicker";
 import { useI18n } from "../context/I18nContext";
-import { DEFAULT_CODEBUDDY_LOCAL_MODEL } from "@swarmifyx/adapter-codebuddy-local";
+import { DEFAULT_CODEBUDDY_LOCAL_MODEL } from "@papertape/adapter-codebuddy-local";
 import {
   DEFAULT_CODEX_LOCAL_BYPASS_APPROVALS_AND_SANDBOX,
   DEFAULT_CODEX_LOCAL_MODEL,
-} from "@swarmifyx/adapter-codex-local";
-import { DEFAULT_CURSOR_LOCAL_MODEL } from "@swarmifyx/adapter-cursor-local";
-import { DEFAULT_GEMINI_LOCAL_MODEL } from "@swarmifyx/adapter-gemini-local";
+} from "@papertape/adapter-codex-local";
+import { DEFAULT_CURSOR_LOCAL_MODEL } from "@papertape/adapter-cursor-local";
+import { DEFAULT_GEMINI_LOCAL_MODEL } from "@papertape/adapter-gemini-local";
 
 const SUPPORTED_ADVANCED_ADAPTER_TYPES = new Set<CreateConfigValues["adapterType"]>([
   "claude_local",

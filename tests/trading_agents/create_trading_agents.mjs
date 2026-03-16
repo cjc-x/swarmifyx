@@ -21,11 +21,11 @@ async function main() {
 
   // 2. Define agents based on the plan
   const agents = [
-    { ref: "pm", name: "投资组合经理", role: "ceo", title: "投资组合经理 (CEO)", icon: "crown", reportsToRef: null, capabilities: "最终决策，审批交易提案，管理整体投资组合", adapterConfig: { skills: ["swarmifyx", "para-memory-files"] } },
-    { ref: "rm", name: "风险管理员", role: "general", title: "风险管理团队", icon: "shield", reportsToRef: "pm", capabilities: "评估市场波动性、流动性，持续监控风险", adapterConfig: { skills: ["swarmifyx", "ssh-mcp"] } },
-    { ref: "tr", name: "交易员", role: "general", title: "交易员代理", icon: "zap", reportsToRef: "pm", capabilities: "整合报告，决定交易时机和规模，执行交易", adapterConfig: { skills: ["swarmifyx", "para-memory-files"] } },
-    { ref: "lr", name: "多头研究员", role: "researcher", title: "多头研究员", icon: "telescope", reportsToRef: "pm", capabilities: "评估分析师见解，寻找做多机会", adapterConfig: { skills: ["swarmifyx", "para-memory-files"] } },
-    { ref: "sr", name: "空头研究员", role: "researcher", title: "空头研究员", icon: "microscope", reportsToRef: "pm", capabilities: "寻找做空机会，进行批判性辩论", adapterConfig: { skills: ["swarmifyx", "para-memory-files"] } },
+    { ref: "pm", name: "投资组合经理", role: "ceo", title: "投资组合经理 (CEO)", icon: "crown", reportsToRef: null, capabilities: "最终决策，审批交易提案，管理整体投资组合", adapterConfig: { skills: ["papertape", "para-memory-files"] } },
+    { ref: "rm", name: "风险管理员", role: "general", title: "风险管理团队", icon: "shield", reportsToRef: "pm", capabilities: "评估市场波动性、流动性，持续监控风险", adapterConfig: { skills: ["papertape", "ssh-mcp"] } },
+    { ref: "tr", name: "交易员", role: "general", title: "交易员代理", icon: "zap", reportsToRef: "pm", capabilities: "整合报告，决定交易时机和规模，执行交易", adapterConfig: { skills: ["papertape", "para-memory-files"] } },
+    { ref: "lr", name: "多头研究员", role: "researcher", title: "多头研究员", icon: "telescope", reportsToRef: "pm", capabilities: "评估分析师见解，寻找做多机会", adapterConfig: { skills: ["papertape", "para-memory-files"] } },
+    { ref: "sr", name: "空头研究员", role: "researcher", title: "空头研究员", icon: "microscope", reportsToRef: "pm", capabilities: "寻找做空机会，进行批判性辩论", adapterConfig: { skills: ["papertape", "para-memory-files"] } },
     { ref: "fa", name: "基本面分析师", role: "researcher", title: "基本面分析师", icon: "file-code", reportsToRef: "lr", capabilities: "评估公司财务、业绩指标、内在价值", adapterConfig: { skills: ["sugarforever/01coder-agent-skills@china-stock-analysis", "nicepkg/ai-workflow@a-share-analysis"] } },
     { ref: "sa", name: "情绪分析师", role: "researcher", title: "情绪分析师", icon: "heart", reportsToRef: "lr", capabilities: "社交媒体情绪分析", adapterConfig: { skills: ["omer-metin/skills-for-antigravity@sentiment-analysis-trading"] } },
     { ref: "na", name: "新闻分析师", role: "researcher", title: "新闻分析师", icon: "globe", reportsToRef: "lr", capabilities: "监测全球新闻和宏观经济", adapterConfig: { skills: ["nanmicoder/newscrawler@china-news-crawler", "skills.volces.com@a-share-daily-report"] } },

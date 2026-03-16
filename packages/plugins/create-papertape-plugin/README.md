@@ -1,19 +1,19 @@
-# @swarmifyx/create-swarmifyx-plugin
+# @papertape/create-papertape-plugin
 
-Scaffolding tool for creating new Swarmifyx plugins.
+Scaffolding tool for creating new Papertape plugins.
 
 ```bash
-npx @swarmifyx/create-swarmifyx-plugin my-plugin
+npx @papertape/create-papertape-plugin my-plugin
 ```
 
 Or with options:
 
 ```bash
-npx @swarmifyx/create-swarmifyx-plugin @acme/my-plugin \
+npx @papertape/create-papertape-plugin @acme/my-plugin \
   --template connector \
   --category connector \
   --display-name "Acme Connector" \
-  --description "Syncs Acme data into Swarmifyx" \
+  --description "Syncs Acme data into Papertape" \
   --author "Acme Inc"
 ```
 
@@ -22,21 +22,21 @@ Supported categories: `connector`, `workspace`, `automation`, `ui`
 
 Generates:
 - typed manifest + worker entrypoint
-- example UI widget using the supported `@swarmifyx/plugin-sdk/ui` hooks
-- test file using `@swarmifyx/plugin-sdk/testing`
+- example UI widget using the supported `@papertape/plugin-sdk/ui` hooks
+- test file using `@papertape/plugin-sdk/testing`
 - `esbuild` and `rollup` config files using SDK bundler presets
-- dev server script for hot-reload (`swarmifyx-plugin-dev-server`)
+- dev server script for hot-reload (`papertape-plugin-dev-server`)
 
 The scaffold intentionally uses plain React elements rather than host-provided UI kit components, because the current plugin runtime does not ship a stable shared component library yet.
 
-Inside this repo, the generated package uses `@swarmifyx/plugin-sdk` via `workspace:*`.
+Inside this repo, the generated package uses `@papertape/plugin-sdk` via `workspace:*`.
 
-Outside this repo, the scaffold snapshots `@swarmifyx/plugin-sdk` from your local Swarmifyx checkout into a `.swarmifyx-sdk/` tarball and points the generated package at that local file by default. You can override the SDK source explicitly:
+Outside this repo, the scaffold snapshots `@papertape/plugin-sdk` from your local Papertape checkout into a `.papertape-sdk/` tarball and points the generated package at that local file by default. You can override the SDK source explicitly:
 
 ```bash
-node packages/plugins/create-paperclip-plugin/dist/index.js @acme/my-plugin \
+node packages/plugins/create-papertape-plugin/dist/index.js @acme/my-plugin \
   --output /absolute/path/to/plugins \
-  --sdk-path /absolute/path/to/swarmifyx/packages/plugins/sdk
+  --sdk-path /absolute/path/to/papertape/packages/plugins/sdk
 ```
 
 That gives you an outside-repo local development path before the SDK is published to npm.

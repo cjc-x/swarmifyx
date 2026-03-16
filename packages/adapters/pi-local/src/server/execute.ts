@@ -2,30 +2,30 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import type { AdapterExecutionContext, AdapterExecutionResult } from "@swarmifyx/adapter-utils";
+import type { AdapterExecutionContext, AdapterExecutionResult } from "@papertape/adapter-utils";
 import {
   asString,
   asNumber,
   asStringArray,
   parseObject,
-  buildSwarmifyxEnv,
+  buildPapertapeEnv,
   redactEnvForLogs,
   ensureAbsoluteDirectory,
   ensureCommandResolvable,
   ensurePathInEnv,
   renderTemplate,
   runChildProcess,
-} from "@swarmifyx/adapter-utils/server-utils";
+} from "@papertape/adapter-utils/server-utils";
 import { isPiUnknownSessionError, parsePiJsonl } from "./parse.js";
 import { ensurePiModelConfiguredAndAvailable } from "./models.js";
 
 const __moduleDir = path.dirname(fileURLToPath(import.meta.url));
-const SWARMIFYX_SKILLS_CANDIDATES = [
+const PAPERTAPE_SKILLS_CANDIDATES = [
   path.resolve(__moduleDir, "../../skills"),
   path.resolve(__moduleDir, "../../../../../skills"),
 ];
 
-const SWARMIFYX_SESSIONS_DIR = path.join(os.homedir(), ".pi", "swarmifyxs");
+const PAPERTAPE_SESSIONS_DIR = path.join(os.homedir(), ".pi", "papertapes");
 
 function firstNonEmptyLine(text: string): string {
   return (
@@ -50,8 +50,8 @@ function parseModelId(model: string | null): string | null {
   return trimmed.slice(trimmed.indexOf("/") + 1).trim() || null;
 }
 
-async function resolveSwarmifyxSkillsDir(): Promise<string | null> {
-  for (const candidate of SWARMIFYX_SKILLS_CANDIDATES) {
+async function resolvePapertapeSkillsDir(): Promise<string | null> {
+  for (const candidate of PAPERTAPE_SKILLS_CANDIDATES) {
     const isDir = await fs.stat(candidate).then((s) => s.isDirectory()).catch(() => false);
     if (isDir) return candidate;
   }
@@ -59,7 +59,7 @@ async function resolveSwarmifyxSkillsDir(): Promise<string | null> {
 }
 
 async function ensurePiSkillsInjected(onLog: AdapterExecutionContext["onLog"]) {
-  const skillsDir = await resolveSwarmifyxSkillsDir();
+  const skillsDir = await resolvePapertapeSkillsDir();
   if (!skillsDir) return;
 
   const piSkillsHome = path.join(os.homedir(), ".pi", "agent", "skills");
@@ -77,25 +77,25 @@ async function ensurePiSkillsInjected(onLog: AdapterExecutionContext["onLog"]) {
       await fs.symlink(source, target);
       await onLog(
         "stderr",
-        `[swarmifyx] Injected Pi skill "${entry.name}" into ${piSkillsHome}\n`,
+        `[papertape] Injected Pi skill "${entry.name}" into ${piSkillsHome}\n`,
       );
     } catch (err) {
       await onLog(
         "stderr",
-        `[swarmifyx] Failed to inject Pi skill "${entry.name}" into ${piSkillsHome}: ${err instanceof Error ? err.message : String(err)}\n`,
+        `[papertape] Failed to inject Pi skill "${entry.name}" into ${piSkillsHome}: ${err instanceof Error ? err.message : String(err)}\n`,
       );
     }
   }
 }
 
 async function ensureSessionsDir(): Promise<string> {
-  await fs.mkdir(SWARMIFYX_SESSIONS_DIR, { recursive: true });
-  return SWARMIFYX_SESSIONS_DIR;
+  await fs.mkdir(PAPERTAPE_SESSIONS_DIR, { recursive: true });
+  return PAPERTAPE_SESSIONS_DIR;
 }
 
 function buildSessionPath(agentId: string, timestamp: string): string {
   const safeTimestamp = timestamp.replace(/[:.]/g, "-");
-  return path.join(SWARMIFYX_SESSIONS_DIR, `${safeTimestamp}-${agentId}.jsonl`);
+  return path.join(PAPERTAPE_SESSIONS_DIR, `${safeTimestamp}-${agentId}.jsonl`);
 }
 
 export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExecutionResult> {
@@ -103,7 +103,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
 
   const promptTemplate = asString(
     config.promptTemplate,
-    "You are agent {{agent.id}} ({{agent.name}}). Continue your Swarmifyx work.",
+    "You are agent {{agent.id}} ({{agent.name}}). Continue your Papertape work.",
   );
   const command = asString(config.command, "pi");
   const model = asString(config.model, "").trim();
@@ -113,15 +113,15 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   const provider = parseModelProvider(model);
   const modelId = parseModelId(model);
 
-  const workspaceContext = parseObject(context.swarmifyxWorkspace);
+  const workspaceContext = parseObject(context.papertapeWorkspace);
   const workspaceCwd = asString(workspaceContext.cwd, "");
   const workspaceSource = asString(workspaceContext.source, "");
   const workspaceId = asString(workspaceContext.workspaceId, "");
   const workspaceRepoUrl = asString(workspaceContext.repoUrl, "");
   const workspaceRepoRef = asString(workspaceContext.repoRef, "");
   const agentHome = asString(workspaceContext.agentHome, "");
-  const workspaceHints = Array.isArray(context.swarmifyxWorkspaces)
-    ? context.swarmifyxWorkspaces.filter(
+  const workspaceHints = Array.isArray(context.papertapeWorkspaces)
+    ? context.papertapeWorkspaces.filter(
       (value): value is Record<string, unknown> => typeof value === "object" && value !== null,
     )
     : [];
@@ -140,9 +140,9 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   // Build environment
   const envConfig = parseObject(config.env);
   const hasExplicitApiKey =
-    typeof envConfig.SWARMIFYX_API_KEY === "string" && envConfig.SWARMIFYX_API_KEY.trim().length > 0;
-  const env: Record<string, string> = { ...buildSwarmifyxEnv(agent) };
-  env.SWARMIFYX_RUN_ID = runId;
+    typeof envConfig.PAPERTAPE_API_KEY === "string" && envConfig.PAPERTAPE_API_KEY.trim().length > 0;
+  const env: Record<string, string> = { ...buildPapertapeEnv(agent) };
+  env.PAPERTAPE_RUN_ID = runId;
 
   const wakeTaskId =
     (typeof context.taskId === "string" && context.taskId.trim().length > 0 && context.taskId.trim()) ||
@@ -167,25 +167,25 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   const linkedIssueIds = Array.isArray(context.issueIds)
     ? context.issueIds.filter((value): value is string => typeof value === "string" && value.trim().length > 0)
     : [];
-  if (wakeTaskId) env.SWARMIFYX_TASK_ID = wakeTaskId;
-  if (wakeReason) env.SWARMIFYX_WAKE_REASON = wakeReason;
-  if (wakeCommentId) env.SWARMIFYX_WAKE_COMMENT_ID = wakeCommentId;
-  if (approvalId) env.SWARMIFYX_APPROVAL_ID = approvalId;
-  if (approvalStatus) env.SWARMIFYX_APPROVAL_STATUS = approvalStatus;
-  if (linkedIssueIds.length > 0) env.SWARMIFYX_LINKED_ISSUE_IDS = linkedIssueIds.join(",");
-  if (workspaceCwd) env.SWARMIFYX_WORKSPACE_CWD = workspaceCwd;
-  if (workspaceSource) env.SWARMIFYX_WORKSPACE_SOURCE = workspaceSource;
-  if (workspaceId) env.SWARMIFYX_WORKSPACE_ID = workspaceId;
-  if (workspaceRepoUrl) env.SWARMIFYX_WORKSPACE_REPO_URL = workspaceRepoUrl;
-  if (workspaceRepoRef) env.SWARMIFYX_WORKSPACE_REPO_REF = workspaceRepoRef;
+  if (wakeTaskId) env.PAPERTAPE_TASK_ID = wakeTaskId;
+  if (wakeReason) env.PAPERTAPE_WAKE_REASON = wakeReason;
+  if (wakeCommentId) env.PAPERTAPE_WAKE_COMMENT_ID = wakeCommentId;
+  if (approvalId) env.PAPERTAPE_APPROVAL_ID = approvalId;
+  if (approvalStatus) env.PAPERTAPE_APPROVAL_STATUS = approvalStatus;
+  if (linkedIssueIds.length > 0) env.PAPERTAPE_LINKED_ISSUE_IDS = linkedIssueIds.join(",");
+  if (workspaceCwd) env.PAPERTAPE_WORKSPACE_CWD = workspaceCwd;
+  if (workspaceSource) env.PAPERTAPE_WORKSPACE_SOURCE = workspaceSource;
+  if (workspaceId) env.PAPERTAPE_WORKSPACE_ID = workspaceId;
+  if (workspaceRepoUrl) env.PAPERTAPE_WORKSPACE_REPO_URL = workspaceRepoUrl;
+  if (workspaceRepoRef) env.PAPERTAPE_WORKSPACE_REPO_REF = workspaceRepoRef;
   if (agentHome) env.AGENT_HOME = agentHome;
-  if (workspaceHints.length > 0) env.SWARMIFYX_WORKSPACES_JSON = JSON.stringify(workspaceHints);
+  if (workspaceHints.length > 0) env.PAPERTAPE_WORKSPACES_JSON = JSON.stringify(workspaceHints);
 
   for (const [key, value] of Object.entries(envConfig)) {
     if (typeof value === "string") env[key] = value;
   }
   if (!hasExplicitApiKey && authToken) {
-    env.SWARMIFYX_API_KEY = authToken;
+    env.PAPERTAPE_API_KEY = authToken;
   }
 
   const runtimeEnv = Object.fromEntries(
@@ -223,7 +223,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   if (runtimeSessionId && !canResumeSession) {
     await onLog(
       "stderr",
-      `[swarmifyx] Pi session "${runtimeSessionId}" was saved for cwd "${runtimeSessionCwd}" and will not be resumed in "${cwd}".\n`,
+      `[papertape] Pi session "${runtimeSessionId}" was saved for cwd "${runtimeSessionCwd}" and will not be resumed in "${cwd}".\n`,
     );
   }
 
@@ -255,17 +255,17 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
         `${instructionsContents}\n\n` +
         `The above agent instructions were loaded from ${resolvedInstructionsFilePath}. ` +
         `Resolve any relative file references from ${instructionsFileDir}.\n\n` +
-        `You are agent {{agent.id}} ({{agent.name}}). Continue your Swarmifyx work.`;
+        `You are agent {{agent.id}} ({{agent.name}}). Continue your Papertape work.`;
       await onLog(
         "stderr",
-        `[swarmifyx] Loaded agent instructions file: ${resolvedInstructionsFilePath}\n`,
+        `[papertape] Loaded agent instructions file: ${resolvedInstructionsFilePath}\n`,
       );
     } catch (err) {
       instructionsReadFailed = true;
       const reason = err instanceof Error ? err.message : String(err);
       await onLog(
         "stderr",
-        `[swarmifyx] Warning: could not read agent instructions file "${resolvedInstructionsFilePath}": ${reason}\n`,
+        `[papertape] Warning: could not read agent instructions file "${resolvedInstructionsFilePath}": ${reason}\n`,
       );
       // Fall back to base prompt template
       systemPromptExtension = promptTemplate;
@@ -461,7 +461,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   ) {
     await onLog(
       "stderr",
-      `[swarmifyx] Pi session "${runtimeSessionId}" is unavailable; retrying with a fresh session.\n`,
+      `[papertape] Pi session "${runtimeSessionId}" is unavailable; retrying with a fresh session.\n`,
     );
     const newSessionPath = buildSessionPath(agent.id, new Date().toISOString());
     try {

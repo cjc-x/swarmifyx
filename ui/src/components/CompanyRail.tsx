@@ -29,10 +29,10 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import type { Company } from "@swarmifyx/shared";
+import type { Company } from "@papertape/shared";
 import { CompanyPatternIcon } from "./CompanyPatternIcon";
 
-const ORDER_STORAGE_KEY = "swarmifyx.companyOrder";
+const ORDER_STORAGE_KEY = "__KEEP_PAPERTAPE_COM__panyOrder";
 
 function getStoredOrder(): string[] {
   try {

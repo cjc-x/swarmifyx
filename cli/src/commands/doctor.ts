@@ -1,6 +1,6 @@
 import * as p from "@clack/prompts";
 import pc from "picocolors";
-import type { SwarmifyxConfig } from "../config/schema.js";
+import type { PapertapeConfig } from "../config/schema.js";
 import { publicCliCommand } from "../config/branding.js";
 import { readConfig, resolveConfigPath } from "../config/store.js";
 import {
@@ -15,8 +15,8 @@ import {
   storageCheck,
   type CheckResult,
 } from "../checks/index.js";
-import { loadSwarmifyxEnvFile } from "../config/env.js";
-import { printSwarmifyxCliBanner } from "../utils/banner.js";
+import { loadPapertapeEnvFile } from "../config/env.js";
+import { printPapertapeCliBanner } from "../utils/banner.js";
 
 const STATUS_ICON = {
   pass: pc.green("✓"),
@@ -29,11 +29,11 @@ export async function doctor(opts: {
   repair?: boolean;
   yes?: boolean;
 }): Promise<{ passed: number; warned: number; failed: number }> {
-  printSwarmifyxCliBanner();
+  printPapertapeCliBanner();
   p.intro(pc.bgCyan(pc.black(` ${publicCliCommand("doctor")} `)));
 
   const configPath = resolveConfigPath(opts.config);
-  loadSwarmifyxEnvFile(configPath);
+  loadPapertapeEnvFile(configPath);
   const results: CheckResult[] = [];
 
   // 1. Config check (must pass before others)
@@ -45,7 +45,7 @@ export async function doctor(opts: {
     return printSummary(results);
   }
 
-  let config: SwarmifyxConfig;
+  let config: PapertapeConfig;
   try {
     config = readConfig(opts.config)!;
   } catch (err) {
@@ -176,7 +176,7 @@ async function runRepairableCheck(input: {
   if (!repaired) return result;
 
   // Repairs may create/update the adjacent .env file or other local resources.
-  loadSwarmifyxEnvFile(input.configPath);
+  loadPapertapeEnvFile(input.configPath);
   result = await input.run();
   printResult(result);
   return result;

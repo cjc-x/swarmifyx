@@ -6,7 +6,7 @@ import {
   updateIssueSchema,
   type Issue,
   type IssueComment,
-} from "@swarmifyx/shared";
+} from "@papertape/shared";
 import {
   addCommonClientOptions,
   formatInlineRecord,

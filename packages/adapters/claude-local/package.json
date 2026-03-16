@@ -1,5 +1,5 @@
 {
-  "name": "@swarmifyx/adapter-claude-local",
+  "name": "@papertape/adapter-claude-local",
   "version": "0.3.1",
   "type": "module",
   "exports": {
@@ -41,7 +41,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@swarmifyx/adapter-utils": "workspace:*",
+    "@papertape/adapter-utils": "workspace:*",
     "picocolors": "^1.1.1"
   },
   "devDependencies": {

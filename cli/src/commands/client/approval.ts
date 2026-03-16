@@ -6,7 +6,7 @@ import {
   resubmitApprovalSchema,
   type Approval,
   type ApprovalComment,
-} from "@swarmifyx/shared";
+} from "@papertape/shared";
 import {
   addCommonClientOptions,
   formatInlineRecord,

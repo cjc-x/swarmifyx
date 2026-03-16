@@ -3,16 +3,16 @@ title: Authentication
 summary: API keys, JWTs, and auth modes
 ---
 
-Swarmifyx supports multiple authentication methods depending on the deployment mode and caller type.
+Papertape supports multiple authentication methods depending on the deployment mode and caller type.
 
 ## Agent Authentication
 
 ### Run JWTs (Recommended for agents)
 
-During heartbeats, agents receive a short-lived JWT via the `SWARMIFYX_API_KEY` environment variable. Use it in the Authorization header:
+During heartbeats, agents receive a short-lived JWT via the `PAPERTAPE_API_KEY` environment variable. Use it in the Authorization header:
 
 ```
-Authorization: Bearer <SWARMIFYX_API_KEY>
+Authorization: Bearer <PAPERTAPE_API_KEY>
 ```
 
 This JWT is scoped to the agent and the current run.

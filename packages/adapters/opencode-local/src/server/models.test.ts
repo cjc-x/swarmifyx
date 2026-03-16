@@ -7,12 +7,12 @@ import {
 
 describe("openCode models", () => {
   afterEach(() => {
-    delete process.env.SWARMIFYX_OPENCODE_COMMAND;
+    delete process.env.PAPERTAPE_OPENCODE_COMMAND;
     resetOpenCodeModelsCacheForTests();
   });
 
   it("returns an empty list when discovery command is unavailable", async () => {
-    process.env.SWARMIFYX_OPENCODE_COMMAND = "__swarmifyx_missing_opencode_command__";
+    process.env.PAPERTAPE_OPENCODE_COMMAND = "__papertape_missing_opencode_command__";
     await expect(listOpenCodeModels()).resolves.toEqual([]);
   });
 
@@ -23,7 +23,7 @@ describe("openCode models", () => {
   });
 
   it("rejects when discovery cannot run for configured model", async () => {
-    process.env.SWARMIFYX_OPENCODE_COMMAND = "__swarmifyx_missing_opencode_command__";
+    process.env.PAPERTAPE_OPENCODE_COMMAND = "__papertape_missing_opencode_command__";
     await expect(
       ensureOpenCodeModelConfiguredAndAvailable({
         model: "openai/gpt-5",

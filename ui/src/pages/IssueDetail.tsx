@@ -49,8 +49,8 @@ import {
   SlidersHorizontal,
   Trash2,
 } from "lucide-react";
-import type { ActivityEvent } from "@swarmifyx/shared";
-import type { Agent, IssueAttachment } from "@swarmifyx/shared";
+import type { ActivityEvent } from "@papertape/shared";
+import type { Agent, IssueAttachment } from "@papertape/shared";
 
 type CommentReassignment = {
   assigneeAgentId: string | null;
@@ -969,7 +969,7 @@ export function IssueDetail() {
             projectId={issue.projectId}
             issueStatus={issue.status}
             agentMap={agentMap}
-            draftKey={`swarmifyx:issue-comment-draft:${issue.id}`}
+            draftKey={`papertape:issue-comment-draft:${issue.id}`}
             enableReassign
             reassignOptions={commentReassignOptions}
             currentAssigneeValue={currentAssigneeValue}

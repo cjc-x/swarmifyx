@@ -1,4 +1,4 @@
-import type { SecretProvider, SecretProviderDescriptor } from "@swarmifyx/shared";
+import type { SecretProvider, SecretProviderDescriptor } from "@papertape/shared";
 import { localEncryptedProvider } from "./local-encrypted-provider.js";
 import {
   awsSecretsManagerProvider,

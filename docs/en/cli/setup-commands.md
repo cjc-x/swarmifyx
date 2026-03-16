@@ -5,32 +5,32 @@ summary: Onboard, run, doctor, and configure
 
 Instance setup and diagnostics commands.
 
-## `swarmifyx run`
+## `papertape run`
 
 One-command bootstrap and start:
 
 ```sh
-pnpm swarmifyx run
+pnpm papertape run
 ```
 
 Does:
 
 1. Auto-onboards if config is missing
-2. Runs `swarmifyx doctor` with repair enabled
+2. Runs `papertape doctor` with repair enabled
 3. Starts the server when checks pass
 
 Choose a specific instance:
 
 ```sh
-pnpm swarmifyx run --instance dev
+pnpm papertape run --instance dev
 ```
 
-## `swarmifyx onboard`
+## `papertape onboard`
 
 Interactive first-time setup:
 
 ```sh
-pnpm swarmifyx onboard
+pnpm papertape onboard
 ```
 
 First prompt:
@@ -41,22 +41,22 @@ First prompt:
 Start immediately after onboarding:
 
 ```sh
-pnpm swarmifyx onboard --run
+pnpm papertape onboard --run
 ```
 
 Non-interactive defaults + immediate start (opens browser on server listen):
 
 ```sh
-pnpm swarmifyx onboard --yes
+pnpm papertape onboard --yes
 ```
 
-## `swarmifyx doctor`
+## `papertape doctor`
 
 Health checks with optional auto-repair:
 
 ```sh
-pnpm swarmifyx doctor
-pnpm swarmifyx doctor --repair
+pnpm papertape doctor
+pnpm papertape doctor --repair
 ```
 
 Validates:
@@ -67,51 +67,51 @@ Validates:
 - Storage configuration
 - Missing key files
 
-## `swarmifyx configure`
+## `papertape configure`
 
 Update configuration sections:
 
 ```sh
-pnpm swarmifyx configure --section server
-pnpm swarmifyx configure --section secrets
-pnpm swarmifyx configure --section storage
+pnpm papertape configure --section server
+pnpm papertape configure --section secrets
+pnpm papertape configure --section storage
 ```
 
-## `swarmifyx env`
+## `papertape env`
 
 Show resolved environment configuration:
 
 ```sh
-pnpm swarmifyx env
+pnpm papertape env
 ```
 
-## `swarmifyx allowed-hostname`
+## `papertape allowed-hostname`
 
 Allow a private hostname for authenticated/private mode:
 
 ```sh
-pnpm swarmifyx allowed-hostname my-tailscale-host
+pnpm papertape allowed-hostname my-tailscale-host
 ```
 
 ## Local Storage Paths
 
 | Data | Default Path |
 |------|-------------|
-| Config | `~/.swarmifyx/instances/default/config.json` |
-| Database | `~/.swarmifyx/instances/default/db` |
-| Logs | `~/.swarmifyx/instances/default/logs` |
-| Storage | `~/.swarmifyx/instances/default/data/storage` |
-| Secrets key | `~/.swarmifyx/instances/default/secrets/master.key` |
+| Config | `~/.papertape/instances/default/config.json` |
+| Database | `~/.papertape/instances/default/db` |
+| Logs | `~/.papertape/instances/default/logs` |
+| Storage | `~/.papertape/instances/default/data/storage` |
+| Secrets key | `~/.papertape/instances/default/secrets/master.key` |
 
 Override with:
 
 ```sh
-SWARMIFYX_HOME=/custom/home SWARMIFYX_INSTANCE_ID=dev pnpm swarmifyx run
+PAPERTAPE_HOME=/custom/home PAPERTAPE_INSTANCE_ID=dev pnpm papertape run
 ```
 
 Or pass `--data-dir` directly on any command:
 
 ```sh
-pnpm swarmifyx run --data-dir ./tmp/swarmifyx-dev
-pnpm swarmifyx doctor --data-dir ./tmp/swarmifyx-dev
+pnpm papertape run --data-dir ./tmp/papertape-dev
+pnpm papertape doctor --data-dir ./tmp/papertape-dev
 ```

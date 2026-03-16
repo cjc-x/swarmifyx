@@ -1,8 +1,8 @@
 /**
- * Core types for the Swarmifyx plugin worker-side SDK.
+ * Core types for the Papertape plugin worker-side SDK.
  *
  * These types define the stable public API surface that plugin workers import
- * from `@swarmifyx/plugin-sdk`.  The host provides a concrete implementation
+ * from `@papertape/plugin-sdk`.  The host provides a concrete implementation
  * of `PluginContext` to the plugin at initialisation time.
  *
  * @see PLUGIN_SPEC.md §14 — SDK Surface
@@ -10,7 +10,7 @@
  */
 
 import type {
-  SwarmifyxPluginManifestV1,
+  PapertapePluginManifestV1,
   PluginStateScopeKind,
   PluginEventType,
   PluginToolDeclaration,
@@ -21,14 +21,14 @@ import type {
   IssueComment,
   Agent,
   Goal,
-} from "@swarmifyx/shared";
+} from "@papertape/shared";
 
 // ---------------------------------------------------------------------------
-// Re-exports from @swarmifyx/shared (plugin authors import from one place)
+// Re-exports from @papertape/shared (plugin authors import from one place)
 // ---------------------------------------------------------------------------
 
 export type {
-  SwarmifyxPluginManifestV1,
+  PapertapePluginManifestV1,
   PluginJobDeclaration,
   PluginWebhookDeclaration,
   PluginToolDeclaration,
@@ -63,7 +63,7 @@ export type {
   IssueComment,
   Agent,
   Goal,
-} from "@swarmifyx/shared";
+} from "@papertape/shared";
 
 // ---------------------------------------------------------------------------
 // Scope key — identifies where plugin state is stored
@@ -81,7 +81,7 @@ export type {
  * @see PLUGIN_SPEC.md §21.3 `plugin_state`
  */
 export interface ScopeKey {
-  /** What kind of Swarmifyx object this state is scoped to. */
+  /** What kind of Papertape object this state is scoped to. */
   scopeKind: PluginStateScopeKind;
   /** UUID or text identifier for the scoped object. Omit for `instance` scope. */
   scopeId?: string;
@@ -213,7 +213,7 @@ export interface PluginEntityUpsert {
   scopeId?: string;
   /** External identifier in the remote system (e.g. Linear issue ID). */
   externalId?: string;
-  /** Human-readable title for display in the Swarmifyx UI. */
+  /** Human-readable title for display in the Papertape UI. */
   title?: string;
   /** Optional status string. */
   status?: string;
@@ -319,7 +319,7 @@ export interface PluginConfigClient {
 }
 
 /**
- * `ctx.events` — subscribe to and emit Swarmifyx domain events.
+ * `ctx.events` — subscribe to and emit Papertape domain events.
  *
  * Requires `events.subscribe` capability for `on()`.
  * Requires `events.emit` capability for `emit()`.
@@ -328,7 +328,7 @@ export interface PluginConfigClient {
  */
 export interface PluginEventsClient {
   /**
-   * Subscribe to a core Swarmifyx domain event or a plugin-namespaced event.
+   * Subscribe to a core Papertape domain event or a plugin-namespaced event.
    *
    * @param name - Event type, e.g. `"issue.created"` or `"plugin.@acme/linear.sync-done"`
    * @param fn - Async event handler
@@ -431,7 +431,7 @@ export interface PluginHttpClient {
  * Requires `secrets.read-ref` capability.
  *
  * Plugins store secret *references* in their config (e.g. a secret name).
- * This client resolves the reference through the Swarmifyx secret provider
+ * This client resolves the reference through the Papertape secret provider
  * system and returns the resolved value at execution time.
  *
  * @see PLUGIN_SPEC.md §22 — Secrets
@@ -441,7 +441,7 @@ export interface PluginSecretsClient {
    * Resolve a secret reference to its current value.
    *
    * The reference is a string identifier pointing to a secret configured
-   * in the Swarmifyx secret provider (e.g. `"MY_API_KEY"`).
+   * in the Papertape secret provider (e.g. `"MY_API_KEY"`).
    *
    * Secret values are resolved at call time and must never be cached or
    * written to logs, config, or other persistent storage.
@@ -964,7 +964,7 @@ export interface PluginGoalsClient {
  * ctx.streams.close("chat");
  * ```
  *
- * @see usePluginStream in `@swarmifyx/plugin-sdk/ui`
+ * @see usePluginStream in `@papertape/plugin-sdk/ui`
  */
 export interface PluginStreamsClient {
   /**
@@ -1001,7 +1001,7 @@ export interface PluginStreamsClient {
  *
  * @example
  * ```ts
- * import { definePlugin } from "@swarmifyx/plugin-sdk";
+ * import { definePlugin } from "@papertape/plugin-sdk";
  *
  * export default definePlugin({
  *   async setup(ctx) {
@@ -1021,7 +1021,7 @@ export interface PluginStreamsClient {
  */
 export interface PluginContext {
   /** The plugin's manifest as validated at install time. */
-  manifest: SwarmifyxPluginManifestV1;
+  manifest: PapertapePluginManifestV1;
 
   /** Read resolved operator configuration. */
   config: PluginConfigClient;

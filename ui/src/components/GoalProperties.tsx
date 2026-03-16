@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Link } from "@/lib/router";
 import { useQuery } from "@tanstack/react-query";
-import type { Goal } from "@swarmifyx/shared";
-import { GOAL_STATUSES, GOAL_LEVELS } from "@swarmifyx/shared";
+import type { Goal } from "@papertape/shared";
+import { GOAL_STATUSES, GOAL_LEVELS } from "@papertape/shared";
 import { agentsApi } from "../api/agents";
 import { goalsApi } from "../api/goals";
 import { useCompany } from "../context/CompanyContext";

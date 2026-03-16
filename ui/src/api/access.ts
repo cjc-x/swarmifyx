@@ -1,4 +1,4 @@
-import type { AgentAdapterType, JoinRequest } from "@swarmifyx/shared";
+import type { AgentAdapterType, JoinRequest } from "@papertape/shared";
 import { api } from "./client";
 
 type InviteSummary = {

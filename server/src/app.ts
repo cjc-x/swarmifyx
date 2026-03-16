@@ -2,8 +2,8 @@ import express, { Router, type Request as ExpressRequest } from "express";
 import path from "node:path";
 import fs from "node:fs";
 import { fileURLToPath } from "node:url";
-import type { Db } from "@swarmifyx/db";
-import type { DeploymentExposure, DeploymentMode } from "@swarmifyx/shared";
+import type { Db } from "@papertape/db";
+import type { DeploymentExposure, DeploymentMode } from "@papertape/shared";
 import type { StorageService } from "./storage/types.js";
 import { httpLogger, errorHandler } from "./middleware/index.js";
 import { actorMiddleware } from "./middleware/auth.js";
@@ -41,7 +41,7 @@ import { setPluginEventBus } from "./services/activity-log.js";
 import { createPluginDevWatcher } from "./services/plugin-dev-watcher.js";
 import { createPluginHostServiceCleanup } from "./services/plugin-host-service-cleanup.js";
 import { pluginRegistryService } from "./services/plugin-registry.js";
-import { createHostClientHandlers } from "@swarmifyx/plugin-sdk";
+import { createHostClientHandlers } from "@papertape/plugin-sdk";
 import type { BetterAuthSessionResult } from "./auth/better-auth.js";
 
 type UiMode = "none" | "static" | "vite-dev";
@@ -99,7 +99,7 @@ export async function createApp(
     }
     res.json({
       session: {
-        id: `swarmifyx:${req.actor.source}:${req.actor.userId}`,
+        id: `papertape:${req.actor.source}:${req.actor.userId}`,
         userId: req.actor.userId,
       },
       user: {
@@ -232,7 +232,7 @@ export async function createApp(
         res.status(200).set("Content-Type", "text/html").end(indexHtml);
       });
     } else {
-      console.warn("[swarmifyx] UI dist not found; running in API-only mode");
+      console.warn("[papertape] UI dist not found; running in API-only mode");
     }
   }
 

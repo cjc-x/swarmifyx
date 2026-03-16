@@ -1,5 +1,5 @@
 /**
- * PluginEventBus — typed in-process event bus for the Swarmifyx plugin system.
+ * PluginEventBus — typed in-process event bus for the Papertape plugin system.
  *
  * Responsibilities:
  * - Deliver core domain events to subscribing plugin workers (server-side).
@@ -20,8 +20,8 @@
  * @see PLUGIN_SPEC.md §16.2 — Plugin-to-Plugin Events
  */
 
-import type { PluginEventType } from "@swarmifyx/shared";
-import type { PluginEvent, EventFilter } from "@swarmifyx/plugin-sdk";
+import type { PluginEventType } from "@papertape/shared";
+import type { PluginEvent, EventFilter } from "@papertape/plugin-sdk";
 
 // ---------------------------------------------------------------------------
 // Internal types

@@ -2,7 +2,7 @@ import { readConfigFile } from "./config-file.js";
 import { existsSync, realpathSync } from "node:fs";
 import { resolve } from "node:path";
 import { config as loadDotenv } from "dotenv";
-import { resolveSwarmifyxEnvPath } from "./paths.js";
+import { resolvePapertapeEnvPath } from "./paths.js";
 import {
   AUTH_BASE_URL_MODES,
   DEPLOYMENT_EXPOSURES,
@@ -14,7 +14,7 @@ import {
   type DeploymentMode,
   type SecretProvider,
   type StorageProvider,
-} from "@swarmifyx/shared";
+} from "@papertape/shared";
 import {
   resolveDefaultBackupDir,
   resolveDefaultEmbeddedPostgresDir,
@@ -23,15 +23,15 @@ import {
   resolveHomeAwarePath,
 } from "./home-paths.js";
 
-const SWARMIFYX_ENV_FILE_PATH = resolveSwarmifyxEnvPath();
-if (existsSync(SWARMIFYX_ENV_FILE_PATH)) {
-  loadDotenv({ path: SWARMIFYX_ENV_FILE_PATH, override: false, quiet: true });
+const PAPERTAPE_ENV_FILE_PATH = resolvePapertapeEnvPath();
+if (existsSync(PAPERTAPE_ENV_FILE_PATH)) {
+  loadDotenv({ path: PAPERTAPE_ENV_FILE_PATH, override: false, quiet: true });
 }
 
 const CWD_ENV_PATH = resolve(process.cwd(), ".env");
-const isSameFile = existsSync(CWD_ENV_PATH) && existsSync(SWARMIFYX_ENV_FILE_PATH)
-  ? realpathSync(CWD_ENV_PATH) === realpathSync(SWARMIFYX_ENV_FILE_PATH)
-  : CWD_ENV_PATH === SWARMIFYX_ENV_FILE_PATH;
+const isSameFile = existsSync(CWD_ENV_PATH) && existsSync(PAPERTAPE_ENV_FILE_PATH)
+  ? realpathSync(CWD_ENV_PATH) === realpathSync(PAPERTAPE_ENV_FILE_PATH)
+  : CWD_ENV_PATH === PAPERTAPE_ENV_FILE_PATH;
 if (!isSameFile && existsSync(CWD_ENV_PATH)) {
   loadDotenv({ path: CWD_ENV_PATH, override: false, quiet: true });
 }
@@ -84,13 +84,13 @@ export function loadConfig(): Config {
   const fileDatabaseBackup = fileConfig?.database.backup;
   const fileSecrets = fileConfig?.secrets;
   const fileStorage = fileConfig?.storage;
-  const strictModeFromEnv = process.env.SWARMIFYX_SECRETS_STRICT_MODE;
+  const strictModeFromEnv = process.env.PAPERTAPE_SECRETS_STRICT_MODE;
   const secretsStrictMode =
     strictModeFromEnv !== undefined
       ? strictModeFromEnv === "true"
       : (fileSecrets?.strictMode ?? false);
 
-  const providerFromEnvRaw = process.env.SWARMIFYX_SECRETS_PROVIDER;
+  const providerFromEnvRaw = process.env.PAPERTAPE_SECRETS_PROVIDER;
   const providerFromEnv =
     providerFromEnvRaw && SECRET_PROVIDERS.includes(providerFromEnvRaw as SecretProvider)
       ? (providerFromEnvRaw as SecretProvider)
@@ -98,33 +98,33 @@ export function loadConfig(): Config {
   const providerFromFile = fileSecrets?.provider;
   const secretsProvider: SecretProvider = providerFromEnv ?? providerFromFile ?? "local_encrypted";
 
-  const storageProviderFromEnvRaw = process.env.SWARMIFYX_STORAGE_PROVIDER;
+  const storageProviderFromEnvRaw = process.env.PAPERTAPE_STORAGE_PROVIDER;
   const storageProviderFromEnv =
     storageProviderFromEnvRaw && STORAGE_PROVIDERS.includes(storageProviderFromEnvRaw as StorageProvider)
       ? (storageProviderFromEnvRaw as StorageProvider)
       : null;
   const storageProvider: StorageProvider = storageProviderFromEnv ?? fileStorage?.provider ?? "local_disk";
   const storageLocalDiskBaseDir = resolveHomeAwarePath(
-    process.env.SWARMIFYX_STORAGE_LOCAL_DIR ??
+    process.env.PAPERTAPE_STORAGE_LOCAL_DIR ??
     fileStorage?.localDisk?.baseDir ??
     resolveDefaultStorageDir(),
   );
-  const storageS3Bucket = process.env.SWARMIFYX_STORAGE_S3_BUCKET ?? fileStorage?.s3?.bucket ?? "swarmifyx";
-  const storageS3Region = process.env.SWARMIFYX_STORAGE_S3_REGION ?? fileStorage?.s3?.region ?? "us-east-1";
-  const storageS3Endpoint = process.env.SWARMIFYX_STORAGE_S3_ENDPOINT ?? fileStorage?.s3?.endpoint ?? undefined;
-  const storageS3Prefix = process.env.SWARMIFYX_STORAGE_S3_PREFIX ?? fileStorage?.s3?.prefix ?? "";
+  const storageS3Bucket = process.env.PAPERTAPE_STORAGE_S3_BUCKET ?? fileStorage?.s3?.bucket ?? "papertape";
+  const storageS3Region = process.env.PAPERTAPE_STORAGE_S3_REGION ?? fileStorage?.s3?.region ?? "us-east-1";
+  const storageS3Endpoint = process.env.PAPERTAPE_STORAGE_S3_ENDPOINT ?? fileStorage?.s3?.endpoint ?? undefined;
+  const storageS3Prefix = process.env.PAPERTAPE_STORAGE_S3_PREFIX ?? fileStorage?.s3?.prefix ?? "";
   const storageS3ForcePathStyle =
-    process.env.SWARMIFYX_STORAGE_S3_FORCE_PATH_STYLE !== undefined
-      ? process.env.SWARMIFYX_STORAGE_S3_FORCE_PATH_STYLE === "true"
+    process.env.PAPERTAPE_STORAGE_S3_FORCE_PATH_STYLE !== undefined
+      ? process.env.PAPERTAPE_STORAGE_S3_FORCE_PATH_STYLE === "true"
       : (fileStorage?.s3?.forcePathStyle ?? false);
 
-  const deploymentModeFromEnvRaw = process.env.SWARMIFYX_DEPLOYMENT_MODE;
+  const deploymentModeFromEnvRaw = process.env.PAPERTAPE_DEPLOYMENT_MODE;
   const deploymentModeFromEnv =
     deploymentModeFromEnvRaw && DEPLOYMENT_MODES.includes(deploymentModeFromEnvRaw as DeploymentMode)
       ? (deploymentModeFromEnvRaw as DeploymentMode)
       : null;
   const deploymentMode: DeploymentMode = deploymentModeFromEnv ?? fileConfig?.server.deploymentMode ?? "local_trusted";
-  const deploymentExposureFromEnvRaw = process.env.SWARMIFYX_DEPLOYMENT_EXPOSURE;
+  const deploymentExposureFromEnvRaw = process.env.PAPERTAPE_DEPLOYMENT_EXPOSURE;
   const deploymentExposureFromEnv =
     deploymentExposureFromEnvRaw &&
       DEPLOYMENT_EXPOSURES.includes(deploymentExposureFromEnvRaw as DeploymentExposure)
@@ -134,15 +134,15 @@ export function loadConfig(): Config {
     deploymentMode === "local_trusted"
       ? "private"
       : (deploymentExposureFromEnv ?? fileConfig?.server.exposure ?? "private");
-  const authBaseUrlModeFromEnvRaw = process.env.SWARMIFYX_AUTH_BASE_URL_MODE;
+  const authBaseUrlModeFromEnvRaw = process.env.PAPERTAPE_AUTH_BASE_URL_MODE;
   const authBaseUrlModeFromEnv =
     authBaseUrlModeFromEnvRaw &&
       AUTH_BASE_URL_MODES.includes(authBaseUrlModeFromEnvRaw as AuthBaseUrlMode)
       ? (authBaseUrlModeFromEnvRaw as AuthBaseUrlMode)
       : null;
-  const publicUrlFromEnv = process.env.SWARMIFYX_PUBLIC_URL;
+  const publicUrlFromEnv = process.env.PAPERTAPE_PUBLIC_URL;
   const authPublicBaseUrlRaw =
-    process.env.SWARMIFYX_AUTH_PUBLIC_BASE_URL ??
+    process.env.PAPERTAPE_AUTH_PUBLIC_BASE_URL ??
     process.env.BETTER_AUTH_URL ??
     process.env.BETTER_AUTH_BASE_URL ??
     publicUrlFromEnv ??
@@ -152,12 +152,12 @@ export function loadConfig(): Config {
     authBaseUrlModeFromEnv ??
     fileConfig?.auth?.baseUrlMode ??
     (authPublicBaseUrl ? "explicit" : "auto");
-  const disableSignUpFromEnv = process.env.SWARMIFYX_AUTH_DISABLE_SIGN_UP;
+  const disableSignUpFromEnv = process.env.PAPERTAPE_AUTH_DISABLE_SIGN_UP;
   const authDisableSignUp: boolean =
     disableSignUpFromEnv !== undefined
       ? disableSignUpFromEnv === "true"
       : (fileConfig?.auth?.disableSignUp ?? false);
-  const allowedHostnamesFromEnvRaw = process.env.SWARMIFYX_ALLOWED_HOSTNAMES;
+  const allowedHostnamesFromEnvRaw = process.env.PAPERTAPE_ALLOWED_HOSTNAMES;
   const allowedHostnamesFromEnv = allowedHostnamesFromEnvRaw
     ? allowedHostnamesFromEnvRaw
       .split(",")
@@ -183,29 +183,29 @@ export function loadConfig(): Config {
         .filter(Boolean),
     ),
   );
-  const companyDeletionEnvRaw = process.env.SWARMIFYX_ENABLE_COMPANY_DELETION;
+  const companyDeletionEnvRaw = process.env.PAPERTAPE_ENABLE_COMPANY_DELETION;
   const companyDeletionEnabled =
     companyDeletionEnvRaw !== undefined
       ? companyDeletionEnvRaw === "true"
       : deploymentMode === "local_trusted";
   const databaseBackupEnabled =
-    process.env.SWARMIFYX_DB_BACKUP_ENABLED !== undefined
-      ? process.env.SWARMIFYX_DB_BACKUP_ENABLED === "true"
+    process.env.PAPERTAPE_DB_BACKUP_ENABLED !== undefined
+      ? process.env.PAPERTAPE_DB_BACKUP_ENABLED === "true"
       : (fileDatabaseBackup?.enabled ?? true);
   const databaseBackupIntervalMinutes = Math.max(
     1,
-    Number(process.env.SWARMIFYX_DB_BACKUP_INTERVAL_MINUTES) ||
+    Number(process.env.PAPERTAPE_DB_BACKUP_INTERVAL_MINUTES) ||
     fileDatabaseBackup?.intervalMinutes ||
     60,
   );
   const databaseBackupRetentionDays = Math.max(
     1,
-    Number(process.env.SWARMIFYX_DB_BACKUP_RETENTION_DAYS) ||
+    Number(process.env.PAPERTAPE_DB_BACKUP_RETENTION_DAYS) ||
     fileDatabaseBackup?.retentionDays ||
     30,
   );
   const databaseBackupDir = resolveHomeAwarePath(
-    process.env.SWARMIFYX_DB_BACKUP_DIR ??
+    process.env.PAPERTAPE_DB_BACKUP_DIR ??
     fileDatabaseBackup?.dir ??
     resolveDefaultBackupDir(),
   );
@@ -233,12 +233,12 @@ export function loadConfig(): Config {
       process.env.SERVE_UI !== undefined
         ? process.env.SERVE_UI === "true"
         : fileConfig?.server.serveUi ?? true,
-    uiDevMiddleware: process.env.SWARMIFYX_UI_DEV_MIDDLEWARE === "true",
+    uiDevMiddleware: process.env.PAPERTAPE_UI_DEV_MIDDLEWARE === "true",
     secretsProvider,
     secretsStrictMode,
     secretsMasterKeyFilePath:
       resolveHomeAwarePath(
-        process.env.SWARMIFYX_SECRETS_MASTER_KEY_FILE ??
+        process.env.PAPERTAPE_SECRETS_MASTER_KEY_FILE ??
         fileSecrets?.localEncrypted.keyFilePath ??
         resolveDefaultSecretsKeyFilePath(),
       ),

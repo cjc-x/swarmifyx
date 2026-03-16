@@ -1,7 +1,7 @@
 {
-  "name": "@swarmifyx/plugin-sdk",
+  "name": "@papertape/plugin-sdk",
   "version": "1.0.0",
-  "description": "Stable public API for Swarmifyx plugins — worker-side context and UI bridge hooks",
+  "description": "Stable public API for Papertape plugins — worker-side context and UI bridge hooks",
   "type": "module",
   "exports": {
     ".": {
@@ -42,7 +42,7 @@
     }
   },
   "bin": {
-    "swarmifyx-plugin-dev-server": "./dist/dev-cli.js"
+    "papertape-plugin-dev-server": "./dist/dev-cli.js"
   },
   "publishConfig": {
     "access": "public",
@@ -91,13 +91,13 @@
     "dist"
   ],
   "scripts": {
-    "build": "pnpm --filter @swarmifyx/shared build && tsc",
+    "build": "pnpm --filter @papertape/shared build && tsc",
     "clean": "rm -rf dist",
-    "typecheck": "pnpm --filter @swarmifyx/shared build && tsc --noEmit",
+    "typecheck": "pnpm --filter @papertape/shared build && tsc --noEmit",
     "dev:server": "tsx src/dev-cli.ts"
   },
   "dependencies": {
-    "@swarmifyx/shared": "workspace:*",
+    "@papertape/shared": "workspace:*",
     "zod": "^3.24.2"
   },
   "devDependencies": {

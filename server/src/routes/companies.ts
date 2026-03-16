@@ -1,12 +1,12 @@
 import { Router } from "express";
-import type { Db } from "@swarmifyx/db";
+import type { Db } from "@papertape/db";
 import {
   companyPortabilityExportSchema,
   companyPortabilityImportSchema,
   companyPortabilityPreviewSchema,
   createCompanySchema,
   updateCompanySchema,
-} from "@swarmifyx/shared";
+} from "@papertape/shared";
 import { forbidden } from "../errors.js";
 import { validate } from "../middleware/validate.js";
 import { accessService, companyPortabilityService, companyService, logActivity } from "../services/index.js";

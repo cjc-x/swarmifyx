@@ -13,7 +13,7 @@ import {
   type PluginSettingsPageProps,
   type PluginSidebarProps,
   type PluginWidgetProps,
-} from "@swarmifyx/plugin-sdk/ui";
+} from "@papertape/plugin-sdk/ui";
 import {
   DEFAULT_CONFIG,
   JOB_KEYS,
@@ -859,7 +859,7 @@ function KitchenSinkIssueCrudDemo({ context }: { context: PluginPageProps["conte
   return (
     <Section title="Issue CRUD">
       <div style={mutedTextStyle}>
-        This is a regular embedded React page inside Swarmifyx calling the board API directly. It creates, updates, and deletes issues for the current company.
+        This is a regular embedded React page inside Papertape calling the board API directly. It creates, updates, and deletes issues for the current company.
       </div>
       {!context.companyId ? (
         <div style={mutedTextStyle}>Select a company to use issue demos.</div>
@@ -1102,9 +1102,9 @@ function KitchenSinkTopRow({ context }: { context: PluginPageProps["context"] })
             {pluginPagePath(context.companyPrefix)}
           </a>
         </Section>
-        <Section title="Swarmifyx Animation">
+        <Section title="Papertape Animation">
           <div style={mutedTextStyle}>
-            This is the same Swarmifyx ASCII treatment used in onboarding, copied into the example plugin so the package stays self-contained.
+            This is the same Papertape ASCII treatment used in onboarding, copied into the example plugin so the package stays self-contained.
           </div>
           <AsciiArtAnimation />
         </Section>
@@ -1223,7 +1223,7 @@ function KitchenSinkHostIntegrationDemo({ context }: { context: PluginPageProps[
   return (
     <Section title="Host Integrations">
       <div style={mutedTextStyle}>
-        Plugin pages can feel like native Swarmifyx pages. This section demonstrates host toasts, company-scoped routing, and reading live heartbeat data from the embedded page.
+        Plugin pages can feel like native Papertape pages. This section demonstrates host toasts, company-scoped routing, and reading live heartbeat data from the embedded page.
       </div>
       <div style={subtleCardStyle}>
         <div style={rowStyle}>
@@ -1552,7 +1552,7 @@ function KitchenSinkConsole({ context }: { context: { companyId: string | null; 
         <JsonBlock value={overview.data?.runtimeLaunchers ?? []} />
       </Section>
 
-      <Section title="Swarmifyx Domain APIs">
+      <Section title="Papertape Domain APIs">
         <div style={{ display: "grid", gap: "12px", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))" }}>
           <PaginatedDomainCard
             title="Companies"
@@ -2088,7 +2088,7 @@ export function KitchenSinkSettingsPage({ context }: PluginSettingsPageProps) {
         <div style={{ display: "grid", gap: "8px" }}>
           <strong>About</strong>
           <div style={{ fontSize: "13px", lineHeight: 1.5 }}>
-            Kitchen Sink demonstrates the current Swarmifyx plugin API surface in one local, trusted example. It intentionally includes domain mutations, event handling, streams, tools, jobs, webhooks, and local workspace/process demos.
+            Kitchen Sink demonstrates the current Papertape plugin API surface in one local, trusted example. It intentionally includes domain mutations, event handling, streams, tools, jobs, webhooks, and local workspace/process demos.
           </div>
           <div style={{ fontSize: "12px", opacity: 0.7 }}>
             Current company context: {context.companyId ?? "none"}

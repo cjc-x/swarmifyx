@@ -1,6 +1,6 @@
 import { Router, type Request } from "express";
-import type { Db } from "@swarmifyx/db";
-import { AGENT_ICON_NAMES } from "@swarmifyx/shared";
+import type { Db } from "@papertape/db";
+import { AGENT_ICON_NAMES } from "@papertape/shared";
 import { forbidden } from "../errors.js";
 import { listServerAdapters } from "../adapters/index.js";
 import { agentService } from "../services/agents.js";
@@ -29,7 +29,7 @@ export function llmRoutes(db: Db) {
     await assertCanRead(req);
     const adapters = listServerAdapters().sort((a, b) => a.type.localeCompare(b.type));
     const lines = [
-      "# Swarmifyx Agent Configuration Index",
+      "# Papertape Agent Configuration Index",
       "",
       "Installed adapters:",
       ...adapters.map((adapter) => `- ${adapter.type}: /llms/agent-configuration/${adapter.type}.txt`),
@@ -53,7 +53,7 @@ export function llmRoutes(db: Db) {
   router.get("/llms/agent-icons.txt", async (req, res) => {
     await assertCanRead(req);
     const lines = [
-      "# Swarmifyx Agent Icon Names",
+      "# Papertape Agent Icon Names",
       "",
       "Set the `icon` field on hire/create payloads to one of:",
       ...AGENT_ICON_NAMES.map((name) => `- ${name}`),

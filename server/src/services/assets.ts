@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
-import type { Db } from "@swarmifyx/db";
-import { assets } from "@swarmifyx/db";
+import type { Db } from "@papertape/db";
+import { assets } from "@papertape/db";
 
 export function assetService(db: Db) {
   return {

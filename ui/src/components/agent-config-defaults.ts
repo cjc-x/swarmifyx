@@ -1,4 +1,4 @@
-import type { CreateConfigValues } from "@swarmifyx/adapter-utils";
+import type { CreateConfigValues } from "@papertape/adapter-utils";
 
 export const defaultCreateValues: CreateConfigValues = {
   adapterType: "claude_local",

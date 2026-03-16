@@ -40,7 +40,7 @@ Operational fields:
 
 Notes:
 - Prompts are piped via stdin (Codex receives "-" prompt argument).
-- Swarmifyx auto-injects local skills into Codex personal skills dir ("$CODEX_HOME/skills" or "~/.codex/skills") when missing, so Codex can discover "$swarmifyx" and related skills.
+- Papertape auto-injects local skills into Codex personal skills dir ("$CODEX_HOME/skills" or "~/.codex/skills") when missing, so Codex can discover "$papertape" and related skills.
 - Some model/tool combinations reject certain effort levels (for example minimal with web search enabled).
-- When Swarmifyx realizes a workspace/runtime for a run, it injects SWARMIFYX_WORKSPACE_* and SWARMIFYX_RUNTIME_* env vars for agent-side tooling.
+- When Papertape realizes a workspace/runtime for a run, it injects PAPERTAPE_WORKSPACE_* and PAPERTAPE_RUNTIME_* env vars for agent-side tooling.
 `;

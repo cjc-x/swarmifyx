@@ -3,14 +3,14 @@ title: Storage
 summary: Local disk vs S3-compatible storage
 ---
 
-Swarmifyx stores uploaded files (issue attachments, images) using a configurable storage provider.
+Papertape stores uploaded files (issue attachments, images) using a configurable storage provider.
 
 ## Local Disk (Default)
 
 Files are stored at:
 
 ```
-~/.swarmifyx/instances/default/data/storage
+~/.papertape/instances/default/data/storage
 ```
 
 No configuration required. Suitable for local development and single-machine deployments.
@@ -22,7 +22,7 @@ For production or multi-node deployments, use S3-compatible object storage (AWS 
 Configure via CLI:
 
 ```sh
-pnpm swarmifyx configure --section storage
+pnpm papertape configure --section storage
 ```
 
 ## Configuration
@@ -35,5 +35,5 @@ pnpm swarmifyx configure --section storage
 Storage configuration is stored in the instance config file:
 
 ```
-~/.swarmifyx/instances/default/config.json
+~/.papertape/instances/default/config.json
 ```

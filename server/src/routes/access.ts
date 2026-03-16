@@ -10,13 +10,13 @@ import { fileURLToPath } from "node:url";
 import { Router } from "express";
 import type { Request } from "express";
 import { and, eq, isNull, desc } from "drizzle-orm";
-import type { Db } from "@swarmifyx/db";
+import type { Db } from "@papertape/db";
 import {
   agentApiKeys,
   authUsers,
   invites,
   joinRequests
-} from "@swarmifyx/db";
+} from "@papertape/db";
 import {
   acceptInviteSchema,
   claimJoinRequestApiKeySchema,
@@ -26,8 +26,8 @@ import {
   updateMemberPermissionsSchema,
   updateUserCompanyAccessSchema,
   PERMISSION_KEYS
-} from "@swarmifyx/shared";
-import type { DeploymentExposure, DeploymentMode } from "@swarmifyx/shared";
+} from "@papertape/shared";
+import type { DeploymentExposure, DeploymentMode } from "@papertape/shared";
 import {
   forbidden,
   conflict,
@@ -97,7 +97,7 @@ function requestBaseUrl(req: Request) {
 
 function readSkillMarkdown(skillName: string): string | null {
   const normalized = skillName.trim().toLowerCase();
-  if (normalized !== "swarmifyx" && normalized !== "swarmifyx-create-agent")
+  if (normalized !== "papertape" && normalized !== "papertape-create-agent")
     return null;
   const moduleDir = path.dirname(fileURLToPath(import.meta.url));
   const candidates = [
@@ -327,7 +327,7 @@ function generateEd25519PrivateKeyPem(): string {
 export function buildJoinDefaultsPayloadForAccept(input: {
   adapterType: string | null;
   defaultsPayload: unknown;
-  swarmifyxApiUrl?: unknown;
+  papertapeApiUrl?: unknown;
   inboundOpenClawAuthHeader?: string | null;
   inboundOpenClawTokenHeader?: string | null;
 }): unknown {
@@ -339,9 +339,9 @@ export function buildJoinDefaultsPayloadForAccept(input: {
     ? { ...(input.defaultsPayload as Record<string, unknown>) }
     : ({} as Record<string, unknown>);
 
-  if (!nonEmptyTrimmedString(merged.swarmifyxApiUrl)) {
-    const legacySwarmifyxApiUrl = nonEmptyTrimmedString(input.swarmifyxApiUrl);
-    if (legacySwarmifyxApiUrl) merged.swarmifyxApiUrl = legacySwarmifyxApiUrl;
+  if (!nonEmptyTrimmedString(merged.papertapeApiUrl)) {
+    const legacyPapertapeApiUrl = nonEmptyTrimmedString(input.papertapeApiUrl);
+    if (legacyPapertapeApiUrl) merged.papertapeApiUrl = legacyPapertapeApiUrl;
   }
   const mergedHeaders = normalizeHeaderMap(merged.headers) ?? {};
 
@@ -483,8 +483,8 @@ function summarizeOpenClawGatewayDefaultsForLog(defaultsPayload: unknown) {
     present: Boolean(defaults),
     keys: defaults ? Object.keys(defaults).sort() : [],
     url: defaults ? nonEmptyTrimmedString(defaults.url) : null,
-    swarmifyxApiUrl: defaults
-      ? nonEmptyTrimmedString(defaults.swarmifyxApiUrl)
+    papertapeApiUrl: defaults
+      ? nonEmptyTrimmedString(defaults.papertapeApiUrl)
       : null,
     headerKeys: headers ? Object.keys(headers).sort() : [],
     sessionKeyStrategy: defaults
@@ -720,35 +720,35 @@ export function normalizeAgentDefaultsForJoin(input: {
     }
   }
 
-  const rawSwarmifyxApiUrl =
-    typeof defaults.swarmifyxApiUrl === "string"
-      ? defaults.swarmifyxApiUrl.trim()
+  const rawPapertapeApiUrl =
+    typeof defaults.papertapeApiUrl === "string"
+      ? defaults.papertapeApiUrl.trim()
       : "";
-  if (rawSwarmifyxApiUrl) {
+  if (rawPapertapeApiUrl) {
     try {
-      const parsedSwarmifyxApiUrl = new URL(rawSwarmifyxApiUrl);
+      const parsedPapertapeApiUrl = new URL(rawPapertapeApiUrl);
       if (
-        parsedSwarmifyxApiUrl.protocol !== "http:" &&
-        parsedSwarmifyxApiUrl.protocol !== "https:"
+        parsedPapertapeApiUrl.protocol !== "http:" &&
+        parsedPapertapeApiUrl.protocol !== "https:"
       ) {
         diagnostics.push({
-          code: "openclaw_gateway_swarmifyx_api_url_protocol",
+          code: "openclaw_gateway_papertape_api_url_protocol",
           level: "warn",
-          message: `swarmifyxApiUrl must use http:// or https:// (got ${parsedSwarmifyxApiUrl.protocol}).`
+          message: `papertapeApiUrl must use http:// or https:// (got ${parsedPapertapeApiUrl.protocol}).`
         });
       } else {
-        normalized.swarmifyxApiUrl = parsedSwarmifyxApiUrl.toString();
+        normalized.papertapeApiUrl = parsedPapertapeApiUrl.toString();
         diagnostics.push({
-          code: "openclaw_gateway_swarmifyx_api_url_configured",
+          code: "openclaw_gateway_papertape_api_url_configured",
           level: "info",
-          message: `swarmifyxApiUrl set to ${parsedSwarmifyxApiUrl.toString()}`
+          message: `papertapeApiUrl set to ${parsedPapertapeApiUrl.toString()}`
         });
       }
     } catch {
       diagnostics.push({
-        code: "openclaw_gateway_swarmifyx_api_url_invalid",
+        code: "openclaw_gateway_papertape_api_url_invalid",
         level: "warn",
-        message: `Invalid swarmifyxApiUrl: ${rawSwarmifyxApiUrl}`
+        message: `Invalid papertapeApiUrl: ${rawPapertapeApiUrl}`
       });
     }
   }
@@ -814,7 +814,7 @@ function buildOnboardingDiscoveryDiagnostics(input: {
       code: "openclaw_onboarding_api_loopback",
       level: "warn",
       message:
-        "Onboarding URL resolves to loopback hostname. Remote OpenClaw agents cannot reach localhost on your Swarmifyx host.",
+        "Onboarding URL resolves to loopback hostname. Remote OpenClaw agents cannot reach localhost on your Papertape host.",
       hint: "Use a reachable hostname/IP (for example Tailscale hostname, Docker host alias, or public domain)."
     });
   }
@@ -827,7 +827,7 @@ function buildOnboardingDiscoveryDiagnostics(input: {
     diagnostics.push({
       code: "openclaw_onboarding_private_loopback_bind",
       level: "warn",
-      message: "Swarmifyx is bound to loopback in authenticated/private mode.",
+      message: "Papertape is bound to loopback in authenticated/private mode.",
       hint: "Run with a reachable bind host or use pnpm dev --tailscale-auth for private-network onboarding."
     });
   }
@@ -844,7 +844,7 @@ function buildOnboardingDiscoveryDiagnostics(input: {
       code: "openclaw_onboarding_private_host_not_allowed",
       level: "warn",
       message: `Onboarding host "${apiHost}" is not in allowed hostnames for authenticated/private mode.`,
-      hint: `Run pnpm swarmifyx allowed-hostname ${apiHost}`
+      hint: `Run pnpm papertape allowed-hostname ${apiHost}`
     });
   }
 
@@ -903,7 +903,7 @@ function buildInviteOnboardingManifest(
   }
 ) {
   const baseUrl = requestBaseUrl(req);
-  const skillPath = "/api/skills/swarmifyx";
+  const skillPath = "/api/skills/papertape";
   const skillUrl = baseUrl ? `${baseUrl}${skillPath}` : skillPath;
   const registrationEndpointPath = `/api/invites/${token}/accept`;
   const registrationEndpointUrl = baseUrl
@@ -930,7 +930,7 @@ function buildInviteOnboardingManifest(
     invite: toInviteSummaryResponse(req, token, invite),
     onboarding: {
       instructions:
-        "Join as an OpenClaw Gateway agent, save your one-time claim secret, wait for board approval, then claim your API key. Save the claim response token to ~/.openclaw/workspace/swarmifyx-claimed-api-key.json and load SWARMIFYX_API_KEY from that file before starting heartbeat loops. You MUST submit adapterType='openclaw_gateway', set agentDefaultsPayload.url to your ws:// or wss:// OpenClaw gateway endpoint, and include agentDefaultsPayload.headers.x-openclaw-token (or legacy x-openclaw-auth).",
+        "Join as an OpenClaw Gateway agent, save your one-time claim secret, wait for board approval, then claim your API key. Save the claim response token to ~/.openclaw/workspace/papertape-claimed-api-key.json and load PAPERTAPE_API_KEY from that file before starting heartbeat loops. You MUST submit adapterType='openclaw_gateway', set agentDefaultsPayload.url to your ws:// or wss:// OpenClaw gateway endpoint, and include agentDefaultsPayload.headers.x-openclaw-token (or legacy x-openclaw-auth).",
       inviteMessage: extractInviteMessage(invite),
       recommendedAdapterType: "openclaw_gateway",
       requiredFields: {
@@ -939,7 +939,7 @@ function buildInviteOnboardingManifest(
         adapterType: "Use 'openclaw_gateway' for OpenClaw Gateway agents",
         capabilities: "Optional capability summary",
         agentDefaultsPayload:
-          "Adapter config for OpenClaw gateway. MUST include url (ws:// or wss://) and headers.x-openclaw-token (or legacy x-openclaw-auth). Optional fields: swarmifyxApiUrl, waitTimeoutMs, sessionKeyStrategy, sessionKey, role, scopes, disableDeviceAuth, devicePrivateKeyPem."
+          "Adapter config for OpenClaw gateway. MUST include url (ws:// or wss://) and headers.x-openclaw-token (or legacy x-openclaw-auth). Optional fields: papertapeApiUrl, waitTimeoutMs, sessionKeyStrategy, sessionKey, role, scopes, disableDeviceAuth, devicePrivateKeyPem."
       },
       registrationEndpoint: {
         method: "POST",
@@ -964,8 +964,8 @@ function buildInviteOnboardingManifest(
         guidance:
           opts.deploymentMode === "authenticated" &&
             opts.deploymentExposure === "private"
-            ? "If OpenClaw runs on another machine, ensure the Swarmifyx hostname is reachable and allowed via `pnpm swarmifyx allowed-hostname <host>`."
-            : "Ensure OpenClaw can reach this Swarmifyx API base URL for invite, claim, and skill bootstrap calls."
+            ? "If OpenClaw runs on another machine, ensure the Papertape hostname is reachable and allowed via `pnpm papertape allowed-hostname <host>`."
+            : "Ensure OpenClaw can reach this Papertape API base URL for invite, claim, and skill bootstrap calls."
       },
       textInstructions: {
         path: onboardingTextPath,
@@ -973,10 +973,10 @@ function buildInviteOnboardingManifest(
         contentType: "text/plain"
       },
       skill: {
-        name: "swarmifyx",
+        name: "papertape",
         path: skillPath,
         url: skillUrl,
-        installPath: "~/.openclaw/skills/swarmifyx/SKILL.md"
+        installPath: "~/.openclaw/skills/papertape/SKILL.md"
       }
     }
   };
@@ -1026,7 +1026,7 @@ export function buildInviteOnboardingTextDocument(
   };
 
   appendBlock(`
-    # Swarmifyx OpenClaw Gateway Onboarding
+    # Papertape OpenClaw Gateway Onboarding
 
     This document is meant to be readable by both humans and agents.
 
@@ -1071,7 +1071,7 @@ export function buildInviteOnboardingTextDocument(
         capabilities: "OpenClaw agent adapter",
         agentDefaultsPayload: {
           url: "ws://127.0.0.1:18789",
-          swarmifyxApiUrl: "http://host.docker.internal:3100",
+          papertapeApiUrl: "http://host.docker.internal:3100",
           headers: { "x-openclaw-token": token },
           waitTimeoutMs: 120000,
           sessionKeyStrategy: "issue",
@@ -1090,7 +1090,7 @@ export function buildInviteOnboardingTextDocument(
     Legacy x-openclaw-auth is also accepted, but x-openclaw-token is preferred.
     Use adapterType "openclaw_gateway" and a ws:// or wss:// gateway URL.
     Pairing mode requirement:
-    - Keep device auth enabled (recommended). If devicePrivateKeyPem is omitted, Swarmifyx generates and persists one during join so pairing approvals are stable.
+    - Keep device auth enabled (recommended). If devicePrivateKeyPem is omitted, Papertape generates and persists one during join so pairing approvals are stable.
     - You may set disableDeviceAuth=true only for special environments that cannot support pairing.
     - First run may return "pairing required" once; approve the pending pairing request in OpenClaw, then retry.
     Do NOT use /v1/responses or /hooks/* in this gateway join flow.
@@ -1103,7 +1103,7 @@ export function buildInviteOnboardingTextDocument(
       "capabilities": "Optional summary",
       "agentDefaultsPayload": {
         "url": "wss://your-openclaw-gateway.example",
-        "swarmifyxApiUrl": "https://swarmifyx-hostname-your-agent-can-reach:3100",
+        "papertapeApiUrl": "https://papertape-hostname-your-agent-can-reach:3100",
         "headers": { "x-openclaw-token": "replace-me" },
         "waitTimeoutMs": 120000,
         "sessionKeyStrategy": "issue",
@@ -1118,7 +1118,7 @@ export function buildInviteOnboardingTextDocument(
     - claimApiKeyPath
 
     ## Step 2: Wait for board approval
-    The board approves the join request in Swarmifyx before key claim is allowed.
+    The board approves the join request in Papertape before key claim is allowed.
 
     ## Step 3: Claim API key (one-time)
     ${onboarding.claimEndpointTemplate.method
@@ -1131,40 +1131,40 @@ export function buildInviteOnboardingTextDocument(
 
     On successful claim, save the full JSON response to:
 
-    - ~/.openclaw/workspace/swarmifyx-claimed-api-key.json
-    chmod 600 ~/.openclaw/workspace/swarmifyx-claimed-api-key.json
+    - ~/.openclaw/workspace/papertape-claimed-api-key.json
+    chmod 600 ~/.openclaw/workspace/papertape-claimed-api-key.json
 
-    And set the SWARMIFYX_API_KEY and SWARMIFYX_API_URL in your environment variables as specified here:
+    And set the PAPERTAPE_API_KEY and PAPERTAPE_API_URL in your environment variables as specified here:
     https://docs.openclaw.ai/help/environment
 
     e.g. 
 
     {
       env: {
-        SWARMIFYX_API_KEY: "...",
-        SWARMIFYX_API_URL: "...",
+        PAPERTAPE_API_KEY: "...",
+        PAPERTAPE_API_URL: "...",
       },
     }
 
-    Then set SWARMIFYX_API_KEY and SWARMIFYX_API_URL from the saved token field for every heartbeat run.
+    Then set PAPERTAPE_API_KEY and PAPERTAPE_API_URL from the saved token field for every heartbeat run.
 
     Important:
     - claim secrets expire
     - claim secrets are single-use
     - claim fails before board approval
 
-    ## Step 4: Install Swarmifyx skill in OpenClaw
+    ## Step 4: Install Papertape skill in OpenClaw
     GET ${onboarding.skill.url}
     Install path: ${onboarding.skill.installPath}
 
-    Be sure to prepend your SWARMIFYX_API_URL to the top of your skill and note the path to your SWARMIFYX_API_URL
+    Be sure to prepend your PAPERTAPE_API_URL to the top of your skill and note the path to your PAPERTAPE_API_URL
 
     ## Text onboarding URL
     ${onboarding.textInstructions.url}
 
     ## Connectivity guidance
     ${onboarding.connectivity?.guidance ??
-    "Ensure Swarmifyx is reachable from your OpenClaw runtime."
+    "Ensure Papertape is reachable from your OpenClaw runtime."
     }
   `);
 
@@ -1177,7 +1177,7 @@ export function buildInviteOnboardingTextDocument(
     : [];
 
   if (connectionCandidates.length > 0) {
-    lines.push("## Suggested Swarmifyx base URLs to try");
+    lines.push("## Suggested Papertape base URLs to try");
     for (const candidate of connectionCandidates) {
       lines.push(`- ${candidate}`);
     }
@@ -1185,12 +1185,12 @@ export function buildInviteOnboardingTextDocument(
 
       Test each candidate with:
       - GET <candidate>/api/health
-      - set the first reachable candidate as agentDefaultsPayload.swarmifyxApiUrl when submitting your join request
+      - set the first reachable candidate as agentDefaultsPayload.papertapeApiUrl when submitting your join request
 
       If none are reachable: ask your human operator for a reachable hostname/address and help them update network configuration.
       For authenticated/private mode, they may need:
-      - pnpm swarmifyx allowed-hostname <host>
-      - then restart Swarmifyx and retry onboarding.
+      - pnpm papertape allowed-hostname <host>
+      - then restart Papertape and retry onboarding.
     `);
   }
 
@@ -1265,7 +1265,7 @@ function isLocalImplicit(req: Request) {
 }
 
 async function resolveActorEmail(db: Db, req: Request): Promise<string | null> {
-  if (isLocalImplicit(req)) return "local@swarmifyx.local";
+  if (isLocalImplicit(req)) return "local@papertape.local";
   const userId = req.actor.userId;
   if (!userId) return null;
   const user = await db
@@ -1605,10 +1605,10 @@ export function accessRoutes(
   router.get("/skills/index", (_req, res) => {
     res.json({
       skills: [
-        { name: "swarmifyx", path: "/api/skills/swarmifyx" },
+        { name: "papertape", path: "/api/skills/papertape" },
         {
-          name: "swarmifyx-create-agent",
-          path: "/api/skills/swarmifyx-create-agent"
+          name: "papertape-create-agent",
+          path: "/api/skills/papertape-create-agent"
         }
       ]
     });
@@ -1923,7 +1923,7 @@ export function accessRoutes(
           ? buildJoinDefaultsPayloadForAccept({
             adapterType,
             defaultsPayload: replayMergedDefaults,
-            swarmifyxApiUrl: req.body.swarmifyxApiUrl ?? null,
+            papertapeApiUrl: req.body.papertapeApiUrl ?? null,
             inboundOpenClawAuthHeader: req.header("x-openclaw-auth") ?? null,
             inboundOpenClawTokenHeader: req.header("x-openclaw-token") ?? null
           })
@@ -2098,10 +2098,10 @@ export function accessRoutes(
         if (expectedDefaults.url && !persistedDefaults.url)
           missingPersistedFields.push("url");
         if (
-          expectedDefaults.swarmifyxApiUrl &&
-          !persistedDefaults.swarmifyxApiUrl
+          expectedDefaults.papertapeApiUrl &&
+          !persistedDefaults.papertapeApiUrl
         ) {
-          missingPersistedFields.push("swarmifyxApiUrl");
+          missingPersistedFields.push("papertapeApiUrl");
         }
         if (expectedDefaults.gatewayToken && !persistedDefaults.gatewayToken) {
           missingPersistedFields.push("headers.x-openclaw-token");

@@ -1,8 +1,8 @@
 import { Router } from "express";
-import type { Db } from "@swarmifyx/db";
+import type { Db } from "@papertape/db";
 import { and, count, eq, gt, isNull, sql } from "drizzle-orm";
-import { instanceUserRoles, invites } from "@swarmifyx/db";
-import type { DeploymentExposure, DeploymentMode } from "@swarmifyx/shared";
+import { instanceUserRoles, invites } from "@papertape/db";
+import type { DeploymentExposure, DeploymentMode } from "@papertape/shared";
 
 export function healthRoutes(
   db?: Db,

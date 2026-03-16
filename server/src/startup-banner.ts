@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
-import { resolveSwarmifyxConfigPath, resolveSwarmifyxEnvPath } from "./paths.js";
-import type { DeploymentExposure, DeploymentMode } from "@swarmifyx/shared";
+import { resolvePapertapeConfigPath, resolvePapertapeEnvPath } from "./paths.js";
+import type { DeploymentExposure, DeploymentMode } from "@papertape/shared";
 
 import { parse as parseEnvFileContents } from "dotenv";
 
@@ -71,7 +71,7 @@ function resolveAgentJwtSecretStatus(
   status: "pass" | "warn";
   message: string;
 } {
-  const envValue = process.env.SWARMIFYX_AGENT_JWT_SECRET?.trim();
+  const envValue = process.env.PAPERTAPE_AGENT_JWT_SECRET?.trim();
   if (envValue) {
     return {
       status: "pass",
@@ -81,7 +81,7 @@ function resolveAgentJwtSecretStatus(
 
   if (existsSync(envFilePath)) {
     const parsed = parseEnvFileContents(readFileSync(envFilePath, "utf-8"));
-    const fileValue = typeof parsed.SWARMIFYX_AGENT_JWT_SECRET === "string" ? parsed.SWARMIFYX_AGENT_JWT_SECRET.trim() : "";
+    const fileValue = typeof parsed.PAPERTAPE_AGENT_JWT_SECRET === "string" ? parsed.PAPERTAPE_AGENT_JWT_SECRET.trim() : "";
     if (fileValue) {
       return {
         status: "warn",
@@ -92,7 +92,7 @@ function resolveAgentJwtSecretStatus(
 
   return {
     status: "warn",
-    message: "missing (run `pnpm swarmifyx onboard`)",
+    message: "missing (run `pnpm papertape onboard`)",
   };
 }
 
@@ -101,8 +101,8 @@ export function printStartupBanner(opts: StartupBannerOptions): void {
   const baseUrl = `http://${baseHost}:${opts.listenPort}`;
   const apiUrl = `${baseUrl}/api`;
   const uiUrl = opts.uiMode === "none" ? "disabled" : baseUrl;
-  const configPath = resolveSwarmifyxConfigPath();
-  const envFilePath = resolveSwarmifyxEnvPath();
+  const configPath = resolvePapertapeConfigPath();
+  const envFilePath = resolvePapertapeEnvPath();
   const agentJwtSecret = resolveAgentJwtSecretStatus(envFilePath);
 
   const dbMode =

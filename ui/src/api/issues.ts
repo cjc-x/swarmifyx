@@ -7,7 +7,7 @@ import type {
   IssueDocument,
   IssueLabel,
   UpsertIssueDocument,
-} from "@swarmifyx/shared";
+} from "@papertape/shared";
 import { api } from "./client";
 
 export const issuesApi = {

@@ -2,7 +2,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { resolveSwarmifyxConfigPath } from "../paths.ts";
+import { resolvePapertapeConfigPath } from "../paths.ts";
 
 const ORIGINAL_CWD = process.cwd();
 const ORIGINAL_ENV = { ...process.env };
@@ -18,15 +18,15 @@ afterEach(() => {
   }
 });
 
-describe("resolveSwarmifyxConfigPath", () => {
-  it("prefers repo-local .swarmifyx config files", () => {
-    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "swarmifyx-server-paths-"));
+describe("resolvePapertapeConfigPath", () => {
+  it("prefers repo-local .papertape config files", () => {
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "papertape-server-paths-"));
     const projectDir = path.join(tempDir, "repo");
-    fs.mkdirSync(path.join(projectDir, ".swarmifyx"), { recursive: true });
-    fs.writeFileSync(path.join(projectDir, ".swarmifyx", "config.json"), "{}\n");
-    delete process.env.SWARMIFYX_CONFIG;
+    fs.mkdirSync(path.join(projectDir, ".papertape"), { recursive: true });
+    fs.writeFileSync(path.join(projectDir, ".papertape", "config.json"), "{}\n");
+    delete process.env.PAPERTAPE_CONFIG;
     process.chdir(projectDir);
 
-    expect(resolveSwarmifyxConfigPath()).toBe(path.join(projectDir, ".swarmifyx", "config.json"));
+    expect(resolvePapertapeConfigPath()).toBe(path.join(projectDir, ".papertape", "config.json"));
   });
 });

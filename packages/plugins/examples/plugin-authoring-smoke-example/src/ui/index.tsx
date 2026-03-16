@@ -1,4 +1,4 @@
-import { usePluginAction, usePluginData, type PluginWidgetProps } from "@swarmifyx/plugin-sdk/ui";
+import { usePluginAction, usePluginData, type PluginWidgetProps } from "@papertape/plugin-sdk/ui";
 
 type HealthData = {
   status: "ok" | "degraded" | "error";

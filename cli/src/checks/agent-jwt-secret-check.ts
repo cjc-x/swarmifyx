@@ -11,7 +11,7 @@ export function agentJwtSecretCheck(configPath?: string): CheckResult {
     return {
       name: "Agent JWT secret",
       status: "pass",
-      message: "SWARMIFYX_AGENT_JWT_SECRET is set in environment",
+      message: "PAPERTAPE_AGENT_JWT_SECRET is set in environment",
     };
   }
 
@@ -22,19 +22,19 @@ export function agentJwtSecretCheck(configPath?: string): CheckResult {
     return {
       name: "Agent JWT secret",
       status: "warn",
-      message: `SWARMIFYX_AGENT_JWT_SECRET is present in ${envPath} but not loaded into environment`,
-      repairHint: `Set the value from ${envPath} in your shell before starting the Swarmifyx server`,
+      message: `PAPERTAPE_AGENT_JWT_SECRET is present in ${envPath} but not loaded into environment`,
+      repairHint: `Set the value from ${envPath} in your shell before starting the Papertape server`,
     };
   }
 
   return {
     name: "Agent JWT secret",
     status: "fail",
-    message: `SWARMIFYX_AGENT_JWT_SECRET missing from environment and ${envPath}`,
+    message: `PAPERTAPE_AGENT_JWT_SECRET missing from environment and ${envPath}`,
     canRepair: true,
     repair: () => {
       ensureAgentJwtSecret(configPath);
     },
-    repairHint: `Run with --repair to create ${envPath} containing SWARMIFYX_AGENT_JWT_SECRET`,
+    repairHint: `Run with --repair to create ${envPath} containing PAPERTAPE_AGENT_JWT_SECRET`,
   };
 }

@@ -2,16 +2,16 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import type { SwarmifyxConfig } from "../config/schema.js";
+import type { PapertapeConfig } from "../config/schema.js";
 import { addAllowedHostname } from "../commands/allowed-hostname.js";
 
 function createTempConfigPath() {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "swarmifyx-allowed-hostname-"));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "papertape-allowed-hostname-"));
   return path.join(dir, "config.json");
 }
 
 function writeBaseConfig(configPath: string) {
-  const base: SwarmifyxConfig = {
+  const base: PapertapeConfig = {
     $meta: {
       version: 1,
       updatedAt: new Date("2026-01-01T00:00:00.000Z").toISOString(),
@@ -19,18 +19,18 @@ function writeBaseConfig(configPath: string) {
     },
     database: {
       mode: "embedded-postgres",
-      embeddedPostgresDataDir: "/tmp/swarmifyx-db",
+      embeddedPostgresDataDir: "/tmp/papertape-db",
       embeddedPostgresPort: 54329,
       backup: {
         enabled: true,
         intervalMinutes: 60,
         retentionDays: 30,
-        dir: "/tmp/swarmifyx-backups",
+        dir: "/tmp/papertape-backups",
       },
     },
     logging: {
       mode: "file",
-      logDir: "/tmp/swarmifyx-logs",
+      logDir: "/tmp/papertape-logs",
     },
     server: {
       deploymentMode: "authenticated",
@@ -46,9 +46,9 @@ function writeBaseConfig(configPath: string) {
     },
     storage: {
       provider: "local_disk",
-      localDisk: { baseDir: "/tmp/swarmifyx-storage" },
+      localDisk: { baseDir: "/tmp/papertape-storage" },
       s3: {
-        bucket: "swarmifyx",
+        bucket: "papertape",
         region: "us-east-1",
         prefix: "",
         forcePathStyle: false,
@@ -57,7 +57,7 @@ function writeBaseConfig(configPath: string) {
     secrets: {
       provider: "local_encrypted",
       strictMode: false,
-      localEncrypted: { keyFilePath: "/tmp/swarmifyx-secrets/master.key" },
+      localEncrypted: { keyFilePath: "/tmp/papertape-secrets/master.key" },
     },
   };
   fs.writeFileSync(configPath, JSON.stringify(base, null, 2));
@@ -71,7 +71,7 @@ describe("allowed-hostname command", () => {
     await addAllowedHostname("https://Dotta-MacBook-Pro:3100", { config: configPath });
     await addAllowedHostname("dotta-macbook-pro", { config: configPath });
 
-    const raw = JSON.parse(fs.readFileSync(configPath, "utf-8")) as SwarmifyxConfig;
+    const raw = JSON.parse(fs.readFileSync(configPath, "utf-8")) as PapertapeConfig;
     expect(raw.server.allowedHostnames).toEqual(["dotta-macbook-pro"]);
   });
 });

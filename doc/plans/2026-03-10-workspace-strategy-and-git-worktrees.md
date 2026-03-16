@@ -2,27 +2,27 @@
 
 ## Context
 
-`PAP-447` asks how Swarmifyx should support worktree-driven coding workflows for local coding agents without turning that into a universal product requirement.
+`PAP-447` asks how Papertape should support worktree-driven coding workflows for local coding agents without turning that into a universal product requirement.
 
 The motivating use case is strong:
 
 - when an issue starts, a local coding agent may want its own isolated checkout
 - the agent may need a dedicated branch and a predictable path to push later
 - the agent may need to start one or more long-lived workspace runtime services, discover reachable ports or URLs, and report them back into the issue
-- the workflow should reuse the same Swarmifyx instance and embedded database instead of creating a blank environment
+- the workflow should reuse the same Papertape instance and embedded database instead of creating a blank environment
 - local agent auth should remain low-friction
 
-At the same time, we do not want to hard-code "every agent uses git worktrees" into Swarmifyx:
+At the same time, we do not want to hard-code "every agent uses git worktrees" into Papertape:
 
-- some operators use Swarmifyx to manage Swarmifyx and want worktrees heavily
+- some operators use Papertape to manage Papertape and want worktrees heavily
 - other operators will not want worktrees at all
 - not every adapter runs in a local git repository
-- not every adapter runs on the same machine as Swarmifyx
-- Claude and Codex expose different built-in affordances, so Swarmifyx should not overfit to one tool
+- not every adapter runs on the same machine as Papertape
+- Claude and Codex expose different built-in affordances, so Papertape should not overfit to one tool
 
 ## Core Product Decision
 
-Swarmifyx should model **execution workspaces**, not **worktrees**.
+Papertape should model **execution workspaces**, not **worktrees**.
 
 More specifically:
 
@@ -40,9 +40,9 @@ This keeps the abstraction portable:
 
 This also keeps the abstraction valid for non-local adapters:
 
-- local adapters may receive a real filesystem cwd produced by Swarmifyx
+- local adapters may receive a real filesystem cwd produced by Papertape
 - remote or cloud adapters may receive the same execution intent in structured form and realize it inside their own environment
-- Swarmifyx should not assume that every adapter can see or use a host filesystem path directly
+- Papertape should not assume that every adapter can see or use a host filesystem path directly
 
 ## Answer to the Main Framing Questions
 
@@ -52,7 +52,7 @@ They should be treated as **repo/project-scoped infrastructure**, not agent iden
 
 The stable object is the project workspace. Agents come and go, ownership changes, and the same issue may be reassigned. A git worktree is a derived checkout of a repo workspace for a specific task or issue. The agent uses it, but should not own the abstraction.
 
-If Swarmifyx makes worktrees agent-first, it will blur:
+If Papertape makes worktrees agent-first, it will blur:
 
 - agent home directories
 - project repo roots
@@ -76,7 +76,7 @@ Then local coding agents can opt into a strategy like `git_worktree`.
 
 By splitting responsibilities:
 
-- Swarmifyx core resolves and records execution workspace state
+- Papertape core resolves and records execution workspace state
 - a shared local runtime helper can implement git-based checkout strategies
 - each adapter launches its tool inside the resolved cwd using adapter-specific flags
 
@@ -106,7 +106,7 @@ For product/UI copy:
 - use **isolated issue checkout** for the user-facing feature when we want to say "this issue gets its own branch/checkout"
 - reserve **git worktree** for advanced or implementation detail views
 
-That gives Swarmifyx room to support:
+That gives Papertape room to support:
 
 - local git worktrees
 - remote sandbox checkouts
@@ -155,7 +155,7 @@ The current raw runtime service JSON is too low-level as a primary UI for most l
 
 For `claude_local` and `codex_local`, the likely desired behavior is:
 
-- Swarmifyx handles workspace runtime services under the hood using project/workspace policy
+- Papertape handles workspace runtime services under the hood using project/workspace policy
 - operators do not need to hand-author generic runtime JSON in the agent form
 - if a provider-specific adapter later needs richer runtime configuration, give it a purpose-built UI rather than generic JSON by default
 
@@ -167,7 +167,7 @@ So the UI recommendation is:
 
 ### Pull request workflow needs explicit ownership and approval rules
 
-Once Swarmifyx is creating isolated issue checkouts, it is implicitly touching a bigger workflow:
+Once Papertape is creating isolated issue checkouts, it is implicitly touching a bigger workflow:
 
 - branch creation
 - runtime service start/stop
@@ -196,7 +196,7 @@ A human operator may want a long-lived personal integration branch such as `dott
 
 That is a legitimate workflow and should be supported directly.
 
-So Swarmifyx should distinguish:
+So Papertape should distinguish:
 
 - **isolated issue checkout workflows**: optimized for agent parallelism and issue-scoped isolation
 - **personal branch workflows**: optimized for a human or operator making multiple related changes on a long-lived branch and creating PRs back to the main branch when convenient
@@ -330,7 +330,7 @@ Based on the concerns above, the UI should change in these ways:
 - remove generic runtime service JSON from the default local-agent configuration surface
 - keep raw workspace/runtime JSON behind advanced settings only
 - prefer inheritance from project settings for `claude_local` and `codex_local`
-- only add adapter-specific runtime UI when an adapter truly needs settings that Swarmifyx cannot infer
+- only add adapter-specific runtime UI when an adapter truly needs settings that Papertape cannot infer
 
 ### Project UI
 
@@ -646,7 +646,7 @@ Likely files:
 
 Needed decisions:
 
-- when issue moves to done, should Swarmifyx auto-commit?
+- when issue moves to done, should Papertape auto-commit?
 - should it auto-push?
 - should it auto-open a PR?
 - should PR open/ready be approval-gated?
@@ -697,7 +697,7 @@ This design shift is complete when all are true:
 
 ## What the Current Code Already Supports
 
-Swarmifyx already has the right foundation for a project-first model.
+Papertape already has the right foundation for a project-first model.
 
 ### Project workspace is already first-class
 
@@ -726,7 +726,7 @@ That means the clean insertion point is before adapter execution: resolve the fi
 
 ### Server-spawned local auth already exists
 
-For server-spawned local adapters, Swarmifyx already injects a short-lived local JWT:
+For server-spawned local adapters, Papertape already injects a short-lived local JWT:
 
 - JWT creation: `server/src/services/heartbeat.ts`
 - adapter env injection:
@@ -743,11 +743,11 @@ The linked tool docs support a project-first, adapter-specific launch model.
 
 - Codex app has a native worktree concept for parallel tasks in git repos
 - Codex CLI documents running in a chosen working directory and resuming sessions from the current working directory
-- Codex CLI does not present a single first-class portable CLI worktree abstraction that Swarmifyx should mirror directly
+- Codex CLI does not present a single first-class portable CLI worktree abstraction that Papertape should mirror directly
 
 Implication:
 
-- for `codex_local`, Swarmifyx should usually create/select the checkout itself and then launch Codex inside that cwd
+- for `codex_local`, Papertape should usually create/select the checkout itself and then launch Codex inside that cwd
 
 ### Claude
 
@@ -758,7 +758,7 @@ Implication:
 Implication:
 
 - `claude_local` can optionally use native `--worktree`
-- but Swarmifyx should still treat that as an adapter optimization, not the canonical cross-adapter model
+- but Papertape should still treat that as an adapter optimization, not the canonical cross-adapter model
 
 ## Local vs Remote Adapters
 
@@ -778,14 +778,14 @@ These adapters do not all share the same capabilities:
 - some may expose a virtual workspace concept with no direct git worktree equivalent
 - some may not allow persistent filesystem state at all
 
-Because of that, Swarmifyx should separate:
+Because of that, Papertape should separate:
 
 - **execution workspace intent**: what isolation/branch/repo behavior we want
 - **adapter realization**: how a specific adapter implements that behavior
 
 ### Execution workspace intent
 
-Swarmifyx should be able to express intentions such as:
+Papertape should be able to express intentions such as:
 
 - use the project's primary workspace directly
 - create an isolated issue-scoped checkout
@@ -818,7 +818,7 @@ Long-lived repo anchor.
 
 Examples:
 
-- `./swarmifyx`
+- `./papertape`
 - repo URL and base ref
 - primary checkout for a project
 
@@ -845,7 +845,7 @@ Examples:
 - test watcher
 - tunnel process
 
-These are not specific to Swarmifyx. They are a common property of working in a dev workspace, whether local or remote.
+These are not specific to Papertape. They are a common property of working in a dev workspace, whether local or remote.
 
 ### 4. Adapter session
 
@@ -873,7 +873,7 @@ Or:
     "type": "git_worktree",
     "baseRef": "origin/main",
     "branchTemplate": "{{issue.identifier}}-{{slug}}",
-    "worktreeParentDir": ".swarmifyx/instances/default/worktrees/projects/{{project.id}}",
+    "worktreeParentDir": ".papertape/instances/default/worktrees/projects/{{project.id}}",
     "cleanupPolicy": "on_merged",
     "startDevServer": true,
     "devServerCommand": "pnpm dev",
@@ -899,7 +899,7 @@ The important point is that `git_worktree` is a strategy value for adapters that
 
 ### Workspace runtime services
 
-Do not model this as a Swarmifyx-specific `devServer` flag.
+Do not model this as a Papertape-specific `devServer` flag.
 
 Instead, model it as a generic list of workspace-attached runtime services.
 
@@ -948,7 +948,7 @@ This contract is intentionally generic:
 
 ### Service intent vs service realization
 
-Swarmifyx should distinguish between:
+Papertape should distinguish between:
 
 - **service intent**: what kind of companion runtime the workspace wants
 - **service realization**: how a local or remote adapter actually starts and exposes it
@@ -968,15 +968,15 @@ Examples:
   - may ask the provider to create a preview environment
   - reports provider-native workspace/service metadata
 
-Swarmifyx should normalize the reported metadata without requiring every adapter to look like a host-local process.
+Papertape should normalize the reported metadata without requiring every adapter to look like a host-local process.
 
 Keep issue-level overrides possible through the existing `assigneeAdapterOverrides` shape in `packages/shared/src/types/issue.ts`.
 
 ## Responsibilities by Layer
 
-### Swarmifyx Core
+### Papertape Core
 
-Swarmifyx core should:
+Papertape core should:
 
 - resolve the base project workspace for the issue
 - resolve or request an execution workspace
@@ -985,7 +985,7 @@ Swarmifyx core should:
 - persist enough metadata for board visibility and cleanup
 - manage lifecycle hooks around run start/finish where needed
 
-Swarmifyx core should not:
+Papertape core should not:
 
 - require worktrees for all agents
 - assume every adapter is local and git-backed
@@ -1013,7 +1013,7 @@ This helper is intentionally for local adapters only. Remote adapters should not
 
 ### Shared Runtime Service Manager
 
-In addition to the local git helper, Swarmifyx should define a generic runtime service manager contract.
+In addition to the local git helper, Papertape should define a generic runtime service manager contract.
 
 Its job is to:
 
@@ -1041,7 +1041,7 @@ For example:
 
 - `codex_local`: run inside cwd, likely with `--cd` or process cwd
 - `claude_local`: run inside cwd, optionally use `--worktree` when it helps
-- remote sandbox adapter: create its own isolated workspace from repo/ref/branch intent and report the realized remote workspace metadata back to Swarmifyx
+- remote sandbox adapter: create its own isolated workspace from repo/ref/branch intent and report the realized remote workspace metadata back to Papertape
 
 For runtime services:
 
@@ -1065,7 +1065,7 @@ Suggested fields to introduce:
 
 These can live first on `heartbeat_runs.context_snapshot` or adjacent run metadata, with an optional later move into a dedicated table if the UI and cleanup workflows justify it.
 
-For runtime services specifically, Swarmifyx should eventually track normalized fields such as:
+For runtime services specifically, Papertape should eventually track normalized fields such as:
 
 - `serviceName`
 - `serviceKind`
@@ -1115,7 +1115,7 @@ Acceptance:
 
 - adapter config can express `project_primary` and `git_worktree`
 - config remains optional and backwards-compatible
-- runtime services are expressed generically, not as Swarmifyx-only dev-server flags
+- runtime services are expressed generically, not as Papertape-only dev-server flags
 
 ## Phase 2: Resolve Execution Workspace in Heartbeat
 
@@ -1123,7 +1123,7 @@ Acceptance:
 2. Keep current fallback order, but distinguish:
    - base project workspace
    - derived execution workspace
-3. Inject resolved execution workspace details into `context.swarmifyxWorkspace` for local adapters and into a generic execution-workspace intent payload for adapters that need structured remote realization.
+3. Inject resolved execution workspace details into `context.papertapeWorkspace` for local adapters and into a generic execution-workspace intent payload for adapters that need structured remote realization.
 4. Resolve configured runtime service intent alongside the execution workspace so the adapter or host manager receives a complete workspace runtime contract.
 
 Primary touchpoints:
@@ -1177,7 +1177,7 @@ Acceptance:
 
 - runtime service startup remains opt-in
 - failures produce actionable run logs and issue comments
-- same embedded DB / Swarmifyx instance can be reused through env/config injection when appropriate
+- same embedded DB / Papertape instance can be reused through env/config injection when appropriate
 - remote service realizations are represented without pretending to be local processes
 
 ## Phase 5: Runtime Service Reuse, Tracking, and Shutdown
@@ -1218,7 +1218,7 @@ Acceptance:
 
 Acceptance:
 
-- Swarmifyx can decide whether to reuse or start a fresh service deterministically
+- Papertape can decide whether to reuse or start a fresh service deterministically
 - local and remote services share a normalized tracking model
 - shutdown is policy-driven instead of implicit
 - board can understand why a service was kept, reused, or stopped
@@ -1298,7 +1298,7 @@ This should likely take the form of a local operator bootstrap flow, not a weake
 
 1. Ship the shared config contract and no-op-compatible heartbeat changes first.
 2. Pilot with `codexcoder` and `claudecoder` only.
-3. Test against Swarmifyx-on-Swarmifyx workflows first.
+3. Test against Papertape-on-Papertape workflows first.
 4. Keep `project_primary` as the default for all existing agents.
 5. Add UI exposure and cleanup only after the core runtime path is stable.
 
@@ -1310,7 +1310,7 @@ This should likely take the form of a local operator bootstrap flow, not a weake
 4. The same model works for both `codex_local` and `claude_local` without forcing a tool-specific abstraction into core.
 5. Remote adapters can consume the same execution workspace intent without requiring host-local filesystem access.
 6. Session continuity remains correct because each adapter resumes relative to its realized execution workspace.
-7. Workspace runtime services are modeled generically, not as Swarmifyx-specific dev-server toggles.
+7. Workspace runtime services are modeled generically, not as Papertape-specific dev-server toggles.
 8. Board users can see branch/path/URL information for worktree-backed or remotely isolated runs.
 9. Service reuse and shutdown are deterministic and policy-driven.
 10. Cleanup is conservative by default.

@@ -25,8 +25,8 @@ require_cmd docker
 require_cmd node
 require_cmd shasum
 
-SWARMIFYX_API_URL="${SWARMIFYX_API_URL:-http://127.0.0.1:3100}"
-API_BASE="${SWARMIFYX_API_URL%/}/api"
+PAPERTAPE_API_URL="${PAPERTAPE_API_URL:-http://127.0.0.1:3100}"
+API_BASE="${PAPERTAPE_API_URL%/}/api"
 
 COMPANY_SELECTOR="${COMPANY_SELECTOR:-CLA}"
 OPENCLAW_AGENT_NAME="${OPENCLAW_AGENT_NAME:-OpenClaw Gateway Smoke Agent}"
@@ -35,7 +35,7 @@ OPENCLAW_GATEWAY_TOKEN="${OPENCLAW_GATEWAY_TOKEN:-}"
 OPENCLAW_TMP_DIR="${OPENCLAW_TMP_DIR:-${TMPDIR:-/tmp}}"
 OPENCLAW_TMP_DIR="${OPENCLAW_TMP_DIR%/}"
 OPENCLAW_TMP_DIR="${OPENCLAW_TMP_DIR:-/tmp}"
-OPENCLAW_CONFIG_DIR="${OPENCLAW_CONFIG_DIR:-${OPENCLAW_TMP_DIR}/openclaw-swarmifyx-smoke}"
+OPENCLAW_CONFIG_DIR="${OPENCLAW_CONFIG_DIR:-${OPENCLAW_TMP_DIR}/openclaw-papertape-smoke}"
 OPENCLAW_WORKSPACE_DIR="${OPENCLAW_WORKSPACE_DIR:-${OPENCLAW_CONFIG_DIR}/workspace}"
 OPENCLAW_CONTAINER_NAME="${OPENCLAW_CONTAINER_NAME:-openclaw-docker-openclaw-gateway-1}"
 OPENCLAW_IMAGE="${OPENCLAW_IMAGE:-openclaw:local}"
@@ -45,7 +45,7 @@ OPENCLAW_BUILD="${OPENCLAW_BUILD:-1}"
 OPENCLAW_WAIT_SECONDS="${OPENCLAW_WAIT_SECONDS:-60}"
 OPENCLAW_RESET_STATE="${OPENCLAW_RESET_STATE:-1}"
 
-SWARMIFYX_API_URL_FOR_OPENCLAW="${SWARMIFYX_API_URL_FOR_OPENCLAW:-http://host.docker.internal:3100}"
+PAPERTAPE_API_URL_FOR_OPENCLAW="${PAPERTAPE_API_URL_FOR_OPENCLAW:-http://host.docker.internal:3100}"
 CASE_TIMEOUT_SEC="${CASE_TIMEOUT_SEC:-420}"
 RUN_TIMEOUT_SEC="${RUN_TIMEOUT_SEC:-300}"
 STRICT_CASES="${STRICT_CASES:-1}"
@@ -57,13 +57,13 @@ PAIRING_AUTO_APPROVE="${PAIRING_AUTO_APPROVE:-1}"
 PAYLOAD_TEMPLATE_MESSAGE_APPEND="${PAYLOAD_TEMPLATE_MESSAGE_APPEND:-}"
 
 AUTH_HEADERS=()
-if [[ -n "${SWARMIFYX_AUTH_HEADER:-}" ]]; then
-  AUTH_HEADERS+=( -H "Authorization: ${SWARMIFYX_AUTH_HEADER}" )
+if [[ -n "${PAPERTAPE_AUTH_HEADER:-}" ]]; then
+  AUTH_HEADERS+=( -H "Authorization: ${PAPERTAPE_AUTH_HEADER}" )
 fi
-if [[ -n "${SWARMIFYX_COOKIE:-}" ]]; then
-  AUTH_HEADERS+=( -H "Cookie: ${SWARMIFYX_COOKIE}" )
-  SWARMIFYX_BROWSER_ORIGIN="${SWARMIFYX_BROWSER_ORIGIN:-${SWARMIFYX_API_URL%/}}"
-  AUTH_HEADERS+=( -H "Origin: ${SWARMIFYX_BROWSER_ORIGIN}" -H "Referer: ${SWARMIFYX_BROWSER_ORIGIN}/" )
+if [[ -n "${PAPERTAPE_COOKIE:-}" ]]; then
+  AUTH_HEADERS+=( -H "Cookie: ${PAPERTAPE_COOKIE}" )
+  PAPERTAPE_BROWSER_ORIGIN="${PAPERTAPE_BROWSER_ORIGIN:-${PAPERTAPE_API_URL%/}}"
+  AUTH_HEADERS+=( -H "Origin: ${PAPERTAPE_BROWSER_ORIGIN}" -H "Referer: ${PAPERTAPE_BROWSER_ORIGIN}/" )
 fi
 
 RESPONSE_CODE=""
@@ -91,7 +91,7 @@ api_request() {
   if [[ "$path" == http://* || "$path" == https://* ]]; then
     url="$path"
   elif [[ "$path" == /api/* ]]; then
-    url="${SWARMIFYX_API_URL%/}${path}"
+    url="${PAPERTAPE_API_URL%/}${path}"
   else
     url="${API_BASE}${path}"
   fi
@@ -175,7 +175,7 @@ assert_status() {
 
 require_board_auth() {
   if [[ ${#AUTH_HEADERS[@]} -eq 0 ]]; then
-    fail "board auth required. Set SWARMIFYX_COOKIE or SWARMIFYX_AUTH_HEADER."
+    fail "board auth required. Set PAPERTAPE_COOKIE or PAPERTAPE_AUTH_HEADER."
   fi
   api_request "GET" "/companies"
   if [[ "$RESPONSE_CODE" != "200" ]]; then
@@ -406,7 +406,7 @@ create_and_approve_gateway_join() {
     --arg name "$OPENCLAW_AGENT_NAME" \
     --arg url "$OPENCLAW_GATEWAY_URL" \
     --arg token "$gateway_token" \
-    --arg swarmifyxApiUrl "$SWARMIFYX_API_URL_FOR_OPENCLAW" \
+    --arg papertapeApiUrl "$PAPERTAPE_API_URL_FOR_OPENCLAW" \
     --argjson timeoutSec "$OPENCLAW_ADAPTER_TIMEOUT_SEC" \
     --argjson waitTimeoutMs "$OPENCLAW_ADAPTER_WAIT_TIMEOUT_MS" \
     '{
@@ -420,10 +420,10 @@ create_and_approve_gateway_join() {
         role: "operator",
         scopes: ["operator.admin"],
         sessionKeyStrategy: "fixed",
-        sessionKey: "swarmifyx",
+        sessionKey: "papertape",
         timeoutSec: $timeoutSec,
         waitTimeoutMs: $waitTimeoutMs,
-        swarmifyxApiUrl: $swarmifyxApiUrl
+        papertapeApiUrl: $papertapeApiUrl
       }
     }')"
 
@@ -460,9 +460,9 @@ create_and_approve_gateway_join() {
 persist_claimed_key_artifacts() {
   local claim_json="$1"
   local workspace_dir="${OPENCLAW_CONFIG_DIR%/}/workspace"
-  local skill_dir="${OPENCLAW_CONFIG_DIR%/}/skills/swarmifyx"
-  local claimed_file="${workspace_dir}/swarmifyx-claimed-api-key.json"
-  local claimed_raw_file="${workspace_dir}/swarmifyx-claimed-api-key.raw.json"
+  local skill_dir="${OPENCLAW_CONFIG_DIR%/}/skills/papertape"
+  local claimed_file="${workspace_dir}/papertape-claimed-api-key.json"
+  local claimed_raw_file="${workspace_dir}/papertape-claimed-api-key.raw.json"
 
   mkdir -p "$workspace_dir" "$skill_dir"
   local token
@@ -480,15 +480,15 @@ persist_claimed_key_artifacts() {
   container="$(detect_openclaw_container || true)"
   if [[ -n "$container" ]]; then
     docker exec "$container" sh -lc "mkdir -p /home/node/.openclaw/workspace" >/dev/null 2>&1 || true
-    docker cp "$claimed_file" "${container}:/home/node/.openclaw/workspace/swarmifyx-claimed-api-key.json" >/dev/null 2>&1 || true
-    docker exec "$container" sh -lc "chmod 644 /home/node/.openclaw/workspace/swarmifyx-claimed-api-key.json" >/dev/null 2>&1 || true
+    docker cp "$claimed_file" "${container}:/home/node/.openclaw/workspace/papertape-claimed-api-key.json" >/dev/null 2>&1 || true
+    docker exec "$container" sh -lc "chmod 644 /home/node/.openclaw/workspace/papertape-claimed-api-key.json" >/dev/null 2>&1 || true
   fi
 
   if [[ "$AUTO_INSTALL_SKILL" == "1" ]]; then
-    api_request "GET" "/skills/swarmifyx"
+    api_request "GET" "/skills/papertape"
     assert_status "200"
     {
-      echo "SWARMIFYX_API_URL=${SWARMIFYX_API_URL_FOR_OPENCLAW}"
+      echo "PAPERTAPE_API_URL=${PAPERTAPE_API_URL_FOR_OPENCLAW}"
       echo
       printf "%s\n" "$RESPONSE_BODY"
     } > "${skill_dir}/SKILL.md"
@@ -506,7 +506,7 @@ inject_agent_api_key_payload_template() {
   assert_status "200"
 
   local base_message
-  base_message="Set SWARMIFYX_API_KEY=${AGENT_API_KEY} in your run context before running Swarmifyx heartbeat steps."
+  base_message="Set PAPERTAPE_API_KEY=${AGENT_API_KEY} in your run context before running Papertape heartbeat steps."
   if [[ -n "$PAYLOAD_TEMPLATE_MESSAGE_APPEND" ]]; then
     base_message="${base_message}\n\n${PAYLOAD_TEMPLATE_MESSAGE_APPEND}"
   fi
@@ -787,7 +787,7 @@ run_case_b() {
   local marker="OPENCLAW_CASE_B_OK_$(date +%s)"
   local message_text="${marker}"
   local description
-  description="Case B validation.\n\nUse the message tool to send this exact text to the user's main chat session in webchat:\n${message_text}\n\nAfter sending, post a Swarmifyx issue comment containing exactly: ${marker}\nThen mark this issue done."
+  description="Case B validation.\n\nUse the message tool to send this exact text to the user's main chat session in webchat:\n${message_text}\n\nAfter sending, post a Papertape issue comment containing exactly: ${marker}\nThen mark this issue done."
 
   local created
   created="$(create_issue_for_case "[OpenClaw Gateway Smoke] Case B" "$description")"
@@ -833,7 +833,7 @@ run_case_c() {
   local ack_marker="OPENCLAW_CASE_C_ACK_$(date +%s)"
   local original_issue_reference="the original case issue you are currently reading"
   local description
-  description="Case C validation.\n\nTreat this run as a fresh/new session.\nCreate a NEW Swarmifyx issue in this same company with title exactly:\n${marker}\nUse description: 'created by case C smoke'.\n\nThen post a comment on ${original_issue_reference} containing exactly: ${ack_marker}\nDo NOT post the ACK comment on the newly created issue.\nThen mark the original case issue done."
+  description="Case C validation.\n\nTreat this run as a fresh/new session.\nCreate a NEW Papertape issue in this same company with title exactly:\n${marker}\nUse description: 'created by case C smoke'.\n\nThen post a comment on ${original_issue_reference} containing exactly: ${ack_marker}\nDo NOT post the ACK comment on the newly created issue.\nThen mark the original case issue done."
 
   local created
   created="$(create_issue_for_case "[OpenClaw Gateway Smoke] Case C" "$description")"
@@ -884,10 +884,10 @@ main() {
   mkdir -p "$OPENCLAW_DIAG_DIR"
   log "diagnostics dir: ${OPENCLAW_DIAG_DIR}"
 
-  wait_http_ready "${SWARMIFYX_API_URL%/}/api/health" 15 || fail "Swarmifyx API health endpoint not reachable"
+  wait_http_ready "${PAPERTAPE_API_URL%/}/api/health" 15 || fail "Papertape API health endpoint not reachable"
   api_request "GET" "/health"
   assert_status "200"
-  log "swarmifyx health deploymentMode=$(jq -r '.deploymentMode // "unknown"' <<<"$RESPONSE_BODY") exposure=$(jq -r '.deploymentExposure // "unknown"' <<<"$RESPONSE_BODY")"
+  log "papertape health deploymentMode=$(jq -r '.deploymentMode // "unknown"' <<<"$RESPONSE_BODY") exposure=$(jq -r '.deploymentExposure // "unknown"' <<<"$RESPONSE_BODY")"
 
   require_board_auth
   resolve_company_id

@@ -37,20 +37,20 @@ describe("buildInviteOnboardingTextDocument", () => {
       allowedHostnames: [],
     });
 
-    expect(text).toContain("Swarmifyx OpenClaw Gateway Onboarding");
+    expect(text).toContain("Papertape OpenClaw Gateway Onboarding");
     expect(text).toContain("/api/invites/token-123/accept");
     expect(text).toContain("/api/join-requests/{requestId}/claim-api-key");
     expect(text).toContain("/api/invites/token-123/onboarding.txt");
-    expect(text).toContain("Suggested Swarmifyx base URLs to try");
+    expect(text).toContain("Suggested Papertape base URLs to try");
     expect(text).toContain("http://localhost:3100");
     expect(text).toContain("host.docker.internal");
-    expect(text).toContain("swarmifyxApiUrl");
+    expect(text).toContain("papertapeApiUrl");
     expect(text).toContain("adapterType \"openclaw_gateway\"");
     expect(text).toContain("headers.x-openclaw-token");
     expect(text).toContain("Do NOT use /v1/responses or /hooks/*");
-    expect(text).toContain("set the first reachable candidate as agentDefaultsPayload.swarmifyxApiUrl");
-    expect(text).toContain("~/.openclaw/workspace/swarmifyx-claimed-api-key.json");
-    expect(text).toContain("SWARMIFYX_API_KEY");
+    expect(text).toContain("set the first reachable candidate as agentDefaultsPayload.papertapeApiUrl");
+    expect(text).toContain("~/.openclaw/workspace/papertape-claimed-api-key.json");
+    expect(text).toContain("PAPERTAPE_API_KEY");
     expect(text).toContain("saved token field");
     expect(text).toContain("Gateway token unexpectedly short");
   });

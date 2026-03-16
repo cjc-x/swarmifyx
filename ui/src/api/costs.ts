@@ -1,4 +1,4 @@
-import type { CostSummary, CostByAgent } from "@swarmifyx/shared";
+import type { CostSummary, CostByAgent } from "@papertape/shared";
 import { api } from "./client";
 
 export interface CostByProject {

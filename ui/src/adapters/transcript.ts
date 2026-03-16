@@ -1,4 +1,4 @@
-import { redactHomePathUserSegments, redactTranscriptEntryPaths } from "@swarmifyx/adapter-utils";
+import { redactHomePathUserSegments, redactTranscriptEntryPaths } from "@papertape/adapter-utils";
 import type { TranscriptEntry, StdoutLineParser } from "./types";
 
 export type RunLogChunk = { ts: string; stream: "stdout" | "stderr" | "system"; chunk: string };

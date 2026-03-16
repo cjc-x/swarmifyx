@@ -4,7 +4,7 @@ import { timeAgo } from "../lib/timeAgo";
 import { cn } from "../lib/utils";
 import { useI18n } from "../context/I18nContext";
 import { getPriorityLabel, getStatusLabel } from "../lib/i18n";
-import { deriveProjectUrlKey, type ActivityEvent, type Agent } from "@swarmifyx/shared";
+import { deriveProjectUrlKey, type ActivityEvent, type Agent } from "@papertape/shared";
 
 const ACTION_VERBS: Record<string, string> = {
   "agent_api_key.claimed": "claimed API key",

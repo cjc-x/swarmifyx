@@ -1,15 +1,15 @@
 import fs from "node:fs";
-import { swarmifyxConfigSchema, type SwarmifyxConfig } from "@swarmifyx/shared";
-import { resolveSwarmifyxConfigPath } from "./paths.js";
+import { papertapeConfigSchema, type PapertapeConfig } from "@papertape/shared";
+import { resolvePapertapeConfigPath } from "./paths.js";
 
-export function readConfigFile(): SwarmifyxConfig | null {
-  const configPath = resolveSwarmifyxConfigPath();
+export function readConfigFile(): PapertapeConfig | null {
+  const configPath = resolvePapertapeConfigPath();
 
   if (!fs.existsSync(configPath)) return null;
 
   try {
     const raw = JSON.parse(fs.readFileSync(configPath, "utf-8"));
-    return swarmifyxConfigSchema.parse(raw);
+    return papertapeConfigSchema.parse(raw);
   } catch {
     return null;
   }

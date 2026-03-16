@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import type { DashboardSummary } from "@swarmifyx/shared";
+import type { DashboardSummary } from "@papertape/shared";
 import {
   addCommonClientOptions,
   handleCommandError,

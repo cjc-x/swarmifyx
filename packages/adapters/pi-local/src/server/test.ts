@@ -2,7 +2,7 @@ import type {
   AdapterEnvironmentCheck,
   AdapterEnvironmentTestContext,
   AdapterEnvironmentTestResult,
-} from "@swarmifyx/adapter-utils";
+} from "@papertape/adapter-utils";
 import {
   asString,
   parseObject,
@@ -10,10 +10,10 @@ import {
   ensureCommandResolvable,
   ensurePathInEnv,
   runChildProcess,
-} from "@swarmifyx/adapter-utils/server-utils";
+} from "@papertape/adapter-utils/server-utils";
 import {
   asStringArray,
-} from "@swarmifyx/adapter-utils/server-utils";
+} from "@papertape/adapter-utils/server-utils";
 import { discoverPiModelsCached } from "./models.js";
 import { parsePiJsonl } from "./parse.js";
 

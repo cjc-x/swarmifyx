@@ -3,7 +3,7 @@ import { PUBLIC_PRODUCT_NAME } from "../config/branding.js";
 
 const TAGLINE = "Orchestrate Your Zero-Human Company.";
 
-export function printSwarmifyxCliBanner(): void {
+export function printPapertapeCliBanner(): void {
   const lines = [
     "",
     pc.bold(pc.cyan(`  ${PUBLIC_PRODUCT_NAME}`)),

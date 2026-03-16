@@ -1,8 +1,8 @@
 import { randomBytes } from "node:crypto";
 import { and, eq } from "drizzle-orm";
-import type { Db } from "@swarmifyx/db";
-import { companies, companyMemberships, instanceUserRoles } from "@swarmifyx/db";
-import type { DeploymentMode } from "@swarmifyx/shared";
+import type { Db } from "@papertape/db";
+import { companies, companyMemberships, instanceUserRoles } from "@papertape/db";
+import type { DeploymentMode } from "@papertape/shared";
 
 const LOCAL_BOARD_USER_ID = "local-board";
 const CLAIM_TTL_MS = 1000 * 60 * 60 * 24;

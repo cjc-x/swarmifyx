@@ -31,9 +31,9 @@ import { cn } from "../lib/utils";
 import { NotFoundPage } from "../pages/NotFound";
 import { Button } from "@/components/ui/button";
 
-const INSTANCE_SETTINGS_MEMORY_KEY = "swarmifyx.lastInstanceSettingsPath";
+const INSTANCE_SETTINGS_MEMORY_KEY = "papertape.lastInstanceSettingsPath";
 const DEFAULT_INSTANCE_SETTINGS_PATH = "/instance/settings/heartbeats";
-const DOCS_URL = "https://docs.swarmifyx.ing/";
+const DOCS_URL = "__KEEP_DOCS_PAPERTAPE__";
 
 function normalizeRememberedInstanceSettingsPath(rawPath: string | null): string {
   if (!rawPath) return DEFAULT_INSTANCE_SETTINGS_PATH;

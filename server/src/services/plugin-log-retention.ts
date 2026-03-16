@@ -1,6 +1,6 @@
 import { lt, sql } from "drizzle-orm";
-import type { Db } from "@swarmifyx/db";
-import { pluginLogs } from "@swarmifyx/db";
+import type { Db } from "@papertape/db";
+import { pluginLogs } from "@papertape/db";
 import { logger } from "../middleware/logger.js";
 
 /** Default retention period: 7 days. */

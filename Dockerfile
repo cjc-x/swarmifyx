@@ -27,29 +27,29 @@ FROM base AS build
 WORKDIR /app
 COPY --from=deps /app /app
 COPY . .
-RUN pnpm --filter @swarmifyx/ui build
-RUN pnpm --filter @swarmifyx/server build
+RUN pnpm --filter @papertape/ui build
+RUN pnpm --filter @papertape/server build
 RUN test -f server/dist/index.js || (echo "ERROR: server build output missing" && exit 1)
 
 FROM base AS production
 WORKDIR /app
 COPY --chown=node:node --from=build /app /app
 RUN npm install --global --omit=dev @anthropic-ai/claude-code@latest @openai/codex@latest opencode-ai \
-  && mkdir -p /swarmifyx \
-  && chown node:node /swarmifyx
+  && mkdir -p /papertape \
+  && chown node:node /papertape
 
 ENV NODE_ENV=production \
-  HOME=/swarmifyx \
+  HOME=/papertape \
   HOST=0.0.0.0 \
   PORT=3100 \
   SERVE_UI=true \
-  SWARMIFYX_HOME=/swarmifyx \
-  SWARMIFYX_INSTANCE_ID=default \
-  SWARMIFYX_CONFIG=/swarmifyx/instances/default/config.json \
-  SWARMIFYX_DEPLOYMENT_MODE=authenticated \
-  SWARMIFYX_DEPLOYMENT_EXPOSURE=private
+  PAPERTAPE_HOME=/papertape \
+  PAPERTAPE_INSTANCE_ID=default \
+  PAPERTAPE_CONFIG=/papertape/instances/default/config.json \
+  PAPERTAPE_DEPLOYMENT_MODE=authenticated \
+  PAPERTAPE_DEPLOYMENT_EXPOSURE=private
 
-VOLUME ["/swarmifyx"]
+VOLUME ["/papertape"]
 EXPOSE 3100
 
 USER node

@@ -1,6 +1,6 @@
 import { Router } from "express";
-import type { Db } from "@swarmifyx/db";
-import { createCostEventSchema, updateBudgetSchema } from "@swarmifyx/shared";
+import type { Db } from "@papertape/db";
+import { createCostEventSchema, updateBudgetSchema } from "@papertape/shared";
 import { validate } from "../middleware/validate.js";
 import { costService, companyService, agentService, logActivity } from "../services/index.js";
 import { assertBoard, assertCompanyAccess, getActorInfo } from "./authz.js";

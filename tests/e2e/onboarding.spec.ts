@@ -10,11 +10,11 @@ import { test, expect, type Page } from "@playwright/test";
  *   Step 4 — Ready to launch (summary + create/open issue)
  *
  * By default this runs in skip_llm mode: we do NOT assert that an LLM
- * heartbeat fires. Set SWARMIFYX_E2E_SKIP_LLM=false to enable LLM-dependent
+ * heartbeat fires. Set PAPERTAPE_E2E_SKIP_LLM=false to enable LLM-dependent
  * assertions (requires a valid ANTHROPIC_API_KEY).
  */
 
-const SKIP_LLM = process.env.SWARMIFYX_E2E_SKIP_LLM !== "false";
+const SKIP_LLM = process.env.PAPERTAPE_E2E_SKIP_LLM !== "false";
 
 const COMPANY_NAME = `E2E-Test-${Date.now()}`;
 const AGENT_NAME = "CEO";

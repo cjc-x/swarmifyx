@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "@/lib/router";
 import { useCompany } from "../context/CompanyContext";
 import { toCompanyRelativePath } from "../lib/company-routes";
 
-const STORAGE_KEY = "swarmifyx.companyPaths";
+const STORAGE_KEY = "__KEEP_PAPERTAPE_COM__panyPaths";
 const GLOBAL_SEGMENTS = new Set(["auth", "invite", "board-claim", "docs"]);
 
 function getCompanyPaths(): Record<string, string> {

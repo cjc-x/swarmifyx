@@ -3,7 +3,7 @@ title: Costs and Budgets
 summary: Budget caps, cost tracking, and auto-pause enforcement
 ---
 
-Swarmifyx tracks every token spent by every agent and enforces budget limits to prevent runaway costs.
+Papertape tracks every token spent by every agent and enforces budget limits to prevent runaway costs.
 
 ## How Cost Tracking Works
 
@@ -39,7 +39,7 @@ PATCH /api/agents/{agentId}
 
 ## Budget Enforcement
 
-Swarmifyx enforces budgets automatically:
+Papertape enforces budgets automatically:
 
 | Threshold | Action |
 |-----------|--------|

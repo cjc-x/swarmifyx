@@ -17,9 +17,9 @@ Examples:
 Environment overrides:
   KEEP_TEMP=1                 Keep the temp directory and detached worktree for debugging
   PC_TEST_ROOT=/tmp/custom    Base temp directory to use
-  PC_DATA=/tmp/data           Swarmifyx data dir to use
-  SWARMIFYX_HOST=127.0.0.1    Host passed to the onboarded server
-  SWARMIFYX_PORT=3232         Port passed to the onboarded server
+  PC_DATA=/tmp/data           Papertape data dir to use
+  PAPERTAPE_HOST=127.0.0.1    Host passed to the onboarded server
+  PAPERTAPE_PORT=3232         Port passed to the onboarded server
 
 Notes:
   - Defaults to the current committed ref (HEAD), not uncommitted local edits.
@@ -40,14 +40,14 @@ fi
 TARGET_COMMIT="$(git -C "$REPO_ROOT" rev-parse --verify "${TARGET_REF}^{commit}")"
 
 export KEEP_TEMP="${KEEP_TEMP:-0}"
-export PC_TEST_ROOT="${PC_TEST_ROOT:-$(mktemp -d /tmp/swarmifyx-clean-ref.XXXXXX)}"
+export PC_TEST_ROOT="${PC_TEST_ROOT:-$(mktemp -d /tmp/papertape-clean-ref.XXXXXX)}"
 export PC_HOME="${PC_HOME:-$PC_TEST_ROOT/home}"
 export PC_CACHE="${PC_CACHE:-$PC_TEST_ROOT/npm-cache}"
-export PC_DATA="${PC_DATA:-$PC_TEST_ROOT/swarmifyx-data}"
+export PC_DATA="${PC_DATA:-$PC_TEST_ROOT/papertape-data}"
 export PC_REPO="${PC_REPO:-$PC_TEST_ROOT/repo}"
-export SWARMIFYX_HOST="${SWARMIFYX_HOST:-127.0.0.1}"
-export SWARMIFYX_PORT="${SWARMIFYX_PORT:-3100}"
-export SWARMIFYX_OPEN_ON_LISTEN="${SWARMIFYX_OPEN_ON_LISTEN:-false}"
+export PAPERTAPE_HOST="${PAPERTAPE_HOST:-127.0.0.1}"
+export PAPERTAPE_PORT="${PAPERTAPE_PORT:-3100}"
+export PAPERTAPE_OPEN_ON_LISTEN="${PAPERTAPE_OPEN_ON_LISTEN:-false}"
 
 cleanup() {
   if [ "$KEEP_TEMP" = "1" ]; then
@@ -68,8 +68,8 @@ echo "PC_TEST_ROOT: $PC_TEST_ROOT"
 echo "PC_HOME: $PC_HOME"
 echo "PC_DATA: $PC_DATA"
 echo "PC_REPO: $PC_REPO"
-echo "SWARMIFYX_HOST: $SWARMIFYX_HOST"
-echo "SWARMIFYX_PORT: $SWARMIFYX_PORT"
+echo "PAPERTAPE_HOST: $PAPERTAPE_HOST"
+echo "PAPERTAPE_PORT: $PAPERTAPE_PORT"
 
 git -C "$REPO_ROOT" worktree add --detach "$PC_REPO" "$TARGET_COMMIT"
 
@@ -80,7 +80,7 @@ env \
   HOME="$PC_HOME" \
   npm_config_cache="$PC_CACHE" \
   npm_config_userconfig="$PC_HOME/.npmrc" \
-  HOST="$SWARMIFYX_HOST" \
-  PORT="$SWARMIFYX_PORT" \
-  SWARMIFYX_OPEN_ON_LISTEN="$SWARMIFYX_OPEN_ON_LISTEN" \
-  pnpm swarmifyx onboard --yes --data-dir "$PC_DATA"
+  HOST="$PAPERTAPE_HOST" \
+  PORT="$PAPERTAPE_PORT" \
+  PAPERTAPE_OPEN_ON_LISTEN="$PAPERTAPE_OPEN_ON_LISTEN" \
+  pnpm papertape onboard --yes --data-dir "$PC_DATA"

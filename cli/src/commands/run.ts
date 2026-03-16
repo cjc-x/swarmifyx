@@ -7,14 +7,14 @@ import { bootstrapCeoInvite } from "./auth-bootstrap-ceo.js";
 import { onboard } from "./onboard.js";
 import { doctor } from "./doctor.js";
 import { publicCliCommand } from "../config/branding.js";
-import { loadSwarmifyxEnvFile } from "../config/env.js";
+import { loadPapertapeEnvFile } from "../config/env.js";
 import { configExists, resolveConfigPath } from "../config/store.js";
-import type { SwarmifyxConfig } from "../config/schema.js";
+import type { PapertapeConfig } from "../config/schema.js";
 import { readConfig } from "../config/store.js";
 import {
   describeLocalInstancePaths,
-  resolveSwarmifyxHomeDir,
-  resolveSwarmifyxInstanceId,
+  resolvePapertapeHomeDir,
+  resolvePapertapeInstanceId,
 } from "../config/home.js";
 
 interface RunOptions {
@@ -32,18 +32,18 @@ interface StartedServer {
 }
 
 export async function runCommand(opts: RunOptions): Promise<void> {
-  const instanceId = resolveSwarmifyxInstanceId(opts.instance);
-  process.env.SWARMIFYX_INSTANCE_ID = instanceId;
+  const instanceId = resolvePapertapeInstanceId(opts.instance);
+  process.env.PAPERTAPE_INSTANCE_ID = instanceId;
 
-  const homeDir = resolveSwarmifyxHomeDir();
+  const homeDir = resolvePapertapeHomeDir();
   fs.mkdirSync(homeDir, { recursive: true });
 
   const paths = describeLocalInstancePaths(instanceId);
   fs.mkdirSync(paths.instanceRoot, { recursive: true });
 
   const configPath = resolveConfigPath(opts.config);
-  process.env.SWARMIFYX_CONFIG = configPath;
-  loadSwarmifyxEnvFile(configPath);
+  process.env.PAPERTAPE_CONFIG = configPath;
+  loadPapertapeEnvFile(configPath);
 
   p.intro(pc.bgCyan(pc.black(` ${publicCliCommand("run")} `)));
   p.log.message(pc.dim(`Home: ${paths.homeDir}`));
@@ -81,7 +81,7 @@ export async function runCommand(opts: RunOptions): Promise<void> {
     process.exit(1);
   }
 
-  p.log.step("Starting SwarmifyX server...");
+  p.log.step("Starting Papertape server...");
   const startedServer = await importServerEntry();
 
   if (shouldGenerateBootstrapInviteAfterStart(config)) {
@@ -95,12 +95,12 @@ export async function runCommand(opts: RunOptions): Promise<void> {
 }
 
 function resolveBootstrapInviteBaseUrl(
-  config: SwarmifyxConfig,
+  config: PapertapeConfig,
   startedServer: StartedServer,
 ): string {
   const explicitBaseUrl =
-    process.env.SWARMIFYX_PUBLIC_URL ??
-    process.env.SWARMIFYX_AUTH_PUBLIC_BASE_URL ??
+    process.env.PAPERTAPE_PUBLIC_URL ??
+    process.env.PAPERTAPE_AUTH_PUBLIC_BASE_URL ??
     process.env.BETTER_AUTH_URL ??
     process.env.BETTER_AUTH_BASE_URL ??
     (config.auth.baseUrlMode === "explicit" ? config.auth.publicBaseUrl : undefined);
@@ -142,10 +142,10 @@ function getMissingModuleSpecifier(err: unknown): string | null {
 }
 
 function maybeEnableUiDevMiddleware(entrypoint: string): void {
-  if (process.env.SWARMIFYX_UI_DEV_MIDDLEWARE !== undefined) return;
+  if (process.env.PAPERTAPE_UI_DEV_MIDDLEWARE !== undefined) return;
   const normalized = entrypoint.replaceAll("\\", "/");
-  if (normalized.endsWith("/server/src/index.ts") || normalized.endsWith("@swarmifyx/server/src/index.ts")) {
-    process.env.SWARMIFYX_UI_DEV_MIDDLEWARE = "true";
+  if (normalized.endsWith("/server/src/index.ts") || normalized.endsWith("@papertape/server/src/index.ts")) {
+    process.env.PAPERTAPE_UI_DEV_MIDDLEWARE = "true";
   }
 }
 
@@ -159,35 +159,35 @@ async function importServerEntry(): Promise<StartedServer> {
     return await startServerFromModule(mod, devEntry);
   }
 
-  // Production mode: import the published @swarmifyx/server package
+  // Production mode: import the published @papertape/server package
   try {
-    const mod = await import("@swarmifyx/server");
-    return await startServerFromModule(mod, "@swarmifyx/server");
+    const mod = await import("@papertape/server");
+    return await startServerFromModule(mod, "@papertape/server");
   } catch (err) {
     const missingSpecifier = getMissingModuleSpecifier(err);
-    const missingServerEntrypoint = !missingSpecifier || missingSpecifier === "@swarmifyx/server";
+    const missingServerEntrypoint = !missingSpecifier || missingSpecifier === "@papertape/server";
     if (isModuleNotFoundError(err) && missingServerEntrypoint) {
       throw new Error(
-        `Could not locate a SwarmifyX server entrypoint.\n` +
-        `Tried: ${devEntry}, @swarmifyx/server\n` +
+        `Could not locate a Papertape server entrypoint.\n` +
+        `Tried: ${devEntry}, @papertape/server\n` +
         `${formatError(err)}`,
       );
     }
     throw new Error(
-      `SwarmifyX server failed to start.\n` +
+      `Papertape server failed to start.\n` +
       `${formatError(err)}`,
     );
   }
 }
 
-function shouldGenerateBootstrapInviteAfterStart(config: SwarmifyxConfig): boolean {
+function shouldGenerateBootstrapInviteAfterStart(config: PapertapeConfig): boolean {
   return config.server.deploymentMode === "authenticated" && config.database.mode === "embedded-postgres";
 }
 
 async function startServerFromModule(mod: unknown, label: string): Promise<StartedServer> {
   const startServer = (mod as { startServer?: () => Promise<StartedServer> }).startServer;
   if (typeof startServer !== "function") {
-    throw new Error(`SwarmifyX server entrypoint did not export startServer(): ${label}`);
+    throw new Error(`Papertape server entrypoint did not export startServer(): ${label}`);
   }
   return await startServer();
 }

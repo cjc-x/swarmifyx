@@ -66,7 +66,7 @@ describe("RunTranscriptView", () => {
       {
         kind: "stderr",
         ts: "2026-03-12T00:00:00.000Z",
-        text: "[swarmifyx] Skipping saved session resume for task \"PAP-485\" because wake reason is issue_assigned.",
+        text: "[papertape] Skipping saved session resume for task \"PAP-485\" because wake reason is issue_assigned.",
       },
       {
         kind: "assistant",

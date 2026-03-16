@@ -1,14 +1,14 @@
 import fs from "node:fs";
 import path from "node:path";
-import { swarmifyxConfigSchema, type SwarmifyxConfig } from "./schema.js";
+import { papertapeConfigSchema, type PapertapeConfig } from "./schema.js";
 import {
   resolveDefaultConfigPath,
-  resolveSwarmifyxInstanceId,
+  resolvePapertapeInstanceId,
 } from "./home.js";
 
 const DEFAULT_CONFIG_BASENAME = "config.json";
 const DEFAULT_ENV_BASENAME = ".env";
-const REPO_CONFIG_DIRNAME = ".swarmifyx";
+const REPO_CONFIG_DIRNAME = ".papertape";
 
 function findConfigFileFromAncestors(startDir: string): string | null {
   const absoluteStartDir = path.resolve(startDir);
@@ -30,8 +30,8 @@ function findConfigFileFromAncestors(startDir: string): string | null {
 
 export function resolveConfigPath(overridePath?: string): string {
   if (overridePath) return path.resolve(overridePath);
-  if (process.env.SWARMIFYX_CONFIG) return path.resolve(process.env.SWARMIFYX_CONFIG);
-  return findConfigFileFromAncestors(process.cwd()) ?? resolveDefaultConfigPath(resolveSwarmifyxInstanceId());
+  if (process.env.PAPERTAPE_CONFIG) return path.resolve(process.env.PAPERTAPE_CONFIG);
+  return findConfigFileFromAncestors(process.cwd()) ?? resolveDefaultConfigPath(resolvePapertapeInstanceId());
 }
 
 function parseJson(filePath: string): unknown {
@@ -57,11 +57,11 @@ function formatValidationError(err: unknown): string {
   return err instanceof Error ? err.message : String(err);
 }
 
-export function readConfig(configPath?: string): SwarmifyxConfig | null {
+export function readConfig(configPath?: string): PapertapeConfig | null {
   const filePath = resolveConfigPath(configPath);
   if (!fs.existsSync(filePath)) return null;
   const raw = parseJson(filePath);
-  const parsed = swarmifyxConfigSchema.safeParse(raw);
+  const parsed = papertapeConfigSchema.safeParse(raw);
   if (!parsed.success) {
     throw new Error(`Invalid config at ${filePath}: ${formatValidationError(parsed.error)}`);
   }
@@ -69,7 +69,7 @@ export function readConfig(configPath?: string): SwarmifyxConfig | null {
 }
 
 export function writeConfig(
-  config: SwarmifyxConfig,
+  config: PapertapeConfig,
   configPath?: string,
 ): void {
   const filePath = resolveConfigPath(configPath);

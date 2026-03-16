@@ -27,7 +27,7 @@ After reviewing the code and local run data, the token problem appears to have f
 
 1. **Measurement inflation on sessioned adapters.** Some token counters, especially for `codex_local`, appear to be recorded as cumulative session totals instead of per-heartbeat deltas.
 2. **Avoidable session resets.** Task sessions are intentionally reset on timer wakes and manual wakes, which destroys cache locality for common heartbeat paths.
-3. **Repeated context reacquisition.** The `swarmifyx` skill tells agents to re-fetch assignments, issue details, ancestors, and full comment threads on every heartbeat. The API does not currently offer efficient delta-oriented alternatives.
+3. **Repeated context reacquisition.** The `papertape` skill tells agents to re-fetch assignments, issue details, ancestors, and full comment threads on every heartbeat. The API does not currently offer efficient delta-oriented alternatives.
 4. **Large static instruction surfaces.** Agent instruction files and globally injected skills are reintroduced at startup even when most of that content is unchanged and not needed for the current task.
 
 The correct approach is:
@@ -84,7 +84,7 @@ So timer wakes are the largest heartbeat path and are mostly not resuming prior 
 
 ### 3. We repeatedly ask agents to reload the same task context
 
-The `swarmifyx` skill currently tells agents to do this on essentially every heartbeat:
+The `papertape` skill currently tells agents to do this on essentially every heartbeat:
 
 - fetch assignments
 - fetch issue details
@@ -128,7 +128,7 @@ Important `codex_local` nuance:
 
 Current repo skill sizes:
 
-- `skills/swarmifyx/SKILL.md`: 17,441 bytes
+- `skills/papertape/SKILL.md`: 17,441 bytes
 - `.agents/skills/create-agent-adapter/SKILL.md`: 31,832 bytes
 - `skills/swamifyx-create-agent/SKILL.md`: 4,718 bytes
 - `skills/para-memory-files/SKILL.md`: 3,978 bytes
@@ -252,7 +252,7 @@ Add heartbeat-oriented endpoints and skill behavior:
 - optional `GET /api/issues/:id/context-digest`
   - server-generated compact summary for heartbeat use
 
-Update the `swarmifyx` skill so the default pattern becomes:
+Update the `papertape` skill so the default pattern becomes:
 
 1. fetch compact inbox
 2. fetch compact task context
@@ -309,7 +309,7 @@ Even when reuse is desirable, some sessions become too expensive to keep alive i
 
 - Move from “inject all repo skills” to an allowlist per agent or per adapter.
 - Default local runtime skill set should likely be:
-  - `swarmifyx`
+  - `papertape`
 - Add opt-in skills for specialized agents:
   - `swamifyx-create-agent`
   - `para-memory-files`
@@ -335,7 +335,7 @@ Recommended order:
 1. telemetry normalization
 2. timer-wake session reuse
 3. bootstrap prompt implementation
-4. heartbeat delta APIs + `swarmifyx` skill rewrite
+4. heartbeat delta APIs + `papertape` skill rewrite
 5. session compaction/rotation
 6. skill allowlists
 
@@ -373,7 +373,7 @@ Initial targets:
 3. Change `shouldResetTaskSessionForWake(...)` so timer wakes do not reset by default.
 4. Implement `bootstrapPromptTemplate` end-to-end in adapter execution.
 5. Add compact heartbeat context and incremental comment APIs.
-6. Rewrite `skills/swarmifyx/SKILL.md` around delta-fetch behavior.
+6. Rewrite `skills/papertape/SKILL.md` around delta-fetch behavior.
 7. Add session rotation with carry-forward summaries.
 8. Replace global skill injection with explicit allowlists.
 9. Fix `codex_local` skill resolution so worktree-local skill changes reliably reach the runtime.

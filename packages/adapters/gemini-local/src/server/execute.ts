@@ -3,13 +3,13 @@ import type { Dirent } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import type { AdapterExecutionContext, AdapterExecutionResult } from "@swarmifyx/adapter-utils";
+import type { AdapterExecutionContext, AdapterExecutionResult } from "@papertape/adapter-utils";
 import {
   asBoolean,
   asNumber,
   asString,
   asStringArray,
-  buildSwarmifyxEnv,
+  buildPapertapeEnv,
   ensureAbsoluteDirectory,
   ensureCommandResolvable,
   ensurePathInEnv,
@@ -17,7 +17,7 @@ import {
   redactEnvForLogs,
   renderTemplate,
   runChildProcess,
-} from "@swarmifyx/adapter-utils/server-utils";
+} from "@papertape/adapter-utils/server-utils";
 import { DEFAULT_GEMINI_LOCAL_MODEL } from "../index.js";
 import {
   describeGeminiFailure,
@@ -29,7 +29,7 @@ import {
 import { firstNonEmptyLine } from "./utils.js";
 
 const __moduleDir = path.dirname(fileURLToPath(import.meta.url));
-const SWARMIFYX_SKILLS_CANDIDATES = [
+const PAPERTAPE_SKILLS_CANDIDATES = [
   path.resolve(__moduleDir, "../../skills"),
   path.resolve(__moduleDir, "../../../../../skills"),
 ];
@@ -45,14 +45,14 @@ function resolveGeminiBillingType(env: Record<string, string>): "api" | "subscri
     : "subscription";
 }
 
-function renderSwarmifyxEnvNote(env: Record<string, string>): string {
-  const swarmifyxKeys = Object.keys(env)
-    .filter((key) => key.startsWith("SWARMIFYX_"))
+function renderPapertapeEnvNote(env: Record<string, string>): string {
+  const papertapeKeys = Object.keys(env)
+    .filter((key) => key.startsWith("PAPERTAPE_"))
     .sort();
-  if (swarmifyxKeys.length === 0) return "";
+  if (papertapeKeys.length === 0) return "";
   return [
-    "Swarmifyx runtime note:",
-    `The following SWARMIFYX_* environment variables are available in this run: ${swarmifyxKeys.join(", ")}`,
+    "Papertape runtime note:",
+    `The following PAPERTAPE_* environment variables are available in this run: ${papertapeKeys.join(", ")}`,
     "Do not assume these variables are missing without checking your shell environment.",
     "",
     "",
@@ -60,21 +60,21 @@ function renderSwarmifyxEnvNote(env: Record<string, string>): string {
 }
 
 function renderApiAccessNote(env: Record<string, string>): string {
-  if (!hasNonEmptyEnvValue(env, "SWARMIFYX_API_URL") || !hasNonEmptyEnvValue(env, "SWARMIFYX_API_KEY")) return "";
+  if (!hasNonEmptyEnvValue(env, "PAPERTAPE_API_URL") || !hasNonEmptyEnvValue(env, "PAPERTAPE_API_KEY")) return "";
   return [
-    "Swarmifyx API access note:",
-    "Use run_shell_command with curl to make Swarmifyx API requests.",
+    "Papertape API access note:",
+    "Use run_shell_command with curl to make Papertape API requests.",
     "GET example:",
-    `  run_shell_command({ command: "curl -s -H \\"Authorization: Bearer $SWARMIFYX_API_KEY\\" \\"$SWARMIFYX_API_URL/api/agents/me\\"" })`,
+    `  run_shell_command({ command: "curl -s -H \\"Authorization: Bearer $PAPERTAPE_API_KEY\\" \\"$PAPERTAPE_API_URL/api/agents/me\\"" })`,
     "POST/PATCH example:",
-    `  run_shell_command({ command: "curl -s -X POST -H \\"Authorization: Bearer $SWARMIFYX_API_KEY\\" -H 'Content-Type: application/json' -H \\"X-Swarmifyx-Run-Id: $SWARMIFYX_RUN_ID\\" -d '{...}' \\"$SWARMIFYX_API_URL/api/issues/{id}/checkout\\"" })`,
+    `  run_shell_command({ command: "curl -s -X POST -H \\"Authorization: Bearer $PAPERTAPE_API_KEY\\" -H 'Content-Type: application/json' -H \\"X-Papertape-Run-Id: $PAPERTAPE_RUN_ID\\" -d '{...}' \\"$PAPERTAPE_API_URL/api/issues/{id}/checkout\\"" })`,
     "",
     "",
   ].join("\n");
 }
 
-async function resolveSwarmifyxSkillsDir(): Promise<string | null> {
-  for (const candidate of SWARMIFYX_SKILLS_CANDIDATES) {
+async function resolvePapertapeSkillsDir(): Promise<string | null> {
+  for (const candidate of PAPERTAPE_SKILLS_CANDIDATES) {
     const isDir = await fs.stat(candidate).then((s) => s.isDirectory()).catch(() => false);
     if (isDir) return candidate;
   }
@@ -86,14 +86,14 @@ function geminiSkillsHome(): string {
 }
 
 /**
- * Inject Swarmifyx skills directly into `~/.gemini/skills/` via symlinks.
+ * Inject Papertape skills directly into `~/.gemini/skills/` via symlinks.
  * This avoids needing GEMINI_CLI_HOME overrides, so the CLI naturally finds
  * both its auth credentials and the injected skills in the real home directory.
  */
 async function ensureGeminiSkillsInjected(
   onLog: AdapterExecutionContext["onLog"],
 ): Promise<void> {
-  const skillsDir = await resolveSwarmifyxSkillsDir();
+  const skillsDir = await resolvePapertapeSkillsDir();
   if (!skillsDir) return;
 
   const skillsHome = geminiSkillsHome();
@@ -102,7 +102,7 @@ async function ensureGeminiSkillsInjected(
   } catch (err) {
     await onLog(
       "stderr",
-      `[swarmifyx] Failed to prepare Gemini skills directory ${skillsHome}: ${err instanceof Error ? err.message : String(err)}\n`,
+      `[papertape] Failed to prepare Gemini skills directory ${skillsHome}: ${err instanceof Error ? err.message : String(err)}\n`,
     );
     return;
   }
@@ -113,7 +113,7 @@ async function ensureGeminiSkillsInjected(
   } catch (err) {
     await onLog(
       "stderr",
-      `[swarmifyx] Failed to read Swarmifyx skills from ${skillsDir}: ${err instanceof Error ? err.message : String(err)}\n`,
+      `[papertape] Failed to read Papertape skills from ${skillsDir}: ${err instanceof Error ? err.message : String(err)}\n`,
     );
     return;
   }
@@ -127,11 +127,11 @@ async function ensureGeminiSkillsInjected(
 
     try {
       await fs.symlink(source, target);
-      await onLog("stderr", `[swarmifyx] Linked Gemini skill: ${entry.name}\n`);
+      await onLog("stderr", `[papertape] Linked Gemini skill: ${entry.name}\n`);
     } catch (err) {
       await onLog(
         "stderr",
-        `[swarmifyx] Failed to link Gemini skill "${entry.name}": ${err instanceof Error ? err.message : String(err)}\n`,
+        `[papertape] Failed to link Gemini skill "${entry.name}": ${err instanceof Error ? err.message : String(err)}\n`,
       );
     }
   }
@@ -142,21 +142,21 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
 
   const promptTemplate = asString(
     config.promptTemplate,
-    "You are agent {{agent.id}} ({{agent.name}}). Continue your Swarmifyx work.",
+    "You are agent {{agent.id}} ({{agent.name}}). Continue your Papertape work.",
   );
   const command = asString(config.command, "gemini");
   const model = asString(config.model, DEFAULT_GEMINI_LOCAL_MODEL).trim();
   const sandbox = asBoolean(config.sandbox, false);
 
-  const workspaceContext = parseObject(context.swarmifyxWorkspace);
+  const workspaceContext = parseObject(context.papertapeWorkspace);
   const workspaceCwd = asString(workspaceContext.cwd, "");
   const workspaceSource = asString(workspaceContext.source, "");
   const workspaceId = asString(workspaceContext.workspaceId, "");
   const workspaceRepoUrl = asString(workspaceContext.repoUrl, "");
   const workspaceRepoRef = asString(workspaceContext.repoRef, "");
   const agentHome = asString(workspaceContext.agentHome, "");
-  const workspaceHints = Array.isArray(context.swarmifyxWorkspaces)
-    ? context.swarmifyxWorkspaces.filter(
+  const workspaceHints = Array.isArray(context.papertapeWorkspaces)
+    ? context.papertapeWorkspaces.filter(
       (value): value is Record<string, unknown> => typeof value === "object" && value !== null,
     )
     : [];
@@ -169,9 +169,9 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
 
   const envConfig = parseObject(config.env);
   const hasExplicitApiKey =
-    typeof envConfig.SWARMIFYX_API_KEY === "string" && envConfig.SWARMIFYX_API_KEY.trim().length > 0;
-  const env: Record<string, string> = { ...buildSwarmifyxEnv(agent) };
-  env.SWARMIFYX_RUN_ID = runId;
+    typeof envConfig.PAPERTAPE_API_KEY === "string" && envConfig.PAPERTAPE_API_KEY.trim().length > 0;
+  const env: Record<string, string> = { ...buildPapertapeEnv(agent) };
+  env.PAPERTAPE_RUN_ID = runId;
   const wakeTaskId =
     (typeof context.taskId === "string" && context.taskId.trim().length > 0 && context.taskId.trim()) ||
     (typeof context.issueId === "string" && context.issueId.trim().length > 0 && context.issueId.trim()) ||
@@ -195,25 +195,25 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   const linkedIssueIds = Array.isArray(context.issueIds)
     ? context.issueIds.filter((value): value is string => typeof value === "string" && value.trim().length > 0)
     : [];
-  if (wakeTaskId) env.SWARMIFYX_TASK_ID = wakeTaskId;
-  if (wakeReason) env.SWARMIFYX_WAKE_REASON = wakeReason;
-  if (wakeCommentId) env.SWARMIFYX_WAKE_COMMENT_ID = wakeCommentId;
-  if (approvalId) env.SWARMIFYX_APPROVAL_ID = approvalId;
-  if (approvalStatus) env.SWARMIFYX_APPROVAL_STATUS = approvalStatus;
-  if (linkedIssueIds.length > 0) env.SWARMIFYX_LINKED_ISSUE_IDS = linkedIssueIds.join(",");
-  if (effectiveWorkspaceCwd) env.SWARMIFYX_WORKSPACE_CWD = effectiveWorkspaceCwd;
-  if (workspaceSource) env.SWARMIFYX_WORKSPACE_SOURCE = workspaceSource;
-  if (workspaceId) env.SWARMIFYX_WORKSPACE_ID = workspaceId;
-  if (workspaceRepoUrl) env.SWARMIFYX_WORKSPACE_REPO_URL = workspaceRepoUrl;
-  if (workspaceRepoRef) env.SWARMIFYX_WORKSPACE_REPO_REF = workspaceRepoRef;
+  if (wakeTaskId) env.PAPERTAPE_TASK_ID = wakeTaskId;
+  if (wakeReason) env.PAPERTAPE_WAKE_REASON = wakeReason;
+  if (wakeCommentId) env.PAPERTAPE_WAKE_COMMENT_ID = wakeCommentId;
+  if (approvalId) env.PAPERTAPE_APPROVAL_ID = approvalId;
+  if (approvalStatus) env.PAPERTAPE_APPROVAL_STATUS = approvalStatus;
+  if (linkedIssueIds.length > 0) env.PAPERTAPE_LINKED_ISSUE_IDS = linkedIssueIds.join(",");
+  if (effectiveWorkspaceCwd) env.PAPERTAPE_WORKSPACE_CWD = effectiveWorkspaceCwd;
+  if (workspaceSource) env.PAPERTAPE_WORKSPACE_SOURCE = workspaceSource;
+  if (workspaceId) env.PAPERTAPE_WORKSPACE_ID = workspaceId;
+  if (workspaceRepoUrl) env.PAPERTAPE_WORKSPACE_REPO_URL = workspaceRepoUrl;
+  if (workspaceRepoRef) env.PAPERTAPE_WORKSPACE_REPO_REF = workspaceRepoRef;
   if (agentHome) env.AGENT_HOME = agentHome;
-  if (workspaceHints.length > 0) env.SWARMIFYX_WORKSPACES_JSON = JSON.stringify(workspaceHints);
+  if (workspaceHints.length > 0) env.PAPERTAPE_WORKSPACES_JSON = JSON.stringify(workspaceHints);
 
   for (const [key, value] of Object.entries(envConfig)) {
     if (typeof value === "string") env[key] = value;
   }
   if (!hasExplicitApiKey && authToken) {
-    env.SWARMIFYX_API_KEY = authToken;
+    env.PAPERTAPE_API_KEY = authToken;
   }
   const billingType = resolveGeminiBillingType(env);
   const runtimeEnv = ensurePathInEnv({ ...process.env, ...env });
@@ -237,7 +237,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   if (runtimeSessionId && !canResumeSession) {
     await onLog(
       "stderr",
-      `[swarmifyx] Gemini session "${runtimeSessionId}" was saved for cwd "${runtimeSessionCwd}" and will not be resumed in "${cwd}".\n`,
+      `[papertape] Gemini session "${runtimeSessionId}" was saved for cwd "${runtimeSessionCwd}" and will not be resumed in "${cwd}".\n`,
     );
   }
 
@@ -253,13 +253,13 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
         `Resolve any relative file references from ${instructionsDir}.\n\n`;
       await onLog(
         "stderr",
-        `[swarmifyx] Loaded agent instructions file: ${instructionsFilePath}\n`,
+        `[papertape] Loaded agent instructions file: ${instructionsFilePath}\n`,
       );
     } catch (err) {
       const reason = err instanceof Error ? err.message : String(err);
       await onLog(
         "stderr",
-        `[swarmifyx] Warning: could not read agent instructions file "${instructionsFilePath}": ${reason}\n`,
+        `[papertape] Warning: could not read agent instructions file "${instructionsFilePath}": ${reason}\n`,
       );
     }
   }
@@ -289,9 +289,9 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     run: { id: runId, source: "on_demand" },
     context,
   });
-  const swarmifyxEnvNote = renderSwarmifyxEnvNote(env);
+  const papertapeEnvNote = renderPapertapeEnvNote(env);
   const apiAccessNote = renderApiAccessNote(env);
-  const prompt = `${instructionsPrefix}${swarmifyxEnvNote}${apiAccessNote}${renderedPrompt}`;
+  const prompt = `${instructionsPrefix}${papertapeEnvNote}${apiAccessNote}${renderedPrompt}`;
 
   const buildArgs = (resumeSessionId: string | null) => {
     const args = ["--output-format", "stream-json"];
@@ -428,7 +428,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   ) {
     await onLog(
       "stderr",
-      `[swarmifyx] Gemini resume session "${sessionId}" is unavailable; retrying with a fresh session.\n`,
+      `[papertape] Gemini resume session "${sessionId}" is unavailable; retrying with a fresh session.\n`,
     );
     const retry = await runAttempt(null);
     return toResult(retry, true, true);

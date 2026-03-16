@@ -178,7 +178,7 @@ export type {
   PluginLauncherDeclaration,
   PluginMinimumHostVersion,
   PluginUiDeclaration,
-  SwarmifyxPluginManifestV1,
+  PapertapePluginManifestV1,
   PluginRecord,
   PluginStateRecord,
   PluginConfig,
@@ -348,7 +348,7 @@ export {
 } from "./project-mentions.js";
 
 export {
-  swarmifyxConfigSchema,
+  papertapeConfigSchema,
   configMetaSchema,
   llmConfigSchema,
   databaseBackupConfigSchema,
@@ -361,7 +361,7 @@ export {
   storageLocalDiskConfigSchema,
   storageS3ConfigSchema,
   secretsLocalEncryptedConfigSchema,
-  type SwarmifyxConfig,
+  type PapertapeConfig,
   type LlmConfig,
   type DatabaseBackupConfig,
   type DatabaseConfig,

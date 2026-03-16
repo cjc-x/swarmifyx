@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import type { ActivityEvent } from "@swarmifyx/shared";
+import type { ActivityEvent } from "@papertape/shared";
 import {
   addCommonClientOptions,
   formatInlineRecord,

@@ -1,8 +1,8 @@
 import { randomUUID } from "node:crypto";
-import type { Db } from "@swarmifyx/db";
-import { activityLog } from "@swarmifyx/db";
-import { PLUGIN_EVENT_TYPES, type PluginEventType } from "@swarmifyx/shared";
-import type { PluginEvent } from "@swarmifyx/plugin-sdk";
+import type { Db } from "@papertape/db";
+import { activityLog } from "@papertape/db";
+import { PLUGIN_EVENT_TYPES, type PluginEventType } from "@papertape/shared";
+import type { PluginEvent } from "@papertape/plugin-sdk";
 import { publishLiveEvent } from "./live-events.js";
 import { redactCurrentUserValue } from "../log-redaction.js";
 import { sanitizeRecord } from "../redaction.js";

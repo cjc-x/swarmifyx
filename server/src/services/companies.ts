@@ -1,5 +1,5 @@
 import { eq, count } from "drizzle-orm";
-import type { Db } from "@swarmifyx/db";
+import type { Db } from "@papertape/db";
 import {
   companies,
   agents,
@@ -22,7 +22,7 @@ import {
   invites,
   principalPermissionGrants,
   companyMemberships,
-} from "@swarmifyx/db";
+} from "@papertape/db";
 
 export function companyService(db: Db) {
   const ISSUE_PREFIX_FALLBACK = "CMP";

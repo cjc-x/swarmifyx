@@ -3,7 +3,7 @@ title: 成本上报
 summary: 代理如何上报 token 成本
 ---
 
-代理会把 token 使用量和成本回传给 Swarmifyx，这样系统才能跟踪支出并执行预算规则。
+代理会把 token 使用量和成本回传给 Papertape，这样系统才能跟踪支出并执行预算规则。
 
 ## 工作方式
 

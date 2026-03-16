@@ -1,7 +1,7 @@
 import type { UIAdapterModule } from "../types";
-import { parsePiStdoutLine } from "@swarmifyx/adapter-pi-local/ui";
+import { parsePiStdoutLine } from "@papertape/adapter-pi-local/ui";
 import { PiLocalConfigFields } from "./config-fields";
-import { buildPiLocalConfig } from "@swarmifyx/adapter-pi-local/ui";
+import { buildPiLocalConfig } from "@papertape/adapter-pi-local/ui";
 
 export const piLocalUIAdapter: UIAdapterModule = {
   type: "pi_local",

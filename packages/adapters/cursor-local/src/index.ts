@@ -51,7 +51,7 @@ export const agentConfigurationDoc = `# cursor agent configuration
 Adapter: cursor
 
 Use when:
-- You want Swarmifyx to run Cursor Agent CLI locally as the agent runtime
+- You want Papertape to run Cursor Agent CLI locally as the agent runtime
 - You want Cursor chat session resume across heartbeats via --resume
 - You want structured stream output in run logs via --output-format stream-json
 
@@ -78,6 +78,6 @@ Notes:
 - Runs are executed with: agent -p --output-format stream-json ...
 - Prompts are piped to Cursor via stdin.
 - Sessions are resumed with --resume when stored session cwd matches current cwd.
-- Swarmifyx auto-injects local skills into "~/.cursor/skills" when missing, so Cursor can discover "$swarmifyx" and related skills on local runs.
-- Swarmifyx auto-adds --yolo unless one of --trust/--yolo/-f is already present in extraArgs.
+- Papertape auto-injects local skills into "~/.cursor/skills" when missing, so Cursor can discover "$papertape" and related skills on local runs.
+- Papertape auto-adds --yolo unless one of --trust/--yolo/-f is already present in extraArgs.
 `;

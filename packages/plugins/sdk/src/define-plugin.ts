@@ -1,5 +1,5 @@
 /**
- * `definePlugin` — the top-level helper for authoring a Swarmifyx plugin.
+ * `definePlugin` — the top-level helper for authoring a Papertape plugin.
  *
  * Plugin authors call `definePlugin()` and export the result as the default
  * export from their worker entrypoint. The host imports the worker module,
@@ -11,7 +11,7 @@
  * @example
  * ```ts
  * // dist/worker.ts
- * import { definePlugin } from "@swarmifyx/plugin-sdk";
+ * import { definePlugin } from "@papertape/plugin-sdk";
  *
  * export default definePlugin({
  *   async setup(ctx) {
@@ -200,7 +200,7 @@ export interface PluginDefinition {
 }
 
 // ---------------------------------------------------------------------------
-// SwarmifyxPlugin — the sealed object returned by definePlugin()
+// PapertapePlugin — the sealed object returned by definePlugin()
 // ---------------------------------------------------------------------------
 
 /**
@@ -211,7 +211,7 @@ export interface PluginDefinition {
  *
  * @see PLUGIN_SPEC.md §14 — SDK Surface
  */
-export interface SwarmifyxPlugin {
+export interface PapertapePlugin {
   /** The original plugin definition passed to `definePlugin()`. */
   readonly definition: PluginDefinition;
 }
@@ -221,18 +221,18 @@ export interface SwarmifyxPlugin {
 // ---------------------------------------------------------------------------
 
 /**
- * Define a Swarmifyx plugin.
+ * Define a Papertape plugin.
  *
  * Call this function in your worker entrypoint and export the result as the
  * default export. The host will import the module and call lifecycle methods
  * on the returned object.
  *
  * @param definition - Plugin lifecycle handlers
- * @returns A sealed `SwarmifyxPlugin` object for the host to consume
+ * @returns A sealed `PapertapePlugin` object for the host to consume
  *
  * @example
  * ```ts
- * import { definePlugin } from "@swarmifyx/plugin-sdk";
+ * import { definePlugin } from "@papertape/plugin-sdk";
  *
  * export default definePlugin({
  *   async setup(ctx) {
@@ -250,6 +250,6 @@ export interface SwarmifyxPlugin {
  *
  * @see PLUGIN_SPEC.md §14.1 — Example SDK Shape
  */
-export function definePlugin(definition: PluginDefinition): SwarmifyxPlugin {
+export function definePlugin(definition: PluginDefinition): PapertapePlugin {
   return Object.freeze({ definition });
 }

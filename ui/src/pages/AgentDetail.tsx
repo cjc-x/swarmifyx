@@ -59,8 +59,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { AgentIcon, AgentIconPicker } from "../components/AgentIconPicker";
 import { RunTranscriptView, type TranscriptMode } from "../components/transcript/RunTranscriptView";
-import { isUuidLike, type Agent, type HeartbeatRun, type HeartbeatRunEvent, type AgentRuntimeState, type LiveEvent } from "@swarmifyx/shared";
-import { redactHomePathUserSegments } from "@swarmifyx/adapter-utils";
+import { isUuidLike, type Agent, type HeartbeatRun, type HeartbeatRunEvent, type AgentRuntimeState, type LiveEvent } from "@papertape/shared";
+import { redactHomePathUserSegments } from "@papertape/adapter-utils";
 import { agentRouteRef } from "../lib/utils";
 
 const runStatusIcons: Record<string, { icon: typeof CheckCircle2; color: string }> = {
@@ -2366,7 +2366,7 @@ function KeysTab({ agentId, companyId }: { agentId: string; companyId?: string }
           {translateText("Create API Key")}
         </h3>
         <p className="text-xs text-muted-foreground">
-          {translateText("API keys allow this agent to authenticate calls to the Swarmifyx server.")}
+          {translateText("API keys allow this agent to authenticate calls to the Papertape server.")}
         </p>
         <div className="flex items-center gap-2">
           <Input

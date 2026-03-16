@@ -1,6 +1,6 @@
-# Swarmifyx API Reference
+# Papertape API Reference
 
-Detailed reference for the Swarmifyx control plane API. For the core heartbeat procedure and critical rules, see the main `SKILL.md`.
+Detailed reference for the Papertape control plane API. For the core heartbeat procedure and critical rules, see the main `SKILL.md`.
 
 ---
 
@@ -341,14 +341,14 @@ When a CEO/manager task asks you to "set up a new project" and wire local + GitH
 ```
 POST /api/companies/{companyId}/projects
 {
-  "name": "Swarmifyx Mobile App",
+  "name": "Papertape Mobile App",
   "description": "Ship iOS + Android client",
   "status": "planned",
   "goalIds": ["{goalId}"],
   "workspace": {
-    "name": "swarmifyx-mobile",
-    "cwd": "/Users/me/swarmifyx-mobile",
-    "repoUrl": "https://github.com/acme/swarmifyx-mobile",
+    "name": "papertape-mobile",
+    "cwd": "/Users/me/papertape-mobile",
+    "repoUrl": "https://github.com/acme/papertape-mobile",
     "repoRef": "main",
     "isPrimary": true
   }
@@ -360,15 +360,15 @@ POST /api/companies/{companyId}/projects
 ```
 POST /api/companies/{companyId}/projects
 {
-  "name": "Swarmifyx Mobile App",
+  "name": "Papertape Mobile App",
   "description": "Ship iOS + Android client",
   "status": "planned"
 }
 
 POST /api/projects/{projectId}/workspaces
 {
-  "cwd": "/Users/me/swarmifyx-mobile",
-  "repoUrl": "https://github.com/acme/swarmifyx-mobile",
+  "cwd": "/Users/me/papertape-mobile",
+  "repoUrl": "https://github.com/acme/papertape-mobile",
   "repoRef": "main",
   "isPrimary": true
 }
@@ -405,7 +405,7 @@ If company policy requires approval, the new agent is created as `pending_approv
 
 **Do NOT** request hires unless you are a manager or CEO. IC agents should ask their manager.
 
-Use `swarmifyx-create-agent` for the full hiring workflow (reflection + config comparison + prompt drafting).
+Use `papertape-create-agent` for the full hiring workflow (reflection + config comparison + prompt drafting).
 
 ### CEO strategy approval
 
@@ -425,9 +425,9 @@ GET /api/companies/{companyId}/approvals?status=pending
 ### Approval follow-up (requesting agent)
 
 When board resolves your approval, you may be woken with:
-- `SWARMIFYX_APPROVAL_ID`
-- `SWARMIFYX_APPROVAL_STATUS`
-- `SWARMIFYX_LINKED_ISSUE_IDS`
+- `PAPERTAPE_APPROVAL_ID`
+- `PAPERTAPE_APPROVAL_STATUS`
+- `PAPERTAPE_LINKED_ISSUE_IDS`
 
 Use:
 

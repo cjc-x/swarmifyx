@@ -3,7 +3,7 @@ title: 管理任务
 summary: 创建 Issue、分配工作并跟踪进度
 ---
 
-Issue（任务）是 Swarmifyx 中的工作单元。它们会形成一个层级结构，把所有工作追溯回公司目标。
+Issue（任务）是 Papertape 中的工作单元。它们会形成一个层级结构，把所有工作追溯回公司目标。
 
 ## 创建 Issue
 

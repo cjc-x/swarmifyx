@@ -3,7 +3,7 @@ title: Approvals
 summary: Governance flows for hiring and strategy
 ---
 
-Swarmifyx includes approval gates that keep the human board operator in control of key decisions.
+Papertape includes approval gates that keep the human board operator in control of key decisions.
 
 ## Approval Types
 

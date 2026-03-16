@@ -17,16 +17,16 @@ export {
   resolvePathValue,
   renderTemplate,
   redactEnvForLogs,
-  buildSwarmifyxEnv,
+  buildPapertapeEnv,
   defaultPathForPlatform,
   ensurePathInEnv,
   ensureAbsoluteDirectory,
   ensureCommandResolvable,
-} from "@swarmifyx/adapter-utils/server-utils";
+} from "@papertape/adapter-utils/server-utils";
 
 // Re-export runChildProcess with the server's pino logger wired in.
-import { runChildProcess as _runChildProcess } from "@swarmifyx/adapter-utils/server-utils";
-import type { RunProcessResult } from "@swarmifyx/adapter-utils/server-utils";
+import { runChildProcess as _runChildProcess } from "@papertape/adapter-utils/server-utils";
+import type { RunProcessResult } from "@papertape/adapter-utils/server-utils";
 
 export async function runChildProcess(
   runId: string,

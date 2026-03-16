@@ -136,19 +136,19 @@ export function OpenClawGatewayConfigFields({
 
       {!isCreate && (
         <>
-          <Field label="Swarmifyx API URL override">
+          <Field label="Papertape API URL override">
             <DraftInput
               value={
                 eff(
                   "adapterConfig",
-                  "swarmifyxApiUrl",
-                  String(config.swarmifyxApiUrl ?? ""),
+                  "papertapeApiUrl",
+                  String(config.papertapeApiUrl ?? ""),
                 )
               }
-              onCommit={(v) => mark("adapterConfig", "swarmifyxApiUrl", v || undefined)}
+              onCommit={(v) => mark("adapterConfig", "papertapeApiUrl", v || undefined)}
               immediate
               className={inputClass}
-              placeholder="https://swarmifyx.example"
+              placeholder="https://papertape.example"
             />
           </Field>
 
@@ -167,11 +167,11 @@ export function OpenClawGatewayConfigFields({
           {sessionStrategy === "fixed" && (
             <Field label="Session key">
               <DraftInput
-                value={eff("adapterConfig", "sessionKey", String(config.sessionKey ?? "swarmifyx"))}
+                value={eff("adapterConfig", "sessionKey", String(config.sessionKey ?? "papertape"))}
                 onCommit={(v) => mark("adapterConfig", "sessionKey", v || undefined)}
                 immediate
                 className={inputClass}
-                placeholder="swarmifyx"
+                placeholder="papertape"
               />
             </Field>
           )}
@@ -229,7 +229,7 @@ export function OpenClawGatewayConfigFields({
           <Field label="Device auth">
             <div className="text-xs text-muted-foreground leading-relaxed">
               {t(
-                "Always enabled for gateway agents. Swarmifyx persists a device key during onboarding so pairing approvals remain stable across runs."
+                "Always enabled for gateway agents. Papertape persists a device key during onboarding so pairing approvals remain stable across runs."
               )}
             </div>
           </Field>

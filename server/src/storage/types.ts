@@ -1,4 +1,4 @@
-import type { StorageProvider as StorageProviderId } from "@swarmifyx/shared";
+import type { StorageProvider as StorageProviderId } from "@papertape/shared";
 import type { Readable } from "node:stream";
 
 export interface PutObjectInput {

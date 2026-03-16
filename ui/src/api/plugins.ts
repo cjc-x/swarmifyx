@@ -1,5 +1,5 @@
 /**
- * @fileoverview Frontend API client for the Swarmifyx plugin system.
+ * @fileoverview Frontend API client for the Papertape plugin system.
  *
  * All functions in `pluginsApi` map 1:1 to REST endpoints on
  * `server/src/routes/plugins.ts`. Call sites should consume these functions
@@ -17,7 +17,7 @@ import type {
   PluginRecord,
   PluginConfig,
   PluginStatus,
-} from "@swarmifyx/shared";
+} from "@papertape/shared";
 import { api } from "./client";
 
 /**
@@ -185,7 +185,7 @@ export const pluginsApi = {
    * On success, the plugin is registered in the database and transitioned to
    * `ready` state. The response is the newly created `PluginRecord`.
    *
-   * @param params.packageName - npm package name (e.g. `@swarmifyx/plugin-linear`)
+   * @param params.packageName - npm package name (e.g. `@papertape/plugin-linear`)
    *   or a filesystem path when `isLocalPath` is `true`.
    * @param params.version - Target npm version tag/range (optional; defaults to latest).
    * @param params.isLocalPath - Set to `true` when `packageName` is a local path.

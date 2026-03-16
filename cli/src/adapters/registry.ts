@@ -1,12 +1,12 @@
-import type { CLIAdapterModule } from "@swarmifyx/adapter-utils";
-import { printClaudeStreamEvent } from "@swarmifyx/adapter-claude-local/cli";
-import { printCodeBuddyStreamEvent } from "@swarmifyx/adapter-codebuddy-local/cli";
-import { printCodexStreamEvent } from "@swarmifyx/adapter-codex-local/cli";
-import { printCursorStreamEvent } from "@swarmifyx/adapter-cursor-local/cli";
-import { printGeminiStreamEvent } from "@swarmifyx/adapter-gemini-local/cli";
-import { printOpenCodeStreamEvent } from "@swarmifyx/adapter-opencode-local/cli";
-import { printPiStreamEvent } from "@swarmifyx/adapter-pi-local/cli";
-import { printOpenClawGatewayStreamEvent } from "@swarmifyx/adapter-openclaw-gateway/cli";
+import type { CLIAdapterModule } from "@papertape/adapter-utils";
+import { printClaudeStreamEvent } from "@papertape/adapter-claude-local/cli";
+import { printCodeBuddyStreamEvent } from "@papertape/adapter-codebuddy-local/cli";
+import { printCodexStreamEvent } from "@papertape/adapter-codex-local/cli";
+import { printCursorStreamEvent } from "@papertape/adapter-cursor-local/cli";
+import { printGeminiStreamEvent } from "@papertape/adapter-gemini-local/cli";
+import { printOpenCodeStreamEvent } from "@papertape/adapter-opencode-local/cli";
+import { printPiStreamEvent } from "@papertape/adapter-pi-local/cli";
+import { printOpenClawGatewayStreamEvent } from "@papertape/adapter-openclaw-gateway/cli";
 import { processCLIAdapter } from "./process/index.js";
 import { httpCLIAdapter } from "./http/index.js";
 

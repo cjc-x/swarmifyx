@@ -20,10 +20,10 @@ async function runGit(cwd: string, args: string[]) {
 }
 
 async function createTempRepo() {
-  const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), "swarmifyx-worktree-repo-"));
+  const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), "papertape-worktree-repo-"));
   await runGit(repoRoot, ["init"]);
-  await runGit(repoRoot, ["config", "user.email", "swarmifyx@example.com"]);
-  await runGit(repoRoot, ["config", "user.name", "Swarmifyx Test"]);
+  await runGit(repoRoot, ["config", "user.email", "papertape@example.com"]);
+  await runGit(repoRoot, ["config", "user.name", "Papertape Test"]);
   await fs.writeFile(path.join(repoRoot, "README.md"), "hello\n", "utf8");
   await runGit(repoRoot, ["add", "README.md"]);
   await runGit(repoRoot, ["commit", "-m", "Initial commit"]);
@@ -91,7 +91,7 @@ describe("realizeExecutionWorkspace", () => {
     expect(first.strategy).toBe("git_worktree");
     expect(first.created).toBe(true);
     expect(first.branchName).toBe("PAP-447-add-worktree-support");
-    expect(first.cwd).toContain(path.join(".swarmifyx", "worktrees"));
+    expect(first.cwd).toContain(path.join(".papertape", "worktrees"));
     await expect(fs.stat(path.join(first.cwd, ".git"))).resolves.toBeTruthy();
 
     const second = await realizeExecutionWorkspace({
@@ -133,9 +133,9 @@ describe("realizeExecutionWorkspace", () => {
       path.join(repoRoot, "scripts", "provision.js"),
       [
         "const fs = require('node:fs');",
-        "fs.writeFileSync('.swarmifyx-provision-branch', `${process.env.SWARMIFYX_WORKSPACE_BRANCH}\\n`);",
-        "fs.writeFileSync('.swarmifyx-provision-base', `${process.env.SWARMIFYX_WORKSPACE_BASE_CWD}\\n`);",
-        "fs.writeFileSync('.swarmifyx-provision-created', `${process.env.SWARMIFYX_WORKSPACE_CREATED}\\n`);",
+        "fs.writeFileSync('.papertape-provision-branch', `${process.env.PAPERTAPE_WORKSPACE_BRANCH}\\n`);",
+        "fs.writeFileSync('.papertape-provision-base', `${process.env.PAPERTAPE_WORKSPACE_BASE_CWD}\\n`);",
+        "fs.writeFileSync('.papertape-provision-created', `${process.env.PAPERTAPE_WORKSPACE_CREATED}\\n`);",
       ].join("\n"),
       "utf8",
     );
@@ -170,13 +170,13 @@ describe("realizeExecutionWorkspace", () => {
       },
     });
 
-    await expect(fs.readFile(path.join(workspace.cwd, ".swarmifyx-provision-branch"), "utf8")).resolves.toBe(
+    await expect(fs.readFile(path.join(workspace.cwd, ".papertape-provision-branch"), "utf8")).resolves.toBe(
       "PAP-448-run-provision-command\n",
     );
-    await expect(fs.readFile(path.join(workspace.cwd, ".swarmifyx-provision-base"), "utf8")).resolves.toBe(
+    await expect(fs.readFile(path.join(workspace.cwd, ".papertape-provision-base"), "utf8")).resolves.toBe(
       `${repoRoot}\n`,
     );
-    await expect(fs.readFile(path.join(workspace.cwd, ".swarmifyx-provision-created"), "utf8")).resolves.toBe(
+    await expect(fs.readFile(path.join(workspace.cwd, ".papertape-provision-created"), "utf8")).resolves.toBe(
       "true\n",
     );
 
@@ -208,14 +208,14 @@ describe("realizeExecutionWorkspace", () => {
       },
     });
 
-    await expect(fs.readFile(path.join(reused.cwd, ".swarmifyx-provision-created"), "utf8")).resolves.toBe("false\n");
+    await expect(fs.readFile(path.join(reused.cwd, ".papertape-provision-created"), "utf8")).resolves.toBe("false\n");
   }, 15_000);
 
   it("throws when the branch is already checked out in another worktree", async () => {
     const repoRoot = await createTempRepo();
     const alternateWorktreePath = path.join(
       path.dirname(repoRoot),
-      "swarmifyx-alt-worktrees",
+      "papertape-alt-worktrees",
       "PAP-449-branch-conflict",
     );
     await fs.mkdir(path.dirname(alternateWorktreePath), { recursive: true });
@@ -255,7 +255,7 @@ describe("realizeExecutionWorkspace", () => {
 
 describe("ensureRuntimeServicesForRun", () => {
   it("reuses shared runtime services across runs and starts a new service after release", async () => {
-    const workspaceRoot = await fs.mkdtemp(path.join(os.tmpdir(), "swarmifyx-runtime-workspace-"));
+    const workspaceRoot = await fs.mkdtemp(path.join(os.tmpdir(), "papertape-runtime-workspace-"));
     const workspace = buildWorkspace(workspaceRoot);
     await fs.writeFile(
       path.join(workspaceRoot, "serve.js"),

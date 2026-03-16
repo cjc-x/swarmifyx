@@ -26,14 +26,14 @@ import {
   projectWorkspaces,
   runDatabaseBackup,
   runDatabaseRestore,
-} from "@swarmifyx/db";
+} from "@papertape/db";
 import type { Command } from "commander";
-import { ensureAgentJwtSecret, loadSwarmifyxEnvFile, mergeSwarmifyxEnvEntries, readSwarmifyxEnvEntries, resolveSwarmifyxEnvFile } from "../config/env.js";
+import { ensureAgentJwtSecret, loadPapertapeEnvFile, mergePapertapeEnvEntries, readPapertapeEnvEntries, resolvePapertapeEnvFile } from "../config/env.js";
 import { publicCliCommand } from "../config/branding.js";
-import { expandHomePrefix, resolveSwarmifyxHomeDir } from "../config/home.js";
-import type { SwarmifyxConfig } from "../config/schema.js";
+import { expandHomePrefix, resolvePapertapeHomeDir } from "../config/home.js";
+import type { PapertapeConfig } from "../config/schema.js";
 import { readConfig, resolveConfigPath, writeConfig } from "../config/store.js";
-import { printSwarmifyxCliBanner } from "../utils/banner.js";
+import { printPapertapeCliBanner } from "../utils/banner.js";
 import { resolveRuntimeLikePath } from "../utils/path-resolver.js";
 import {
   buildWorktreeConfig,
@@ -122,14 +122,14 @@ function nonEmpty(value: string | null | undefined): string | null {
 }
 
 function isCurrentSourceConfigPath(sourceConfigPath: string): boolean {
-  const currentConfigPath = process.env.SWARMIFYX_CONFIG;
+  const currentConfigPath = process.env.PAPERTAPE_CONFIG;
   if (!currentConfigPath || currentConfigPath.trim().length === 0) {
     return false;
   }
   return path.resolve(currentConfigPath) === path.resolve(sourceConfigPath);
 }
 
-const WORKTREE_NAME_PREFIX = "swarmifyx-";
+const WORKTREE_NAME_PREFIX = "papertape-";
 
 function resolveWorktreeMakeName(name: string): string {
   const value = nonEmpty(name);
@@ -148,11 +148,11 @@ function resolveWorktreeMakeName(name: string): string {
 }
 
 function resolveWorktreeHome(explicit?: string): string {
-  return explicit ?? process.env.SWARMIFYX_WORKTREES_DIR ?? DEFAULT_WORKTREE_HOME;
+  return explicit ?? process.env.PAPERTAPE_WORKTREES_DIR ?? DEFAULT_WORKTREE_HOME;
 }
 
 function resolveWorktreeStartPoint(explicit?: string): string | undefined {
-  return explicit ?? nonEmpty(process.env.SWARMIFYX_WORKTREE_START_POINT) ?? undefined;
+  return explicit ?? nonEmpty(process.env.PAPERTAPE_WORKTREE_START_POINT) ?? undefined;
 }
 
 export function resolveWorktreeMakeTargetPath(name: string): string {
@@ -433,12 +433,12 @@ function resolveSourceConfigPath(opts: WorktreeInitOptions): string {
   if (opts.fromConfig) return path.resolve(opts.fromConfig);
   const sourceHome = opts.fromDataDir
     ? path.resolve(expandHomePrefix(opts.fromDataDir))
-    : resolveSwarmifyxHomeDir();
+    : resolvePapertapeHomeDir();
   const sourceInstanceId = sanitizeWorktreeInstanceId(opts.fromInstance ?? "default");
   return path.resolve(sourceHome, "instances", sourceInstanceId, "config.json");
 }
 
-function resolveSourceConnectionString(config: SwarmifyxConfig, envEntries: Record<string, string>, portOverride?: number): string {
+function resolveSourceConnectionString(config: PapertapeConfig, envEntries: Record<string, string>, portOverride?: number): string {
   if (config.database.mode === "postgres") {
     const connectionString = nonEmpty(envEntries.DATABASE_URL) ?? nonEmpty(config.database.connectionString);
     if (!connectionString) {
@@ -450,12 +450,12 @@ function resolveSourceConnectionString(config: SwarmifyxConfig, envEntries: Reco
   }
 
   const port = portOverride ?? config.database.embeddedPostgresPort;
-  return `postgres://swarmifyx:swarmifyx@127.0.0.1:${port}/swarmifyx`;
+  return `postgres://papertape:papertape@127.0.0.1:${port}/papertape`;
 }
 
 export function copySeededSecretsKey(input: {
   sourceConfigPath: string;
-  sourceConfig: SwarmifyxConfig;
+  sourceConfig: PapertapeConfig;
   sourceEnvEntries: Record<string, string>;
   targetKeyFilePath: string;
 }): void {
@@ -467,8 +467,8 @@ export function copySeededSecretsKey(input: {
 
   const allowProcessEnvFallback = isCurrentSourceConfigPath(input.sourceConfigPath);
   const sourceInlineMasterKey =
-    nonEmpty(input.sourceEnvEntries.SWARMIFYX_SECRETS_MASTER_KEY) ??
-    (allowProcessEnvFallback ? nonEmpty(process.env.SWARMIFYX_SECRETS_MASTER_KEY) : null);
+    nonEmpty(input.sourceEnvEntries.PAPERTAPE_SECRETS_MASTER_KEY) ??
+    (allowProcessEnvFallback ? nonEmpty(process.env.PAPERTAPE_SECRETS_MASTER_KEY) : null);
   if (sourceInlineMasterKey) {
     writeFileSync(input.targetKeyFilePath, sourceInlineMasterKey, {
       encoding: "utf8",
@@ -483,8 +483,8 @@ export function copySeededSecretsKey(input: {
   }
 
   const sourceKeyFileOverride =
-    nonEmpty(input.sourceEnvEntries.SWARMIFYX_SECRETS_MASTER_KEY_FILE) ??
-    (allowProcessEnvFallback ? nonEmpty(process.env.SWARMIFYX_SECRETS_MASTER_KEY_FILE) : null);
+    nonEmpty(input.sourceEnvEntries.PAPERTAPE_SECRETS_MASTER_KEY_FILE) ??
+    (allowProcessEnvFallback ? nonEmpty(process.env.PAPERTAPE_SECRETS_MASTER_KEY_FILE) : null);
   const sourceConfiguredKeyPath = sourceKeyFileOverride ?? input.sourceConfig.secrets.localEncrypted.keyFilePath;
   const sourceKeyFilePath = resolveRuntimeLikePath(sourceConfiguredKeyPath, input.sourceConfigPath);
 
@@ -527,8 +527,8 @@ async function ensureEmbeddedPostgres(dataDir: string, preferredPort: number): P
   const port = await findAvailablePort(preferredPort);
   const instance = new EmbeddedPostgres({
     databaseDir: dataDir,
-    user: "swarmifyx",
-    password: "swarmifyx",
+    user: "papertape",
+    password: "papertape",
     port,
     persistent: true,
     initdbFlags: ["--encoding=UTF8", "--locale=C"],
@@ -555,15 +555,15 @@ async function ensureEmbeddedPostgres(dataDir: string, preferredPort: number): P
 
 async function seedWorktreeDatabase(input: {
   sourceConfigPath: string;
-  sourceConfig: SwarmifyxConfig;
-  targetConfig: SwarmifyxConfig;
+  sourceConfig: PapertapeConfig;
+  targetConfig: PapertapeConfig;
   targetPaths: WorktreeLocalPaths;
   instanceId: string;
   seedMode: WorktreeSeedMode;
 }): Promise<SeedWorktreeDatabaseResult> {
   const seedPlan = resolveWorktreeSeedPlan(input.seedMode);
-  const sourceEnvFile = resolveSwarmifyxEnvFile(input.sourceConfigPath);
-  const sourceEnvEntries = readSwarmifyxEnvEntries(sourceEnvFile);
+  const sourceEnvFile = resolvePapertapeEnvFile(input.sourceConfigPath);
+  const sourceEnvEntries = readPapertapeEnvEntries(sourceEnvFile);
   copySeededSecretsKey({
     sourceConfigPath: input.sourceConfigPath,
     sourceConfig: input.sourceConfig,
@@ -600,9 +600,9 @@ async function seedWorktreeDatabase(input: {
       input.targetConfig.database.embeddedPostgresPort,
     );
 
-    const adminConnectionString = `postgres://swarmifyx:swarmifyx@127.0.0.1:${targetHandle.port}/postgres`;
-    await ensurePostgresDatabase(adminConnectionString, "swarmifyx");
-    const targetConnectionString = `postgres://swarmifyx:swarmifyx@127.0.0.1:${targetHandle.port}/swarmifyx`;
+    const adminConnectionString = `postgres://papertape:papertape@127.0.0.1:${targetHandle.port}/postgres`;
+    await ensurePostgresDatabase(adminConnectionString, "papertape");
+    const targetConnectionString = `postgres://papertape:papertape@127.0.0.1:${targetHandle.port}/papertape`;
     await runDatabaseRestore({
       connectionString: targetConnectionString,
       backupFile: backup.backupFile,
@@ -669,19 +669,19 @@ async function runWorktreeInit(opts: WorktreeInitOptions): Promise<void> {
   });
 
   writeConfig(targetConfig, paths.configPath);
-  const sourceEnvEntries = readSwarmifyxEnvEntries(resolveSwarmifyxEnvFile(sourceConfigPath));
+  const sourceEnvEntries = readPapertapeEnvEntries(resolvePapertapeEnvFile(sourceConfigPath));
   const existingAgentJwtSecret =
-    nonEmpty(sourceEnvEntries.SWARMIFYX_AGENT_JWT_SECRET) ??
-    nonEmpty(process.env.SWARMIFYX_AGENT_JWT_SECRET);
-  mergeSwarmifyxEnvEntries(
+    nonEmpty(sourceEnvEntries.PAPERTAPE_AGENT_JWT_SECRET) ??
+    nonEmpty(process.env.PAPERTAPE_AGENT_JWT_SECRET);
+  mergePapertapeEnvEntries(
     {
       ...buildWorktreeEnvEntries(paths),
-      ...(existingAgentJwtSecret ? { SWARMIFYX_AGENT_JWT_SECRET: existingAgentJwtSecret } : {}),
+      ...(existingAgentJwtSecret ? { PAPERTAPE_AGENT_JWT_SECRET: existingAgentJwtSecret } : {}),
     },
     paths.envPath,
   );
   ensureAgentJwtSecret(paths.configPath);
-  loadSwarmifyxEnvFile(paths.configPath);
+  loadPapertapeEnvFile(paths.configPath);
   const copiedGitHooks = copyGitHooksToWorktreeGitDir(cwd);
 
   let seedSummary: string | null = null;
@@ -733,19 +733,19 @@ async function runWorktreeInit(opts: WorktreeInitOptions): Promise<void> {
   }
   p.outro(
     pc.green(
-      `Worktree ready. Run Swarmifyx inside this repo and the CLI/server will use ${paths.instanceId} automatically.`,
+      `Worktree ready. Run Papertape inside this repo and the CLI/server will use ${paths.instanceId} automatically.`,
     ),
   );
 }
 
 export async function worktreeInitCommand(opts: WorktreeInitOptions): Promise<void> {
-  printSwarmifyxCliBanner();
+  printPapertapeCliBanner();
   p.intro(pc.bgCyan(pc.black(` ${publicCliCommand("worktree init")} `)));
   await runWorktreeInit(opts);
 }
 
 export async function worktreeMakeCommand(nameArg: string, opts: WorktreeMakeOptions): Promise<void> {
-  printSwarmifyxCliBanner();
+  printPapertapeCliBanner();
   p.intro(pc.bgCyan(pc.black(` ${publicCliCommand("worktree:make")} `)));
 
   const name = resolveWorktreeMakeName(nameArg);
@@ -909,7 +909,7 @@ function worktreePathHasUncommittedChanges(worktreePath: string): boolean {
 }
 
 export async function worktreeCleanupCommand(nameArg: string, opts: WorktreeCleanupOptions): Promise<void> {
-  printSwarmifyxCliBanner();
+  printPapertapeCliBanner();
   p.intro(pc.bgCyan(pc.black(` ${publicCliCommand("worktree:cleanup")} `)));
 
   const name = resolveWorktreeMakeName(nameArg);
@@ -1046,13 +1046,13 @@ export async function worktreeCleanupCommand(nameArg: string, opts: WorktreeClea
 
 export async function worktreeEnvCommand(opts: WorktreeEnvOptions): Promise<void> {
   const configPath = resolveConfigPath(opts.config);
-  const envPath = resolveSwarmifyxEnvFile(configPath);
-  const envEntries = readSwarmifyxEnvEntries(envPath);
+  const envPath = resolvePapertapeEnvFile(configPath);
+  const envEntries = readPapertapeEnvEntries(envPath);
   const out = {
-    SWARMIFYX_CONFIG: configPath,
-    ...(envEntries.SWARMIFYX_HOME ? { SWARMIFYX_HOME: envEntries.SWARMIFYX_HOME } : {}),
-    ...(envEntries.SWARMIFYX_INSTANCE_ID ? { SWARMIFYX_INSTANCE_ID: envEntries.SWARMIFYX_INSTANCE_ID } : {}),
-    ...(envEntries.SWARMIFYX_CONTEXT ? { SWARMIFYX_CONTEXT: envEntries.SWARMIFYX_CONTEXT } : {}),
+    PAPERTAPE_CONFIG: configPath,
+    ...(envEntries.PAPERTAPE_HOME ? { PAPERTAPE_HOME: envEntries.PAPERTAPE_HOME } : {}),
+    ...(envEntries.PAPERTAPE_INSTANCE_ID ? { PAPERTAPE_INSTANCE_ID: envEntries.PAPERTAPE_INSTANCE_ID } : {}),
+    ...(envEntries.PAPERTAPE_CONTEXT ? { PAPERTAPE_CONTEXT: envEntries.PAPERTAPE_CONTEXT } : {}),
     ...envEntries,
   };
 
@@ -1065,17 +1065,17 @@ export async function worktreeEnvCommand(opts: WorktreeEnvOptions): Promise<void
 }
 
 export function registerWorktreeCommands(program: Command): void {
-  const worktree = program.command("worktree").description("Worktree-local SwarmifyX instance helpers");
+  const worktree = program.command("worktree").description("Worktree-local Papertape instance helpers");
 
   program
     .command("worktree:make")
-    .description("Create ~/NAME as a git worktree, then initialize an isolated SwarmifyX instance inside it")
-    .argument("<name>", "Worktree name — auto-prefixed with swarmifyx- if needed (created at ~/swarmifyx-NAME)")
-    .option("--start-point <ref>", "Remote ref to base the new branch on (env: SWARMIFYX_WORKTREE_START_POINT)")
+    .description("Create ~/NAME as a git worktree, then initialize an isolated Papertape instance inside it")
+    .argument("<name>", "Worktree name — auto-prefixed with papertape- if needed (created at ~/papertape-NAME)")
+    .option("--start-point <ref>", "Remote ref to base the new branch on (env: PAPERTAPE_WORKTREE_START_POINT)")
     .option("--instance <id>", "Explicit isolated instance id")
-    .option("--home <path>", `Home root for worktree instances (env: SWARMIFYX_WORKTREES_DIR, default: ${DEFAULT_WORKTREE_HOME})`)
+    .option("--home <path>", `Home root for worktree instances (env: PAPERTAPE_WORKTREES_DIR, default: ${DEFAULT_WORKTREE_HOME})`)
     .option("--from-config <path>", "Source config.json to seed from")
-    .option("--from-data-dir <path>", "Source SWARMIFYX_HOME used when deriving the source config")
+    .option("--from-data-dir <path>", "Source PAPERTAPE_HOME used when deriving the source config")
     .option("--from-instance <id>", "Source instance id when deriving the source config", "default")
     .option("--server-port <port>", "Preferred server port", (value) => Number(value))
     .option("--db-port <port>", "Preferred embedded Postgres port", (value) => Number(value))
@@ -1089,9 +1089,9 @@ export function registerWorktreeCommands(program: Command): void {
     .description("Create repo-local config/env and an isolated instance for this worktree")
     .option("--name <name>", "Display name used to derive the instance id")
     .option("--instance <id>", "Explicit isolated instance id")
-    .option("--home <path>", `Home root for worktree instances (env: SWARMIFYX_WORKTREES_DIR, default: ${DEFAULT_WORKTREE_HOME})`)
+    .option("--home <path>", `Home root for worktree instances (env: PAPERTAPE_WORKTREES_DIR, default: ${DEFAULT_WORKTREE_HOME})`)
     .option("--from-config <path>", "Source config.json to seed from")
-    .option("--from-data-dir <path>", "Source SWARMIFYX_HOME used when deriving the source config")
+    .option("--from-data-dir <path>", "Source PAPERTAPE_HOME used when deriving the source config")
     .option("--from-instance <id>", "Source instance id when deriving the source config", "default")
     .option("--server-port <port>", "Preferred server port", (value) => Number(value))
     .option("--db-port <port>", "Preferred embedded Postgres port", (value) => Number(value))
@@ -1102,7 +1102,7 @@ export function registerWorktreeCommands(program: Command): void {
 
   worktree
     .command("env")
-    .description("Print shell exports for the current worktree-local SwarmifyX instance")
+    .description("Print shell exports for the current worktree-local Papertape instance")
     .option("-c, --config <path>", "Path to config file")
     .option("--json", "Print JSON instead of shell exports")
     .action(worktreeEnvCommand);
@@ -1110,9 +1110,9 @@ export function registerWorktreeCommands(program: Command): void {
   program
     .command("worktree:cleanup")
     .description("Safely remove a worktree, its branch, and its isolated instance data")
-    .argument("<name>", "Worktree name — auto-prefixed with swarmifyx- if needed")
+    .argument("<name>", "Worktree name — auto-prefixed with papertape- if needed")
     .option("--instance <id>", "Explicit instance id (if different from the worktree name)")
-    .option("--home <path>", `Home root for worktree instances (env: SWARMIFYX_WORKTREES_DIR, default: ${DEFAULT_WORKTREE_HOME})`)
+    .option("--home <path>", `Home root for worktree instances (env: PAPERTAPE_WORKTREES_DIR, default: ${DEFAULT_WORKTREE_HOME})`)
     .option("--force", "Bypass safety checks (uncommitted changes, unique commits)", false)
     .action(worktreeCleanupCommand);
 }

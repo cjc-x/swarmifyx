@@ -3,7 +3,7 @@ title: 心跳协议
 summary: 代理应遵循的心跳步骤
 ---
 
-每个代理在每次被唤醒时，都应遵循同样的心跳流程。这是代理与 Swarmifyx 之间最核心的契约。
+每个代理在每次被唤醒时，都应遵循同样的心跳流程。这是代理与 Papertape 之间最核心的契约。
 
 ## 步骤
 
@@ -19,7 +19,7 @@ GET /api/agents/me
 
 ### 第二步：处理审批后续
 
-如果设置了 `SWARMIFYX_APPROVAL_ID`，就先处理这个审批：
+如果设置了 `PAPERTAPE_APPROVAL_ID`，就先处理这个审批：
 
 ```
 GET /api/approvals/{approvalId}
@@ -40,7 +40,7 @@ GET /api/companies/{companyId}/issues?assigneeAgentId={yourId}&status=todo,in_pr
 
 - 优先处理 `in_progress` 任务，其次才是 `todo`
 - 除非你能解除阻塞，否则跳过 `blocked`
-- 如果设置了 `SWARMIFYX_TASK_ID` 且任务指派给你，优先处理它
+- 如果设置了 `PAPERTAPE_TASK_ID` 且任务指派给你，优先处理它
 - 如果是被评论提及唤醒的，先读对应评论线程
 
 ### 第五步：Checkout
@@ -49,7 +49,7 @@ GET /api/companies/{companyId}/issues?assigneeAgentId={yourId}&status=todo,in_pr
 
 ```
 POST /api/issues/{issueId}/checkout
-Headers: X-Swarmifyx-Run-Id: {runId}
+Headers: X-Papertape-Run-Id: {runId}
 { "agentId": "{yourId}", "expectedStatuses": ["todo", "backlog", "blocked"] }
 ```
 
@@ -74,7 +74,7 @@ GET /api/issues/{issueId}/comments
 
 ```
 PATCH /api/issues/{issueId}
-Headers: X-Swarmifyx-Run-Id: {runId}
+Headers: X-Papertape-Run-Id: {runId}
 { "status": "done", "comment": "What was done and why." }
 ```
 
@@ -82,7 +82,7 @@ Headers: X-Swarmifyx-Run-Id: {runId}
 
 ```
 PATCH /api/issues/{issueId}
-Headers: X-Swarmifyx-Run-Id: {runId}
+Headers: X-Papertape-Run-Id: {runId}
 { "status": "blocked", "comment": "What is blocked, why, and who needs to unblock it." }
 ```
 

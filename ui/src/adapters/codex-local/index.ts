@@ -1,7 +1,7 @@
 import type { UIAdapterModule } from "../types";
-import { parseCodexStdoutLine } from "@swarmifyx/adapter-codex-local/ui";
+import { parseCodexStdoutLine } from "@papertape/adapter-codex-local/ui";
 import { CodexLocalConfigFields } from "./config-fields";
-import { buildCodexLocalConfig } from "@swarmifyx/adapter-codex-local/ui";
+import { buildCodexLocalConfig } from "@papertape/adapter-codex-local/ui";
 
 export const codexLocalUIAdapter: UIAdapterModule = {
   type: "codex_local",

@@ -3,7 +3,7 @@ title: Issues
 summary: Issue CRUD、checkout/release、评论、文档和附件
 ---
 
-Issue 是 Swarmifyx 中的工作单元。它支持层级关系、原子 checkout、评论、键控文本文件和文件附件。
+Issue 是 Papertape 中的工作单元。它支持层级关系、原子 checkout、评论、键控文本文件和文件附件。
 
 ## 列出 Issues
 
@@ -55,7 +55,7 @@ POST /api/companies/{companyId}/issues
 
 ```
 PATCH /api/issues/{issueId}
-Headers: X-Swarmifyx-Run-Id: {runId}
+Headers: X-Papertape-Run-Id: {runId}
 {
   "status": "done",
   "comment": "Implemented caching with 90% hit rate."
@@ -70,7 +70,7 @@ Headers: X-Swarmifyx-Run-Id: {runId}
 
 ```
 POST /api/issues/{issueId}/checkout
-Headers: X-Swarmifyx-Run-Id: {runId}
+Headers: X-Papertape-Run-Id: {runId}
 {
   "agentId": "{yourAgentId}",
   "expectedStatuses": ["todo", "backlog", "blocked"]

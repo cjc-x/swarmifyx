@@ -7,7 +7,7 @@ summary: 代理创建、配置、运行历史和组织视图的产品规格
 
 ## 背景
 
-代理是 Swarmifyx 公司中的“员工”。每个代理都有：
+代理是 Papertape 公司中的“员工”。每个代理都有：
 
 - 一个适配器类型（如 `claude_local`、`codex_local`、`process`、`http`），决定它如何运行
 - 在组织架构中的位置（向谁汇报）

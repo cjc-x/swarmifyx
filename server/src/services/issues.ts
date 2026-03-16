@@ -1,5 +1,5 @@
 import { and, asc, desc, eq, inArray, isNull, or, sql } from "drizzle-orm";
-import type { Db } from "@swarmifyx/db";
+import type { Db } from "@papertape/db";
 import {
   agents,
   assets,
@@ -17,8 +17,8 @@ import {
   labels,
   projectWorkspaces,
   projects,
-} from "@swarmifyx/db";
-import { extractProjectMentionIds } from "@swarmifyx/shared";
+} from "@papertape/db";
+import { extractProjectMentionIds } from "@papertape/shared";
 import { conflict, notFound, unprocessable } from "../errors.js";
 import {
   defaultIssueExecutionWorkspaceSettingsForProject,

@@ -1,21 +1,21 @@
 ---
 title: ClipHub Plan
-summary: Marketplace concept for Swarmifyx team blueprints, skills, and governance bundles
+summary: Marketplace concept for Papertape team blueprints, skills, and governance bundles
 ---
 
-# ClipHub: Marketplace for Swarmifyx Team Configurations
+# ClipHub: Marketplace for Papertape Team Configurations
 
-> The "app store" for whole-company AI teams — pre-built Swarmifyx configurations, agent blueprints, skills, and governance templates that ship real work from day one.
+> The "app store" for whole-company AI teams — pre-built Papertape configurations, agent blueprints, skills, and governance templates that ship real work from day one.
 
 ## 1. Vision & Positioning
 
-**ClipHub** sells **entire team configurations** — org charts, agent roles, inter-agent workflows, governance rules, and project templates — for Swarmifyx-managed companies.
+**ClipHub** sells **entire team configurations** — org charts, agent roles, inter-agent workflows, governance rules, and project templates — for Papertape-managed companies.
 
 | Dimension | ClipHub |
 |---|---|
 | Unit of sale | Team blueprint (multi-agent org) |
 | Buyer | Founder / team lead spinning up an AI company |
-| Install target | Swarmifyx company (agents, projects, governance) |
+| Install target | Papertape company (agents, projects, governance) |
 | Value prop | "Skip org design — get a shipping team in minutes" |
 | Price range | $0–$499 per blueprint (+ individual add-ons) |
 
@@ -25,7 +25,7 @@ summary: Marketplace concept for Swarmifyx team blueprints, skills, and governan
 
 ### 2.1 Team Blueprints (primary product)
 
-A complete Swarmifyx company configuration:
+A complete Papertape company configuration:
 
 - **Org chart**: Agents with roles, titles, reporting chains, capabilities
 - **Agent configs**: Adapter type, model, prompt templates, instructions paths
@@ -41,7 +41,7 @@ A complete Swarmifyx company configuration:
 
 ### 2.2 Agent Blueprints (individual agents within a team context)
 
-Single-agent configurations designed to plug into a Swarmifyx org:
+Single-agent configurations designed to plug into a Papertape org:
 
 - Role definition, prompt template, adapter config
 - Reporting chain expectations (who they report to)
@@ -55,11 +55,11 @@ Single-agent configurations designed to plug into a Swarmifyx org:
 
 ### 2.3 Skills (modular capabilities)
 
-Portable skill files that any Swarmifyx agent can use:
+Portable skill files that any Papertape agent can use:
 
 - Markdown skill files with instructions
 - Tool configurations and shell scripts
-- Compatible with Swarmifyx's skill loading system
+- Compatible with Papertape's skill loading system
 
 **Examples:**
 - "Git PR Workflow" — standardized PR creation and review (Free)
@@ -116,7 +116,7 @@ interface Listing {
   // Compatibility
   compatibleAdapters: string[];    // ['claude_local', 'codex_local', ...]
   requiredModels: string[];        // ['claude-opus-4-6', 'claude-sonnet-4-6']
-  swarmifyxVersionMin: string;     // Minimum Swarmifyx version
+  papertapeVersionMin: string;     // Minimum Papertape version
 
   // Social proof
   installCount: number;
@@ -221,7 +221,7 @@ interface Purchase {
   id: string;
   listingId: string;
   buyerUserId: string;
-  buyerCompanyId: string | null;    // Target Swarmifyx company
+  buyerCompanyId: string | null;    // Target Papertape company
   pricePaidCents: number;
   paymentIntentId: string | null;   // Stripe
   installedAt: string | null;       // When deployed to company
@@ -289,7 +289,7 @@ interface Review {
 | `PATCH` | `/api/listings/:id` | Update listing |
 | `DELETE` | `/api/listings/:id` | Archive listing |
 | `POST` | `/api/listings/:id/purchase` | Purchase listing (Stripe checkout) |
-| `POST` | `/api/listings/:id/install` | Install to Swarmifyx company |
+| `POST` | `/api/listings/:id/install` | Install to Papertape company |
 | `GET` | `/api/listings/:id/reviews` | Get reviews |
 | `POST` | `/api/listings/:id/reviews` | Submit review |
 | `GET` | `/api/creators/:slug` | Creator profile |
@@ -309,14 +309,14 @@ Homepage → Browse marketplace → Filter by type/category
   → Click listing → Read details, reviews, preview org chart
   → Click "Buy" → Stripe checkout (or free install)
   → Post-purchase: "Install to Company" button
-  → Select target Swarmifyx company (or create new)
-  → ClipHub API calls Swarmifyx API to:
+  → Select target Papertape company (or create new)
+  → ClipHub API calls Papertape API to:
       1. Create agents with configs from blueprint
       2. Set up reporting chains
       3. Create projects with workspace configs
       4. Apply governance rules
       5. Deploy skill files to agent instruction paths
-  → Redirect to Swarmifyx dashboard with new team running
+  → Redirect to Papertape dashboard with new team running
 ```
 
 ### 5.2 Creator: Build → Publish → Earn
@@ -334,11 +334,11 @@ Sign up as creator → Connect Stripe
   → Track installs, revenue, reviews on creator dashboard
 ```
 
-### 5.3 Creator: Export from Swarmifyx → Publish
+### 5.3 Creator: Export from Papertape → Publish
 
 ```
-Running Swarmifyx company → "Export as Blueprint" (CLI or UI)
-  → Swarmifyx exports:
+Running Papertape company → "Export as Blueprint" (CLI or UI)
+  → Papertape exports:
       - Agent configs (sanitized — no secrets)
       - Org chart / reporting chains
       - Governance rules
@@ -354,7 +354,7 @@ Running Swarmifyx company → "Export as Blueprint" (CLI or UI)
 
 ### 6.1 Visual Language
 
-- **Color palette**: Dark ink primary, warm sand backgrounds, accent color for CTAs (Swarmifyx brand blue/purple)
+- **Color palette**: Dark ink primary, warm sand backgrounds, accent color for CTAs (Papertape brand blue/purple)
 - **Typography**: Clean sans-serif, strong hierarchy, monospace for technical details
 - **Cards**: Rounded corners, subtle shadows, clear pricing badges
 - **Org chart visuals**: Interactive tree/graph showing agent relationships in team blueprints
@@ -365,7 +365,7 @@ Running Swarmifyx company → "Export as Blueprint" (CLI or UI)
 |---|---|
 | Product card | Org chart mini-preview + agent count badge |
 | Detail page | Interactive org chart + per-agent breakdown |
-| Install flow | One-click deploy to Swarmifyx company |
+| Install flow | One-click deploy to Papertape company |
 | Social proof | "X companies running this blueprint" |
 | Preview | Live demo sandbox (stretch goal) |
 
@@ -412,7 +412,7 @@ When a buyer clicks "Install to Company":
 ```
 POST /api/listings/:id/install
 {
-  "targetCompanyId": "uuid",         // Existing Swarmifyx company
+  "targetCompanyId": "uuid",         // Existing Papertape company
   "overrides": {                      // Optional customization
     "agentModel": "claude-sonnet-4-6", // Override default model
     "budgetScale": 0.5,               // Scale budgets
@@ -426,7 +426,7 @@ The install handler:
 1. Validates buyer owns the purchase
 2. Validates target company access
 3. For each agent in blueprint:
-   - `POST /api/companies/:id/agents` (if `swarmifyx-create-agent` supports it, or via approval flow)
+   - `POST /api/companies/:id/agents` (if `papertape-create-agent` supports it, or via approval flow)
    - Sets adapter config, prompt template, instructions path
 4. Sets reporting chains
 5. Creates projects and workspaces
@@ -458,20 +458,20 @@ The install handler:
 
 ### 9.1 Stack
 
-- **Frontend**: Next.js (React), Tailwind CSS, same UI framework as Swarmifyx
-- **Backend**: Node.js API (or extend Swarmifyx server)
-- **Database**: Postgres (can share Swarmifyx's DB or separate)
+- **Frontend**: Next.js (React), Tailwind CSS, same UI framework as Papertape
+- **Backend**: Node.js API (or extend Papertape server)
+- **Database**: Postgres (can share Papertape's DB or separate)
 - **Payments**: Stripe Connect (marketplace mode)
 - **Storage**: S3/R2 for listing bundles and images
-- **Auth**: Shared with Swarmifyx auth (or OAuth2)
+- **Auth**: Shared with Papertape auth (or OAuth2)
 
-### 9.2 Integration with Swarmifyx
+### 9.2 Integration with Papertape
 
 ClipHub can be:
-- **Option A**: A separate app that calls Swarmifyx's API to install blueprints
-- **Option B**: A built-in section of the Swarmifyx UI (`/marketplace` route)
+- **Option A**: A separate app that calls Papertape's API to install blueprints
+- **Option B**: A built-in section of the Papertape UI (`/marketplace` route)
 
-Option B is simpler for MVP — adds routes to the existing Swarmifyx UI and API.
+Option B is simpler for MVP — adds routes to the existing Papertape UI and API.
 
 ### 9.3 Bundle Format
 
@@ -511,14 +511,14 @@ blueprint/
 - [ ] Listing detail page with org chart visualization
 - [ ] Creator registration and listing creation wizard
 - [ ] Free installs only (no payments yet)
-- [ ] Install flow: blueprint → Swarmifyx company
+- [ ] Install flow: blueprint → Papertape company
 
 ### Phase 2: Payments & Social
 - [ ] Stripe Connect integration
 - [ ] Purchase flow
 - [ ] Review system
 - [ ] Creator analytics dashboard
-- [ ] "Export from Swarmifyx" CLI command
+- [ ] "Export from Papertape" CLI command
 
 ### Phase 3: Growth
 - [ ] Search with relevance ranking

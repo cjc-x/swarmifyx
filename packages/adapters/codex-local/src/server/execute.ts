@@ -2,25 +2,25 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import type { AdapterExecutionContext, AdapterExecutionResult } from "@swarmifyx/adapter-utils";
+import type { AdapterExecutionContext, AdapterExecutionResult } from "@papertape/adapter-utils";
 import {
   asString,
   asNumber,
   asBoolean,
   asStringArray,
   parseObject,
-  buildSwarmifyxEnv,
+  buildPapertapeEnv,
   redactEnvForLogs,
   ensureAbsoluteDirectory,
   ensureCommandResolvable,
   ensurePathInEnv,
   renderTemplate,
   runChildProcess,
-} from "@swarmifyx/adapter-utils/server-utils";
+} from "@papertape/adapter-utils/server-utils";
 import { parseCodexJsonl, isCodexUnknownSessionError } from "./parse.js";
 
 const __moduleDir = path.dirname(fileURLToPath(import.meta.url));
-const SWARMIFYX_SKILLS_CANDIDATES = [
+const PAPERTAPE_SKILLS_CANDIDATES = [
   path.resolve(__moduleDir, "../../skills"),         // published: <pkg>/dist/server/ -> <pkg>/skills/
   path.resolve(__moduleDir, "../../../../../skills"), // dev: src/server/ -> repo root/skills/
 ];
@@ -67,8 +67,8 @@ function codexHomeDir(): string {
   return path.join(os.homedir(), ".codex");
 }
 
-async function resolveSwarmifyxSkillsDir(): Promise<string | null> {
-  for (const candidate of SWARMIFYX_SKILLS_CANDIDATES) {
+async function resolvePapertapeSkillsDir(): Promise<string | null> {
+  for (const candidate of PAPERTAPE_SKILLS_CANDIDATES) {
     const isDir = await fs.stat(candidate).then((s) => s.isDirectory()).catch(() => false);
     if (isDir) return candidate;
   }
@@ -76,7 +76,7 @@ async function resolveSwarmifyxSkillsDir(): Promise<string | null> {
 }
 
 export async function ensureCodexSkillsInjected(onLog: AdapterExecutionContext["onLog"]) {
-  const skillsDir = await resolveSwarmifyxSkillsDir();
+  const skillsDir = await resolvePapertapeSkillsDir();
   if (!skillsDir) return;
 
   const skillsHome = path.join(codexHomeDir(), "skills");
@@ -93,12 +93,12 @@ export async function ensureCodexSkillsInjected(onLog: AdapterExecutionContext["
       await fs.symlink(source, target);
       await onLog(
         "stderr",
-        `[swarmifyx] Injected Codex skill "${entry.name}" into ${skillsHome}\n`,
+        `[papertape] Injected Codex skill "${entry.name}" into ${skillsHome}\n`,
       );
     } catch (err) {
       await onLog(
         "stderr",
-        `[swarmifyx] Failed to inject Codex skill "${entry.name}" into ${skillsHome}: ${err instanceof Error ? err.message : String(err)}\n`,
+        `[papertape] Failed to inject Codex skill "${entry.name}" into ${skillsHome}: ${err instanceof Error ? err.message : String(err)}\n`,
       );
     }
   }
@@ -109,7 +109,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
 
   const promptTemplate = asString(
     config.promptTemplate,
-    "You are agent {{agent.id}} ({{agent.name}}). Continue your Swarmifyx work.",
+    "You are agent {{agent.id}} ({{agent.name}}). Continue your Papertape work.",
   );
   const command = asString(config.command, "codex");
   const model = asString(config.model, "");
@@ -123,7 +123,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     asBoolean(config.dangerouslyBypassSandbox, false),
   );
 
-  const workspaceContext = parseObject(context.swarmifyxWorkspace);
+  const workspaceContext = parseObject(context.papertapeWorkspace);
   const workspaceCwd = asString(workspaceContext.cwd, "");
   const workspaceSource = asString(workspaceContext.source, "");
   const workspaceStrategy = asString(workspaceContext.strategy, "");
@@ -133,22 +133,22 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   const workspaceBranch = asString(workspaceContext.branchName, "");
   const workspaceWorktreePath = asString(workspaceContext.worktreePath, "");
   const agentHome = asString(workspaceContext.agentHome, "");
-  const workspaceHints = Array.isArray(context.swarmifyxWorkspaces)
-    ? context.swarmifyxWorkspaces.filter(
+  const workspaceHints = Array.isArray(context.papertapeWorkspaces)
+    ? context.papertapeWorkspaces.filter(
       (value): value is Record<string, unknown> => typeof value === "object" && value !== null,
     )
     : [];
-  const runtimeServiceIntents = Array.isArray(context.swarmifyxRuntimeServiceIntents)
-    ? context.swarmifyxRuntimeServiceIntents.filter(
+  const runtimeServiceIntents = Array.isArray(context.papertapeRuntimeServiceIntents)
+    ? context.papertapeRuntimeServiceIntents.filter(
       (value): value is Record<string, unknown> => typeof value === "object" && value !== null,
     )
     : [];
-  const runtimeServices = Array.isArray(context.swarmifyxRuntimeServices)
-    ? context.swarmifyxRuntimeServices.filter(
+  const runtimeServices = Array.isArray(context.papertapeRuntimeServices)
+    ? context.papertapeRuntimeServices.filter(
       (value): value is Record<string, unknown> => typeof value === "object" && value !== null,
     )
     : [];
-  const runtimePrimaryUrl = asString(context.swarmifyxRuntimePrimaryUrl, "");
+  const runtimePrimaryUrl = asString(context.papertapeRuntimePrimaryUrl, "");
   const configuredCwd = asString(config.cwd, "");
   const useConfiguredInsteadOfAgentHome = workspaceSource === "agent_home" && configuredCwd.length > 0;
   const effectiveWorkspaceCwd = useConfiguredInsteadOfAgentHome ? "" : workspaceCwd;
@@ -157,9 +157,9 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   await ensureCodexSkillsInjected(onLog);
   const envConfig = parseObject(config.env);
   const hasExplicitApiKey =
-    typeof envConfig.SWARMIFYX_API_KEY === "string" && envConfig.SWARMIFYX_API_KEY.trim().length > 0;
-  const env: Record<string, string> = { ...buildSwarmifyxEnv(agent) };
-  env.SWARMIFYX_RUN_ID = runId;
+    typeof envConfig.PAPERTAPE_API_KEY === "string" && envConfig.PAPERTAPE_API_KEY.trim().length > 0;
+  const env: Record<string, string> = { ...buildPapertapeEnv(agent) };
+  env.PAPERTAPE_RUN_ID = runId;
   const wakeTaskId =
     (typeof context.taskId === "string" && context.taskId.trim().length > 0 && context.taskId.trim()) ||
     (typeof context.issueId === "string" && context.issueId.trim().length > 0 && context.issueId.trim()) ||
@@ -184,67 +184,67 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     ? context.issueIds.filter((value): value is string => typeof value === "string" && value.trim().length > 0)
     : [];
   if (wakeTaskId) {
-    env.SWARMIFYX_TASK_ID = wakeTaskId;
+    env.PAPERTAPE_TASK_ID = wakeTaskId;
   }
   if (wakeReason) {
-    env.SWARMIFYX_WAKE_REASON = wakeReason;
+    env.PAPERTAPE_WAKE_REASON = wakeReason;
   }
   if (wakeCommentId) {
-    env.SWARMIFYX_WAKE_COMMENT_ID = wakeCommentId;
+    env.PAPERTAPE_WAKE_COMMENT_ID = wakeCommentId;
   }
   if (approvalId) {
-    env.SWARMIFYX_APPROVAL_ID = approvalId;
+    env.PAPERTAPE_APPROVAL_ID = approvalId;
   }
   if (approvalStatus) {
-    env.SWARMIFYX_APPROVAL_STATUS = approvalStatus;
+    env.PAPERTAPE_APPROVAL_STATUS = approvalStatus;
   }
   if (linkedIssueIds.length > 0) {
-    env.SWARMIFYX_LINKED_ISSUE_IDS = linkedIssueIds.join(",");
+    env.PAPERTAPE_LINKED_ISSUE_IDS = linkedIssueIds.join(",");
   }
   if (effectiveWorkspaceCwd) {
-    env.SWARMIFYX_WORKSPACE_CWD = effectiveWorkspaceCwd;
+    env.PAPERTAPE_WORKSPACE_CWD = effectiveWorkspaceCwd;
   }
   if (workspaceSource) {
-    env.SWARMIFYX_WORKSPACE_SOURCE = workspaceSource;
+    env.PAPERTAPE_WORKSPACE_SOURCE = workspaceSource;
   }
   if (workspaceStrategy) {
-    env.SWARMIFYX_WORKSPACE_STRATEGY = workspaceStrategy;
+    env.PAPERTAPE_WORKSPACE_STRATEGY = workspaceStrategy;
   }
   if (workspaceId) {
-    env.SWARMIFYX_WORKSPACE_ID = workspaceId;
+    env.PAPERTAPE_WORKSPACE_ID = workspaceId;
   }
   if (workspaceRepoUrl) {
-    env.SWARMIFYX_WORKSPACE_REPO_URL = workspaceRepoUrl;
+    env.PAPERTAPE_WORKSPACE_REPO_URL = workspaceRepoUrl;
   }
   if (workspaceRepoRef) {
-    env.SWARMIFYX_WORKSPACE_REPO_REF = workspaceRepoRef;
+    env.PAPERTAPE_WORKSPACE_REPO_REF = workspaceRepoRef;
   }
   if (workspaceBranch) {
-    env.SWARMIFYX_WORKSPACE_BRANCH = workspaceBranch;
+    env.PAPERTAPE_WORKSPACE_BRANCH = workspaceBranch;
   }
   if (workspaceWorktreePath) {
-    env.SWARMIFYX_WORKSPACE_WORKTREE_PATH = workspaceWorktreePath;
+    env.PAPERTAPE_WORKSPACE_WORKTREE_PATH = workspaceWorktreePath;
   }
   if (agentHome) {
     env.AGENT_HOME = agentHome;
   }
   if (workspaceHints.length > 0) {
-    env.SWARMIFYX_WORKSPACES_JSON = JSON.stringify(workspaceHints);
+    env.PAPERTAPE_WORKSPACES_JSON = JSON.stringify(workspaceHints);
   }
   if (runtimeServiceIntents.length > 0) {
-    env.SWARMIFYX_RUNTIME_SERVICE_INTENTS_JSON = JSON.stringify(runtimeServiceIntents);
+    env.PAPERTAPE_RUNTIME_SERVICE_INTENTS_JSON = JSON.stringify(runtimeServiceIntents);
   }
   if (runtimeServices.length > 0) {
-    env.SWARMIFYX_RUNTIME_SERVICES_JSON = JSON.stringify(runtimeServices);
+    env.PAPERTAPE_RUNTIME_SERVICES_JSON = JSON.stringify(runtimeServices);
   }
   if (runtimePrimaryUrl) {
-    env.SWARMIFYX_RUNTIME_PRIMARY_URL = runtimePrimaryUrl;
+    env.PAPERTAPE_RUNTIME_PRIMARY_URL = runtimePrimaryUrl;
   }
   for (const [k, v] of Object.entries(envConfig)) {
     if (typeof v === "string") env[k] = v;
   }
   if (!hasExplicitApiKey && authToken) {
-    env.SWARMIFYX_API_KEY = authToken;
+    env.PAPERTAPE_API_KEY = authToken;
   }
   const billingType = resolveCodexBillingType(env);
   const runtimeEnv = ensurePathInEnv({ ...process.env, ...env });
@@ -268,7 +268,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   if (runtimeSessionId && !canResumeSession) {
     await onLog(
       "stderr",
-      `[swarmifyx] Codex session "${runtimeSessionId}" was saved for cwd "${runtimeSessionCwd}" and will not be resumed in "${cwd}".\n`,
+      `[papertape] Codex session "${runtimeSessionId}" was saved for cwd "${runtimeSessionCwd}" and will not be resumed in "${cwd}".\n`,
     );
   }
   const instructionsFilePath = asString(config.instructionsFilePath, "").trim();
@@ -283,13 +283,13 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
         `Resolve any relative file references from ${instructionsDir}.\n\n`;
       await onLog(
         "stderr",
-        `[swarmifyx] Loaded agent instructions file: ${instructionsFilePath}\n`,
+        `[papertape] Loaded agent instructions file: ${instructionsFilePath}\n`,
       );
     } catch (err) {
       const reason = err instanceof Error ? err.message : String(err);
       await onLog(
         "stderr",
-        `[swarmifyx] Warning: could not read agent instructions file "${instructionsFilePath}": ${reason}\n`,
+        `[papertape] Warning: could not read agent instructions file "${instructionsFilePath}": ${reason}\n`,
       );
     }
   }
@@ -438,7 +438,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   ) {
     await onLog(
       "stderr",
-      `[swarmifyx] Codex resume session "${sessionId}" is unavailable; retrying with a fresh session.\n`,
+      `[papertape] Codex resume session "${sessionId}" is unavailable; retrying with a fresh session.\n`,
     );
     const retry = await runAttempt(null);
     return toResult(retry, true);

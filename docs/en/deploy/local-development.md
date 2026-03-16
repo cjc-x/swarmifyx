@@ -1,9 +1,9 @@
 ---
 title: Local Development
-summary: Set up Swarmifyx for local development
+summary: Set up Papertape for local development
 ---
 
-Run Swarmifyx locally with zero external dependencies.
+Run Papertape locally with zero external dependencies.
 
 ## Prerequisites
 
@@ -22,20 +22,20 @@ This starts:
 - **API server** at `http://localhost:3100`
 - **UI** served by the API server in dev middleware mode (same origin)
 
-No Docker or external database required. Swarmifyx uses embedded PostgreSQL automatically.
+No Docker or external database required. Papertape uses embedded PostgreSQL automatically.
 
 ## One-Command Bootstrap
 
 For a first-time install:
 
 ```sh
-pnpm swarmifyx run
+pnpm papertape run
 ```
 
 This does:
 
 1. Auto-onboards if config is missing
-2. Runs `swarmifyx doctor` with repair enabled
+2. Runs `papertape doctor` with repair enabled
 3. Starts the server when checks pass
 
 ## Tailscale/Private Auth Dev Mode
@@ -57,7 +57,7 @@ pnpm dev --authenticated-private
 Allow additional private hostnames:
 
 ```sh
-pnpm swarmifyx allowed-hostname dotta-macbook-pro
+pnpm papertape allowed-hostname dotta-macbook-pro
 ```
 
 For full setup and troubleshooting, see [Tailscale Private Access](/en/deploy/tailscale-private-access).
@@ -77,7 +77,7 @@ curl http://localhost:3100/api/companies
 To wipe local data and start fresh:
 
 ```sh
-rm -rf ~/.swarmifyx/instances/default/db
+rm -rf ~/.papertape/instances/default/db
 pnpm dev
 ```
 
@@ -85,16 +85,16 @@ pnpm dev
 
 | Data | Path |
 |------|------|
-| Config | `~/.swarmifyx/instances/default/config.json` |
-| Database | `~/.swarmifyx/instances/default/db` |
-| Storage | `~/.swarmifyx/instances/default/data/storage` |
-| Secrets key | `~/.swarmifyx/instances/default/secrets/master.key` |
-| Logs | `~/.swarmifyx/instances/default/logs` |
+| Config | `~/.papertape/instances/default/config.json` |
+| Database | `~/.papertape/instances/default/db` |
+| Storage | `~/.papertape/instances/default/data/storage` |
+| Secrets key | `~/.papertape/instances/default/secrets/master.key` |
+| Logs | `~/.papertape/instances/default/logs` |
 
 Override with environment variables:
 
 ```sh
-SWARMIFYX_HOME=/custom/path SWARMIFYX_INSTANCE_ID=dev pnpm swarmifyx run
+PAPERTAPE_HOME=/custom/path PAPERTAPE_INSTANCE_ID=dev pnpm papertape run
 ```
 
-Compatibility note: `~/.swarmifyx` is now the only default local home. Legacy `~/.swarmifyx` homes are no longer auto-detected; move the directory to `~/.swarmifyx` or set `SWARMIFYX_HOME` explicitly during migration.
+Compatibility note: `~/.papertape` is now the only default local home. Legacy `~/.papertape` homes are no longer auto-detected; move the directory to `~/.papertape` or set `PAPERTAPE_HOME` explicitly during migration.

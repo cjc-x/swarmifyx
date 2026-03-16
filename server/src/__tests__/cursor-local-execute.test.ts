@@ -2,18 +2,18 @@ import { describe, expect, it } from "vitest";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { execute } from "@swarmifyx/adapter-cursor-local/server";
+import { execute } from "@papertape/adapter-cursor-local/server";
 
 async function writeFakeCursorCommand(commandPath: string): Promise<void> {
   const script = `#!/usr/bin/env node
 const fs = require("node:fs");
 
-const capturePath = process.env.SWARMIFYX_TEST_CAPTURE_PATH;
+const capturePath = process.env.PAPERTAPE_TEST_CAPTURE_PATH;
 const payload = {
   argv: process.argv.slice(2),
   prompt: fs.readFileSync(0, "utf8"),
-  swarmifyxEnvKeys: Object.keys(process.env)
-    .filter((key) => key.startsWith("SWARMIFYX_"))
+  papertapeEnvKeys: Object.keys(process.env)
+    .filter((key) => key.startsWith("PAPERTAPE_"))
     .sort(),
 };
 if (capturePath) {
@@ -43,12 +43,12 @@ console.log(JSON.stringify({
 type CapturePayload = {
   argv: string[];
   prompt: string;
-  swarmifyxEnvKeys: string[];
+  papertapeEnvKeys: string[];
 };
 
 describe("cursor execute", () => {
-  it("injects swarmifyx env vars and prompt note by default", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "swarmifyx-cursor-execute-"));
+  it("injects papertape env vars and prompt note by default", async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "papertape-cursor-execute-"));
     const workspace = path.join(root, "workspace");
     const commandPath = path.join(root, "agent");
     const capturePath = path.join(root, "capture.json");
@@ -80,9 +80,9 @@ describe("cursor execute", () => {
           cwd: workspace,
           model: "auto",
           env: {
-            SWARMIFYX_TEST_CAPTURE_PATH: capturePath,
+            PAPERTAPE_TEST_CAPTURE_PATH: capturePath,
           },
-          promptTemplate: "Follow the swarmifyx heartbeat.",
+          promptTemplate: "Follow the papertape heartbeat.",
         },
         context: {},
         authToken: "run-jwt-token",
@@ -96,22 +96,22 @@ describe("cursor execute", () => {
       expect(result.errorMessage).toBeNull();
 
       const capture = JSON.parse(await fs.readFile(capturePath, "utf8")) as CapturePayload;
-      expect(capture.argv).not.toContain("Follow the swarmifyx heartbeat.");
+      expect(capture.argv).not.toContain("Follow the papertape heartbeat.");
       expect(capture.argv).not.toContain("--mode");
       expect(capture.argv).not.toContain("ask");
-      expect(capture.swarmifyxEnvKeys).toEqual(
+      expect(capture.papertapeEnvKeys).toEqual(
         expect.arrayContaining([
-          "SWARMIFYX_AGENT_ID",
-          "SWARMIFYX_API_KEY",
-          "SWARMIFYX_API_URL",
-          "SWARMIFYX_COMPANY_ID",
-          "SWARMIFYX_RUN_ID",
+          "PAPERTAPE_AGENT_ID",
+          "PAPERTAPE_API_KEY",
+          "PAPERTAPE_API_URL",
+          "PAPERTAPE_COMPANY_ID",
+          "PAPERTAPE_RUN_ID",
         ]),
       );
-      expect(capture.prompt).toContain("Swarmifyx runtime note:");
-      expect(capture.prompt).toContain("SWARMIFYX_API_KEY");
-      expect(invocationPrompt).toContain("Swarmifyx runtime note:");
-      expect(invocationPrompt).toContain("SWARMIFYX_API_URL");
+      expect(capture.prompt).toContain("Papertape runtime note:");
+      expect(capture.prompt).toContain("PAPERTAPE_API_KEY");
+      expect(invocationPrompt).toContain("Papertape runtime note:");
+      expect(invocationPrompt).toContain("PAPERTAPE_API_URL");
     } finally {
       if (previousHome === undefined) {
         delete process.env.HOME;
@@ -123,7 +123,7 @@ describe("cursor execute", () => {
   });
 
   it("passes --mode when explicitly configured", async () => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), "swarmifyx-cursor-execute-mode-"));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "papertape-cursor-execute-mode-"));
     const workspace = path.join(root, "workspace");
     const commandPath = path.join(root, "agent");
     const capturePath = path.join(root, "capture.json");
@@ -155,9 +155,9 @@ describe("cursor execute", () => {
           model: "auto",
           mode: "ask",
           env: {
-            SWARMIFYX_TEST_CAPTURE_PATH: capturePath,
+            PAPERTAPE_TEST_CAPTURE_PATH: capturePath,
           },
-          promptTemplate: "Follow the swarmifyx heartbeat.",
+          promptTemplate: "Follow the papertape heartbeat.",
         },
         context: {},
         authToken: "run-jwt-token",

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# release.sh — Prepare and publish a Swarmifyx release.
+# release.sh — Prepare and publish a Papertape release.
 #
 # Stable release:
 #   ./scripts/release.sh patch
@@ -464,7 +464,7 @@ if [ "$dry_run" = true ]; then
   fi
 elif [ "$canary" = true ]; then
   release_info "Published canary ${TARGET_PUBLISH_VERSION}."
-  release_info "Install with: npx swarmifyx@canary onboard"
+  release_info "Install with: npx papertape@canary onboard"
   release_info "Stable version remains: $CURRENT_STABLE_VERSION"
 else
   release_info "Published stable v${TARGET_STABLE_VERSION}."

@@ -18,7 +18,7 @@ Usage:
 Examples:
   ./scripts/release-start.sh patch
   ./scripts/release-start.sh minor --dry-run
-  ./scripts/release-start.sh major --worktree-dir ../swarmifyx-release-1.0.0
+  ./scripts/release-start.sh major --worktree-dir ../papertape-release-1.0.0
 
 What it does:
   - fetches the release remote and tags

@@ -1,12 +1,12 @@
 ---
-name: swarmifyx-create-agent
+name: papertape-create-agent
 description: >
-  Create new agents in Swarmifyx with governance-aware hiring. Use when you need
+  Create new agents in Papertape with governance-aware hiring. Use when you need
   to inspect adapter configuration options, compare existing agent configs,
   draft a new agent prompt/config, and submit a hire request.
 ---
 
-# Swarmifyx Create Agent Skill
+# Papertape Create Agent Skill
 
 Use this skill when you are asked to hire/create an agent.
 
@@ -24,36 +24,36 @@ If you do not have this permission, escalate to your CEO or board.
 1. Confirm identity and company context.
 
 ```sh
-curl -sS "$SWARMIFYX_API_URL/api/agents/me" \
-  -H "Authorization: Bearer $SWARMIFYX_API_KEY"
+curl -sS "$PAPERTAPE_API_URL/api/agents/me" \
+  -H "Authorization: Bearer $PAPERTAPE_API_KEY"
 ```
 
-2. Discover available adapter configuration docs for this Swarmifyx instance.
+2. Discover available adapter configuration docs for this Papertape instance.
 
 ```sh
-curl -sS "$SWARMIFYX_API_URL/llms/agent-configuration.txt" \
-  -H "Authorization: Bearer $SWARMIFYX_API_KEY"
+curl -sS "$PAPERTAPE_API_URL/llms/agent-configuration.txt" \
+  -H "Authorization: Bearer $PAPERTAPE_API_KEY"
 ```
 
 3. Read adapter-specific docs (example: `claude_local`).
 
 ```sh
-curl -sS "$SWARMIFYX_API_URL/llms/agent-configuration/claude_local.txt" \
-  -H "Authorization: Bearer $SWARMIFYX_API_KEY"
+curl -sS "$PAPERTAPE_API_URL/llms/agent-configuration/claude_local.txt" \
+  -H "Authorization: Bearer $PAPERTAPE_API_KEY"
 ```
 
 4. Compare existing agent configurations in your company.
 
 ```sh
-curl -sS "$SWARMIFYX_API_URL/api/companies/$SWARMIFYX_COMPANY_ID/agent-configurations" \
-  -H "Authorization: Bearer $SWARMIFYX_API_KEY"
+curl -sS "$PAPERTAPE_API_URL/api/companies/$PAPERTAPE_COMPANY_ID/agent-configurations" \
+  -H "Authorization: Bearer $PAPERTAPE_API_KEY"
 ```
 
 5. Discover allowed agent icons and pick one that matches the role.
 
 ```sh
-curl -sS "$SWARMIFYX_API_URL/llms/agent-icons.txt" \
-  -H "Authorization: Bearer $SWARMIFYX_API_KEY"
+curl -sS "$PAPERTAPE_API_URL/llms/agent-icons.txt" \
+  -H "Authorization: Bearer $PAPERTAPE_API_KEY"
 ```
 
 6. Draft the new hire config:
@@ -69,8 +69,8 @@ curl -sS "$SWARMIFYX_API_URL/llms/agent-icons.txt" \
 7. Submit hire request.
 
 ```sh
-curl -sS -X POST "$SWARMIFYX_API_URL/api/companies/$SWARMIFYX_COMPANY_ID/agent-hires" \
-  -H "Authorization: Bearer $SWARMIFYX_API_KEY" \
+curl -sS -X POST "$PAPERTAPE_API_URL/api/companies/$PAPERTAPE_COMPANY_ID/agent-hires" \
+  -H "Authorization: Bearer $PAPERTAPE_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "name": "CTO",
@@ -89,14 +89,14 @@ curl -sS -X POST "$SWARMIFYX_API_URL/api/companies/$SWARMIFYX_COMPANY_ID/agent-h
 8. Handle governance state:
 - if response has `approval`, hire is `pending_approval`
 - monitor and discuss on approval thread
-- when the board approves, you will be woken with `SWARMIFYX_APPROVAL_ID`; read linked issues and close/comment follow-up
+- when the board approves, you will be woken with `PAPERTAPE_APPROVAL_ID`; read linked issues and close/comment follow-up
 
 ```sh
-curl -sS "$SWARMIFYX_API_URL/api/approvals/<approval-id>" \
-  -H "Authorization: Bearer $SWARMIFYX_API_KEY"
+curl -sS "$PAPERTAPE_API_URL/api/approvals/<approval-id>" \
+  -H "Authorization: Bearer $PAPERTAPE_API_KEY"
 
-curl -sS -X POST "$SWARMIFYX_API_URL/api/approvals/<approval-id>/comments" \
-  -H "Authorization: Bearer $SWARMIFYX_API_KEY" \
+curl -sS -X POST "$PAPERTAPE_API_URL/api/approvals/<approval-id>/comments" \
+  -H "Authorization: Bearer $PAPERTAPE_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"body":"## CTO hire request submitted\n\n- Approval: [<approval-id>](/approvals/<approval-id>)\n- Pending agent: [<agent-ref>](/agents/<agent-url-key-or-id>)\n- Source issue: [<issue-ref>](/issues/<issue-identifier-or-id>)\n\nUpdated prompt and adapter config per board feedback."}'
 ```
@@ -104,8 +104,8 @@ curl -sS -X POST "$SWARMIFYX_API_URL/api/approvals/<approval-id>/comments" \
 If the approval already exists and needs manual linking to the issue:
 
 ```sh
-curl -sS -X POST "$SWARMIFYX_API_URL/api/issues/<issue-id>/approvals" \
-  -H "Authorization: Bearer $SWARMIFYX_API_KEY" \
+curl -sS -X POST "$PAPERTAPE_API_URL/api/issues/<issue-id>/approvals" \
+  -H "Authorization: Bearer $PAPERTAPE_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"approvalId":"<approval-id>"}'
 ```
@@ -113,11 +113,11 @@ curl -sS -X POST "$SWARMIFYX_API_URL/api/issues/<issue-id>/approvals" \
 After approval is granted, run this follow-up loop:
 
 ```sh
-curl -sS "$SWARMIFYX_API_URL/api/approvals/$SWARMIFYX_APPROVAL_ID" \
-  -H "Authorization: Bearer $SWARMIFYX_API_KEY"
+curl -sS "$PAPERTAPE_API_URL/api/approvals/$PAPERTAPE_APPROVAL_ID" \
+  -H "Authorization: Bearer $PAPERTAPE_API_KEY"
 
-curl -sS "$SWARMIFYX_API_URL/api/approvals/$SWARMIFYX_APPROVAL_ID/issues" \
-  -H "Authorization: Bearer $SWARMIFYX_API_KEY"
+curl -sS "$PAPERTAPE_API_URL/api/approvals/$PAPERTAPE_APPROVAL_ID/issues" \
+  -H "Authorization: Bearer $PAPERTAPE_API_KEY"
 ```
 
 For each linked issue, either:
@@ -136,4 +136,4 @@ Before sending a hire request:
 - If board requests revision, update payload and resubmit through approval flow.
 
 For endpoint payload shapes and full examples, read:
-`skills/swarmifyx-create-agent/references/api-reference.md`
+`skills/papertape-create-agent/references/api-reference.md`

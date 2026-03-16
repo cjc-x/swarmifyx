@@ -21,22 +21,22 @@ function expandHomePrefix(value: string): string {
   return value;
 }
 
-function resolveSwarmifyxHomeDir(): string {
-  const envHome = process.env.SWARMIFYX_HOME?.trim();
+function resolvePapertapeHomeDir(): string {
+  const envHome = process.env.PAPERTAPE_HOME?.trim();
   if (envHome) return path.resolve(expandHomePrefix(envHome));
-  return path.resolve(os.homedir(), ".swarmifyx");
+  return path.resolve(os.homedir(), ".papertape");
 }
 
-function resolveSwarmifyxInstanceId(): string {
-  const raw = process.env.SWARMIFYX_INSTANCE_ID?.trim() || "default";
+function resolvePapertapeInstanceId(): string {
+  const raw = process.env.PAPERTAPE_INSTANCE_ID?.trim() || "default";
   if (!/^[a-zA-Z0-9_-]+$/.test(raw)) {
-    throw new Error(`Invalid SWARMIFYX_INSTANCE_ID '${raw}'.`);
+    throw new Error(`Invalid PAPERTAPE_INSTANCE_ID '${raw}'.`);
   }
   return raw;
 }
 
 function resolveDefaultConfigPath(): string {
-  return path.resolve(resolveSwarmifyxHomeDir(), "instances", resolveSwarmifyxInstanceId(), "config.json");
+  return path.resolve(resolvePapertapeHomeDir(), "instances", resolvePapertapeInstanceId(), "config.json");
 }
 
 function readConfig(configPath: string): PartialConfig | null {
@@ -111,11 +111,11 @@ function resolveConnectionString(config: PartialConfig | null): string {
   }
 
   const port = resolveEmbeddedPort(config);
-  return `postgres://swarmifyx:swarmifyx@127.0.0.1:${port}/swarmifyx`;
+  return `postgres://papertape:papertape@127.0.0.1:${port}/papertape`;
 }
 
 function resolveDefaultBackupDir(): string {
-  return path.resolve(resolveSwarmifyxHomeDir(), "instances", resolveSwarmifyxInstanceId(), "data", "backups");
+  return path.resolve(resolvePapertapeHomeDir(), "instances", resolvePapertapeInstanceId(), "data", "backups");
 }
 
 function resolveBackupDir(config: PartialConfig | null): string {
@@ -146,7 +146,7 @@ async function main() {
       connectionString,
       backupDir,
       retentionDays,
-      filenamePrefix: "swarmifyx",
+      filenamePrefix: "papertape",
     });
 
     console.log(`Backup saved: ${formatDatabaseBackupResult(result)}`);

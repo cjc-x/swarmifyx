@@ -13,7 +13,7 @@ import {
 const ORIGINAL_CWD = process.cwd();
 
 function createTempContextPath(): string {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "swarmifyx-cli-context-"));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "papertape-cli-context-"));
   return path.join(dir, "context.json");
 }
 
@@ -36,7 +36,7 @@ describe("client context store", () => {
       {
         apiBase: "http://localhost:3100",
         companyId: "company-123",
-        apiKeyEnvVarName: "SWARMIFYX_AGENT_TOKEN",
+        apiKeyEnvVarName: "PAPERTAPE_AGENT_TOKEN",
       },
       contextPath,
     );
@@ -48,7 +48,7 @@ describe("client context store", () => {
     expect(context.profiles.work).toEqual({
       apiBase: "http://localhost:3100",
       companyId: "company-123",
-      apiKeyEnvVarName: "SWARMIFYX_AGENT_TOKEN",
+      apiKeyEnvVarName: "PAPERTAPE_AGENT_TOKEN",
     });
   });
 

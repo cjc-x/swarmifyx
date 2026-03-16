@@ -1,7 +1,7 @@
 export { execute, ensureCodeBuddySkillsInjected } from "./execute.js";
 export { testEnvironment } from "./test.js";
 export { parseCodeBuddyJsonl, isCodeBuddyUnknownSessionError } from "./parse.js";
-import type { AdapterSessionCodec } from "@swarmifyx/adapter-utils";
+import type { AdapterSessionCodec } from "@papertape/adapter-utils";
 
 function readNonEmptyString(value: unknown): string | null {
   return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;

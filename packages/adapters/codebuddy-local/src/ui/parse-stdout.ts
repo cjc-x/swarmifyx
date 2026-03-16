@@ -1,4 +1,4 @@
-import type { TranscriptEntry } from "@swarmifyx/adapter-utils";
+import type { TranscriptEntry } from "@papertape/adapter-utils";
 import { normalizeCodeBuddyStreamLine } from "../shared/stream.js";
 
 function safeJsonParse(text: string): unknown {

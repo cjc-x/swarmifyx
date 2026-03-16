@@ -22,7 +22,7 @@ export function useDismissedInboxItems() {
 
   useEffect(() => {
     const handleStorage = (event: StorageEvent) => {
-      if (event.key !== "swarmifyx:inbox:dismissed") return;
+      if (event.key !== "papertape:inbox:dismissed") return;
       setDismissed(loadDismissedInboxItems());
     };
     window.addEventListener("storage", handleStorage);

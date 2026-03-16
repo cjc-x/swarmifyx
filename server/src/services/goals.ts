@@ -1,6 +1,6 @@
 import { and, asc, eq, isNull } from "drizzle-orm";
-import type { Db } from "@swarmifyx/db";
-import { goals } from "@swarmifyx/db";
+import type { Db } from "@papertape/db";
+import { goals } from "@papertape/db";
 
 type GoalReader = Pick<Db, "select">;
 

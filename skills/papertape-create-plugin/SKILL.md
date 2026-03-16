@@ -1,15 +1,15 @@
 ---
-name: swarmifyx-create-plugin
+name: papertape-create-plugin
 description: >
-  Create new Swarmifyx plugins with the current alpha SDK/runtime. Use when
+  Create new Papertape plugins with the current alpha SDK/runtime. Use when
   scaffolding a plugin package, adding a new example plugin, or updating plugin
   authoring docs. Covers the supported worker/UI surface, route conventions,
   scaffold flow, and verification steps.
 ---
 
-# Create a Swarmifyx Plugin
+# Create a Papertape Plugin
 
-Use this skill when the task is to create, scaffold, or document a Swarmifyx plugin.
+Use this skill when the task is to create, scaffold, or document a Papertape plugin.
 
 ## 1. Ground rules
 
@@ -33,17 +33,17 @@ Current runtime assumptions:
 Use the scaffold package instead of hand-writing the boilerplate:
 
 ```bash
-pnpm --filter @swarmifyx/create-swarmifyx-plugin build
-node packages/plugins/create-paperclip-plugin/dist/index.js <npm-package-name> --output <target-dir>
+pnpm --filter @papertape/create-papertape-plugin build
+node packages/plugins/create-papertape-plugin/dist/index.js <npm-package-name> --output <target-dir>
 ```
 
-For a plugin that lives outside the Swarmifyx repo, pass `--sdk-path` and let the scaffold snapshot the local SDK/shared packages into `.swarmifyx-sdk/`:
+For a plugin that lives outside the Papertape repo, pass `--sdk-path` and let the scaffold snapshot the local SDK/shared packages into `.papertape-sdk/`:
 
 ```bash
-pnpm --filter @swarmifyx/create-swarmifyx-plugin build
-node packages/plugins/create-paperclip-plugin/dist/index.js @acme/plugin-name \
+pnpm --filter @papertape/create-papertape-plugin build
+node packages/plugins/create-papertape-plugin/dist/index.js @acme/plugin-name \
   --output /absolute/path/to/plugin-repos \
-  --sdk-path /absolute/path/to/swarmifyx/packages/plugins/sdk
+  --sdk-path /absolute/path/to/papertape/packages/plugins/sdk
 ```
 
 Recommended target inside this repo:
@@ -68,7 +68,7 @@ Make sure the plugin:
 - does not import host UI component stubs
 - keeps UI self-contained
 - uses `routePath` only on `page` slots
-- is installed into Swarmifyx from an absolute local path during development
+- is installed into Papertape from an absolute local path during development
 
 ## 4. If the plugin should appear in the app
 

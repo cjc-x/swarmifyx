@@ -1,4 +1,4 @@
-import type { Goal } from "@swarmifyx/shared";
+import type { Goal } from "@papertape/shared";
 import { Link } from "@/lib/router";
 import { StatusBadge } from "./StatusBadge";
 import { ChevronRight } from "lucide-react";

@@ -2,10 +2,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createLocalAgentJwt, verifyLocalAgentJwt } from "../agent-auth-jwt.js";
 
 describe("agent local JWT", () => {
-  const secretEnv = "SWARMIFYX_AGENT_JWT_SECRET";
-  const ttlEnv = "SWARMIFYX_AGENT_JWT_TTL_SECONDS";
-  const issuerEnv = "SWARMIFYX_AGENT_JWT_ISSUER";
-  const audienceEnv = "SWARMIFYX_AGENT_JWT_AUDIENCE";
+  const secretEnv = "PAPERTAPE_AGENT_JWT_SECRET";
+  const ttlEnv = "PAPERTAPE_AGENT_JWT_TTL_SECONDS";
+  const issuerEnv = "PAPERTAPE_AGENT_JWT_ISSUER";
+  const audienceEnv = "PAPERTAPE_AGENT_JWT_AUDIENCE";
 
   const originalEnv = {
     secret: process.env[secretEnv],
@@ -45,8 +45,8 @@ describe("agent local JWT", () => {
       company_id: "company-1",
       adapter_type: "claude_local",
       run_id: "run-1",
-      iss: "swarmifyx",
-      aud: "swarmifyx-api",
+      iss: "papertape",
+      aud: "papertape-api",
     });
   });
 
@@ -72,8 +72,8 @@ describe("agent local JWT", () => {
     vi.setSystemTime(new Date("2026-01-01T00:00:00.000Z"));
     const token = createLocalAgentJwt("agent-1", "company-1", "codex_local", "run-1");
 
-    process.env[issuerEnv] = "swarmifyx";
-    process.env[audienceEnv] = "swarmifyx-api";
+    process.env[issuerEnv] = "papertape";
+    process.env[audienceEnv] = "papertape-api";
     expect(verifyLocalAgentJwt(token!)).toBeNull();
   });
 });

@@ -2,8 +2,8 @@ import type {
   AdapterExecutionContext,
   AdapterExecutionResult,
   AdapterRuntimeServiceReport,
-} from "@swarmifyx/adapter-utils";
-import { asNumber, asString, buildSwarmifyxEnv, parseObject } from "@swarmifyx/adapter-utils/server-utils";
+} from "@papertape/adapter-utils";
+import { asNumber, asString, buildPapertapeEnv, parseObject } from "@papertape/adapter-utils/server-utils";
 import crypto, { randomUUID } from "node:crypto";
 import { WebSocket } from "ws";
 
@@ -82,7 +82,7 @@ const PROTOCOL_VERSION = 3;
 const DEFAULT_SCOPES = ["operator.admin"];
 const DEFAULT_CLIENT_ID = "gateway-client";
 const DEFAULT_CLIENT_MODE = "backend";
-const DEFAULT_CLIENT_VERSION = "swarmifyx";
+const DEFAULT_CLIENT_VERSION = "papertape";
 const DEFAULT_ROLE = "operator";
 
 const SENSITIVE_LOG_KEY_PATTERN =
@@ -132,9 +132,9 @@ function resolveSessionKey(input: {
   runId: string;
   issueId: string | null;
 }): string {
-  const fallback = input.configuredSessionKey ?? "swarmifyx";
-  if (input.strategy === "run") return `swarmifyx:run:${input.runId}`;
-  if (input.strategy === "issue" && input.issueId) return `swarmifyx:issue:${input.issueId}`;
+  const fallback = input.configuredSessionKey ?? "papertape";
+  if (input.strategy === "run") return `papertape:run:${input.runId}`;
+  if (input.strategy === "issue" && input.issueId) return `papertape:issue:${input.issueId}`;
   return fallback;
 }
 
@@ -301,7 +301,7 @@ function buildWakePayload(ctx: AdapterExecutionContext): WakePayload {
   };
 }
 
-function resolveSwarmifyxApiUrlOverride(value: unknown): string | null {
+function resolvePapertapeApiUrlOverride(value: unknown): string | null {
   const raw = nonEmpty(value);
   if (!raw) return null;
   try {
@@ -313,63 +313,63 @@ function resolveSwarmifyxApiUrlOverride(value: unknown): string | null {
   }
 }
 
-function buildSwarmifyxEnvForWake(ctx: AdapterExecutionContext, wakePayload: WakePayload): Record<string, string> {
-  const swarmifyxApiUrlOverride = resolveSwarmifyxApiUrlOverride(ctx.config.swarmifyxApiUrl);
-  const swarmifyxEnv: Record<string, string> = {
-    ...buildSwarmifyxEnv(ctx.agent),
-    SWARMIFYX_RUN_ID: ctx.runId,
+function buildPapertapeEnvForWake(ctx: AdapterExecutionContext, wakePayload: WakePayload): Record<string, string> {
+  const papertapeApiUrlOverride = resolvePapertapeApiUrlOverride(ctx.config.papertapeApiUrl);
+  const papertapeEnv: Record<string, string> = {
+    ...buildPapertapeEnv(ctx.agent),
+    PAPERTAPE_RUN_ID: ctx.runId,
   };
 
-  if (swarmifyxApiUrlOverride) {
-    swarmifyxEnv.SWARMIFYX_API_URL = swarmifyxApiUrlOverride;
+  if (papertapeApiUrlOverride) {
+    papertapeEnv.PAPERTAPE_API_URL = papertapeApiUrlOverride;
   }
-  if (wakePayload.taskId) swarmifyxEnv.SWARMIFYX_TASK_ID = wakePayload.taskId;
-  if (wakePayload.wakeReason) swarmifyxEnv.SWARMIFYX_WAKE_REASON = wakePayload.wakeReason;
-  if (wakePayload.wakeCommentId) swarmifyxEnv.SWARMIFYX_WAKE_COMMENT_ID = wakePayload.wakeCommentId;
-  if (wakePayload.approvalId) swarmifyxEnv.SWARMIFYX_APPROVAL_ID = wakePayload.approvalId;
-  if (wakePayload.approvalStatus) swarmifyxEnv.SWARMIFYX_APPROVAL_STATUS = wakePayload.approvalStatus;
+  if (wakePayload.taskId) papertapeEnv.PAPERTAPE_TASK_ID = wakePayload.taskId;
+  if (wakePayload.wakeReason) papertapeEnv.PAPERTAPE_WAKE_REASON = wakePayload.wakeReason;
+  if (wakePayload.wakeCommentId) papertapeEnv.PAPERTAPE_WAKE_COMMENT_ID = wakePayload.wakeCommentId;
+  if (wakePayload.approvalId) papertapeEnv.PAPERTAPE_APPROVAL_ID = wakePayload.approvalId;
+  if (wakePayload.approvalStatus) papertapeEnv.PAPERTAPE_APPROVAL_STATUS = wakePayload.approvalStatus;
   if (wakePayload.issueIds.length > 0) {
-    swarmifyxEnv.SWARMIFYX_LINKED_ISSUE_IDS = wakePayload.issueIds.join(",");
+    papertapeEnv.PAPERTAPE_LINKED_ISSUE_IDS = wakePayload.issueIds.join(",");
   }
 
-  return swarmifyxEnv;
+  return papertapeEnv;
 }
 
-function buildWakeText(payload: WakePayload, swarmifyxEnv: Record<string, string>): string {
-  const claimedApiKeyPath = "~/.openclaw/workspace/swarmifyx-claimed-api-key.json";
+function buildWakeText(payload: WakePayload, papertapeEnv: Record<string, string>): string {
+  const claimedApiKeyPath = "~/.openclaw/workspace/papertape-claimed-api-key.json";
   const orderedKeys = [
-    "SWARMIFYX_RUN_ID",
-    "SWARMIFYX_AGENT_ID",
-    "SWARMIFYX_COMPANY_ID",
-    "SWARMIFYX_API_URL",
-    "SWARMIFYX_TASK_ID",
-    "SWARMIFYX_WAKE_REASON",
-    "SWARMIFYX_WAKE_COMMENT_ID",
-    "SWARMIFYX_APPROVAL_ID",
-    "SWARMIFYX_APPROVAL_STATUS",
-    "SWARMIFYX_LINKED_ISSUE_IDS",
+    "PAPERTAPE_RUN_ID",
+    "PAPERTAPE_AGENT_ID",
+    "PAPERTAPE_COMPANY_ID",
+    "PAPERTAPE_API_URL",
+    "PAPERTAPE_TASK_ID",
+    "PAPERTAPE_WAKE_REASON",
+    "PAPERTAPE_WAKE_COMMENT_ID",
+    "PAPERTAPE_APPROVAL_ID",
+    "PAPERTAPE_APPROVAL_STATUS",
+    "PAPERTAPE_LINKED_ISSUE_IDS",
   ];
 
   const envLines: string[] = [];
   for (const key of orderedKeys) {
-    const value = swarmifyxEnv[key];
+    const value = papertapeEnv[key];
     if (!value) continue;
     envLines.push(`${key}=${value}`);
   }
 
   const issueIdHint = payload.taskId ?? payload.issueId ?? "";
-  const apiBaseHint = swarmifyxEnv.SWARMIFYX_API_URL ?? "<set SWARMIFYX_API_URL>";
+  const apiBaseHint = papertapeEnv.PAPERTAPE_API_URL ?? "<set PAPERTAPE_API_URL>";
 
   const lines = [
-    "Swarmifyx wake event for a cloud adapter.",
+    "Papertape wake event for a cloud adapter.",
     "",
     "Run this procedure now. Do not guess undocumented endpoints and do not ask for additional heartbeat docs.",
     "",
     "Set these values in your run context:",
     ...envLines,
-    `SWARMIFYX_API_KEY=<token from ${claimedApiKeyPath}>`,
+    `PAPERTAPE_API_KEY=<token from ${claimedApiKeyPath}>`,
     "",
-    `Load SWARMIFYX_API_KEY from ${claimedApiKeyPath} (the token you saved after claim-api-key).`,
+    `Load PAPERTAPE_API_KEY from ${claimedApiKeyPath} (the token you saved after claim-api-key).`,
     "",
     `api_base=${apiBaseHint}`,
     `task_id=${payload.taskId ?? ""}`,
@@ -381,23 +381,23 @@ function buildWakeText(payload: WakePayload, swarmifyxEnv: Record<string, string
     `linked_issue_ids=${payload.issueIds.join(",")}`,
     "",
     "HTTP rules:",
-    "- Use Authorization: Bearer $SWARMIFYX_API_KEY on every API call.",
-    "- Use X-Swarmifyx-Run-Id: $SWARMIFYX_RUN_ID on every mutating API call.",
+    "- Use Authorization: Bearer $PAPERTAPE_API_KEY on every API call.",
+    "- Use X-Papertape-Run-Id: $PAPERTAPE_RUN_ID on every mutating API call.",
     "- Use only /api endpoints listed below.",
     "- Do NOT call guessed endpoints like /api/cloud-adapter/*, /api/cloud-adapters/*, /api/adapters/cloud/*, or /api/heartbeat.",
     "",
     "Workflow:",
     "1) GET /api/agents/me",
-    `2) Determine issueId: SWARMIFYX_TASK_ID if present, otherwise issue_id (${issueIdHint}).`,
+    `2) Determine issueId: PAPERTAPE_TASK_ID if present, otherwise issue_id (${issueIdHint}).`,
     "3) If issueId exists:",
-    "   - POST /api/issues/{issueId}/checkout with {\"agentId\":\"$SWARMIFYX_AGENT_ID\",\"expectedStatuses\":[\"todo\",\"backlog\",\"blocked\"]}",
+    "   - POST /api/issues/{issueId}/checkout with {\"agentId\":\"$PAPERTAPE_AGENT_ID\",\"expectedStatuses\":[\"todo\",\"backlog\",\"blocked\"]}",
     "   - GET /api/issues/{issueId}",
     "   - GET /api/issues/{issueId}/comments",
     "   - Execute the issue instructions exactly.",
     "   - If instructions require a comment, POST /api/issues/{issueId}/comments with {\"body\":\"...\"}.",
     "   - PATCH /api/issues/{issueId} with {\"status\":\"done\",\"comment\":\"what changed and why\"}.",
     "4) If issueId does not exist:",
-    "   - GET /api/companies/$SWARMIFYX_COMPANY_ID/issues?assigneeAgentId=$SWARMIFYX_AGENT_ID&status=todo,in_progress,blocked",
+    "   - GET /api/companies/$PAPERTAPE_COMPANY_ID/issues?assigneeAgentId=$PAPERTAPE_AGENT_ID&status=todo,in_progress,blocked",
     "   - Pick in_progress first, then todo, then blocked, then execute step 3.",
     "",
     "Useful endpoints for issue work:",
@@ -415,25 +415,25 @@ function appendWakeText(baseText: string, wakeText: string): string {
   return trimmedBase.length > 0 ? `${trimmedBase}\n\n${wakeText}` : wakeText;
 }
 
-function buildStandardSwarmifyxPayload(
+function buildStandardPapertapePayload(
   ctx: AdapterExecutionContext,
   wakePayload: WakePayload,
-  swarmifyxEnv: Record<string, string>,
+  papertapeEnv: Record<string, string>,
   payloadTemplate: Record<string, unknown>,
 ): Record<string, unknown> {
-  const templateSwarmifyx = parseObject(payloadTemplate.swarmifyx);
-  const workspace = asRecord(ctx.context.swarmifyxWorkspace);
-  const workspaces = Array.isArray(ctx.context.swarmifyxWorkspaces)
-    ? ctx.context.swarmifyxWorkspaces.filter((entry): entry is Record<string, unknown> => Boolean(asRecord(entry)))
+  const templatePapertape = parseObject(payloadTemplate.papertape);
+  const workspace = asRecord(ctx.context.papertapeWorkspace);
+  const workspaces = Array.isArray(ctx.context.papertapeWorkspaces)
+    ? ctx.context.papertapeWorkspaces.filter((entry): entry is Record<string, unknown> => Boolean(asRecord(entry)))
     : [];
   const configuredWorkspaceRuntime = parseObject(ctx.config.workspaceRuntime);
-  const runtimeServiceIntents = Array.isArray(ctx.context.swarmifyxRuntimeServiceIntents)
-    ? ctx.context.swarmifyxRuntimeServiceIntents.filter(
+  const runtimeServiceIntents = Array.isArray(ctx.context.papertapeRuntimeServiceIntents)
+    ? ctx.context.papertapeRuntimeServiceIntents.filter(
       (entry): entry is Record<string, unknown> => Boolean(asRecord(entry)),
     )
     : [];
 
-  const standardSwarmifyx: Record<string, unknown> = {
+  const standardPapertape: Record<string, unknown> = {
     runId: ctx.runId,
     companyId: ctx.agent.companyId,
     agentId: ctx.agent.id,
@@ -445,25 +445,25 @@ function buildStandardSwarmifyxPayload(
     wakeCommentId: wakePayload.wakeCommentId,
     approvalId: wakePayload.approvalId,
     approvalStatus: wakePayload.approvalStatus,
-    apiUrl: swarmifyxEnv.SWARMIFYX_API_URL ?? null,
+    apiUrl: papertapeEnv.PAPERTAPE_API_URL ?? null,
   };
 
   if (workspace) {
-    standardSwarmifyx.workspace = workspace;
+    standardPapertape.workspace = workspace;
   }
   if (workspaces.length > 0) {
-    standardSwarmifyx.workspaces = workspaces;
+    standardPapertape.workspaces = workspaces;
   }
   if (runtimeServiceIntents.length > 0 || Object.keys(configuredWorkspaceRuntime).length > 0) {
-    standardSwarmifyx.workspaceRuntime = {
+    standardPapertape.workspaceRuntime = {
       ...configuredWorkspaceRuntime,
       ...(runtimeServiceIntents.length > 0 ? { services: runtimeServiceIntents } : {}),
     };
   }
 
   return {
-    ...templateSwarmifyx,
-    ...standardSwarmifyx,
+    ...templatePapertape,
+    ...standardPapertape,
   };
 }
 
@@ -712,7 +712,7 @@ class GatewayWsClient {
 
   close() {
     if (!this.ws) return;
-    this.ws.close(1000, "swarmifyx-complete");
+    this.ws.close(1000, "papertape-complete");
     this.ws = null;
   }
 
@@ -1051,8 +1051,8 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   const disableDeviceAuth = parseBoolean(ctx.config.disableDeviceAuth, false);
 
   const wakePayload = buildWakePayload(ctx);
-  const swarmifyxEnv = buildSwarmifyxEnvForWake(ctx, wakePayload);
-  const wakeText = buildWakeText(wakePayload, swarmifyxEnv);
+  const papertapeEnv = buildPapertapeEnvForWake(ctx, wakePayload);
+  const wakeText = buildWakeText(wakePayload, papertapeEnv);
 
   const sessionKeyStrategy = normalizeSessionKeyStrategy(ctx.config.sessionKeyStrategy);
   const configuredSessionKey = nonEmpty(ctx.config.sessionKey);
@@ -1065,7 +1065,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
 
   const templateMessage = nonEmpty(payloadTemplate.message) ?? nonEmpty(payloadTemplate.text);
   const message = templateMessage ? appendWakeText(templateMessage, wakeText) : wakeText;
-  const swarmifyxPayload = buildStandardSwarmifyxPayload(ctx, wakePayload, swarmifyxEnv, payloadTemplate);
+  const papertapePayload = buildStandardPapertapePayload(ctx, wakePayload, papertapeEnv, payloadTemplate);
 
   const agentParams: Record<string, unknown> = {
     ...payloadTemplate,

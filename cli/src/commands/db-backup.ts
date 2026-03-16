@@ -1,15 +1,15 @@
 import path from "node:path";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
-import { formatDatabaseBackupResult, runDatabaseBackup } from "@swarmifyx/db";
+import { formatDatabaseBackupResult, runDatabaseBackup } from "@papertape/db";
 import {
   expandHomePrefix,
   resolveDefaultBackupDir,
-  resolveSwarmifyxInstanceId,
+  resolvePapertapeInstanceId,
 } from "../config/home.js";
 import { publicCliCommand } from "../config/branding.js";
 import { readConfig, resolveConfigPath } from "../config/store.js";
-import { printSwarmifyxCliBanner } from "../utils/banner.js";
+import { printPapertapeCliBanner } from "../utils/banner.js";
 
 type DbBackupOptions = {
   config?: string;
@@ -30,7 +30,7 @@ function resolveConnectionString(configPath?: string): { value: string; source: 
 
   const port = config?.database.embeddedPostgresPort ?? 54329;
   return {
-    value: `postgres://swarmifyx:swarmifyx@127.0.0.1:${port}/swarmifyx`,
+    value: `postgres://papertape:papertape@127.0.0.1:${port}/papertape`,
     source: `embedded-postgres@${port}`,
   };
 }
@@ -48,20 +48,20 @@ function resolveBackupDir(raw: string): string {
 }
 
 export async function dbBackupCommand(opts: DbBackupOptions): Promise<void> {
-  printSwarmifyxCliBanner();
+  printPapertapeCliBanner();
   p.intro(pc.bgCyan(pc.black(` ${publicCliCommand("db:backup")} `)));
 
   const configPath = resolveConfigPath(opts.config);
   const config = readConfig(opts.config);
   const connection = resolveConnectionString(opts.config);
-  const defaultDir = resolveDefaultBackupDir(resolveSwarmifyxInstanceId());
+  const defaultDir = resolveDefaultBackupDir(resolvePapertapeInstanceId());
   const configuredDir = opts.dir?.trim() || config?.database.backup.dir || defaultDir;
   const backupDir = resolveBackupDir(configuredDir);
   const retentionDays = normalizeRetentionDays(
     opts.retentionDays,
     config?.database.backup.retentionDays ?? 30,
   );
-  const filenamePrefix = opts.filenamePrefix?.trim() || "swarmifyx";
+  const filenamePrefix = opts.filenamePrefix?.trim() || "papertape";
 
   p.log.message(pc.dim(`Config: ${configPath}`));
   p.log.message(pc.dim(`Connection source: ${connection.source}`));

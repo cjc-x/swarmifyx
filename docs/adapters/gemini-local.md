@@ -33,7 +33,7 @@ summary: Gemini CLI 本地适配器的安装与配置
 
 ## 技能注入
 
-该适配器会把 Swarmifyx 技能以符号链接形式放入 Gemini 全局技能目录（`~/.gemini/skills`）。已有用户技能不会被覆盖。
+该适配器会把 Papertape 技能以符号链接形式放入 Gemini 全局技能目录（`~/.gemini/skills`）。已有用户技能不会被覆盖。
 
 ## 环境测试
 

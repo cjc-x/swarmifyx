@@ -1,6 +1,6 @@
 ---
 title: Dashboard
-summary: 理解 Swarmifyx Dashboard
+summary: 理解 Papertape Dashboard
 ---
 
 Dashboard 会让你实时掌握自治 AI 公司的整体健康状况。

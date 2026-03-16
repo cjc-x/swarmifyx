@@ -7,7 +7,7 @@ The `process` adapter executes arbitrary shell commands. Use it for simple scrip
 
 ## When to Use
 
-- Running a Python script that calls the Swarmifyx API
+- Running a Python script that calls the Papertape API
 - Executing a custom agent loop
 - Any runtime that can be invoked as a shell command
 
@@ -27,8 +27,8 @@ The `process` adapter executes arbitrary shell commands. Use it for simple scrip
 
 ## How It Works
 
-1. Swarmifyx spawns the configured command as a child process
-2. Standard Swarmifyx environment variables are injected (`SWARMIFYX_AGENT_ID`, `SWARMIFYX_API_KEY`, etc.)
+1. Papertape spawns the configured command as a child process
+2. Standard Papertape environment variables are injected (`PAPERTAPE_AGENT_ID`, `PAPERTAPE_API_KEY`, etc.)
 3. The process runs to completion
 4. Exit code determines success/failure
 
@@ -47,4 +47,4 @@ An agent that runs a Python script:
 }
 ```
 
-The script can use the injected environment variables to authenticate with the Swarmifyx API and perform work.
+The script can use the injected environment variables to authenticate with the Papertape API and perform work.

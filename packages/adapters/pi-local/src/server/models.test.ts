@@ -7,12 +7,12 @@ import {
 
 describe("pi models", () => {
   afterEach(() => {
-    delete process.env.SWARMIFYX_PI_COMMAND;
+    delete process.env.PAPERTAPE_PI_COMMAND;
     resetPiModelsCacheForTests();
   });
 
   it("returns an empty list when discovery command is unavailable", async () => {
-    process.env.SWARMIFYX_PI_COMMAND = "__swarmifyx_missing_pi_command__";
+    process.env.PAPERTAPE_PI_COMMAND = "__papertape_missing_pi_command__";
     await expect(listPiModels()).resolves.toEqual([]);
   });
 
@@ -23,7 +23,7 @@ describe("pi models", () => {
   });
 
   it("rejects when discovery cannot run for configured model", async () => {
-    process.env.SWARMIFYX_PI_COMMAND = "__swarmifyx_missing_pi_command__";
+    process.env.PAPERTAPE_PI_COMMAND = "__papertape_missing_pi_command__";
     await expect(
       ensurePiModelConfiguredAndAvailable({
         model: "xai/grok-4",

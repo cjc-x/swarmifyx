@@ -4,13 +4,13 @@ import type {
   HeartbeatRun,
   Issue,
   JoinRequest,
-} from "@swarmifyx/shared";
+} from "@papertape/shared";
 
 export const RECENT_ISSUES_LIMIT = 100;
 export const FAILED_RUN_STATUSES = new Set(["failed", "timed_out"]);
 export const ACTIONABLE_APPROVAL_STATUSES = new Set(["pending", "revision_requested"]);
-export const DISMISSED_KEY = "swarmifyx:inbox:dismissed";
-export const INBOX_LAST_TAB_KEY = "swarmifyx:inbox:last-tab";
+export const DISMISSED_KEY = "papertape:inbox:dismissed";
+export const INBOX_LAST_TAB_KEY = "papertape:inbox:last-tab";
 export type InboxTab = "recent" | "unread" | "all";
 
 export interface InboxBadgeData {

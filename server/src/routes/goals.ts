@@ -1,6 +1,6 @@
 import { Router } from "express";
-import type { Db } from "@swarmifyx/db";
-import { createGoalSchema, updateGoalSchema } from "@swarmifyx/shared";
+import type { Db } from "@papertape/db";
+import { createGoalSchema, updateGoalSchema } from "@papertape/shared";
 import { validate } from "../middleware/validate.js";
 import { goalService, logActivity } from "../services/index.js";
 import { assertCompanyAccess, getActorInfo } from "./authz.js";

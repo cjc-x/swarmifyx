@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useState, type ReactNode } from "react";
 
-const STORAGE_KEY = "swarmifyx:panel-visible";
+const STORAGE_KEY = "papertape:panel-visible";
 
 interface PanelContextValue {
   panelContent: ReactNode | null;

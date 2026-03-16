@@ -1,8 +1,8 @@
 import { Router, type Request } from "express";
 import { generateKeyPairSync, randomUUID } from "node:crypto";
 import path from "node:path";
-import type { Db } from "@swarmifyx/db";
-import { agents as agentsTable, companies, heartbeatRuns } from "@swarmifyx/db";
+import type { Db } from "@papertape/db";
+import { agents as agentsTable, companies, heartbeatRuns } from "@papertape/db";
 import { and, desc, eq, inArray, not, sql } from "drizzle-orm";
 import {
   createAgentKeySchema,
@@ -17,7 +17,7 @@ import {
   updateAgentInstructionsPathSchema,
   wakeAgentSchema,
   updateAgentSchema,
-} from "@swarmifyx/shared";
+} from "@papertape/shared";
 import { validate } from "../middleware/validate.js";
 import {
   agentService,
@@ -34,15 +34,15 @@ import { assertBoard, assertCompanyAccess, getActorInfo } from "./authz.js";
 import { findServerAdapter, listAdapterModels } from "../adapters/index.js";
 import { redactEventPayload } from "../redaction.js";
 import { redactCurrentUserValue } from "../log-redaction.js";
-import { runClaudeLogin } from "@swarmifyx/adapter-claude-local/server";
-import { DEFAULT_CODEBUDDY_LOCAL_MODEL } from "@swarmifyx/adapter-codebuddy-local";
+import { runClaudeLogin } from "@papertape/adapter-claude-local/server";
+import { DEFAULT_CODEBUDDY_LOCAL_MODEL } from "@papertape/adapter-codebuddy-local";
 import {
   DEFAULT_CODEX_LOCAL_BYPASS_APPROVALS_AND_SANDBOX,
   DEFAULT_CODEX_LOCAL_MODEL,
-} from "@swarmifyx/adapter-codex-local";
-import { DEFAULT_CURSOR_LOCAL_MODEL } from "@swarmifyx/adapter-cursor-local";
-import { DEFAULT_GEMINI_LOCAL_MODEL } from "@swarmifyx/adapter-gemini-local";
-import { ensureOpenCodeModelConfiguredAndAvailable } from "@swarmifyx/adapter-opencode-local/server";
+} from "@papertape/adapter-codex-local";
+import { DEFAULT_CURSOR_LOCAL_MODEL } from "@papertape/adapter-cursor-local";
+import { DEFAULT_GEMINI_LOCAL_MODEL } from "@papertape/adapter-gemini-local";
+import { ensureOpenCodeModelConfiguredAndAvailable } from "@papertape/adapter-opencode-local/server";
 
 export function agentRoutes(db: Db) {
   const DEFAULT_INSTRUCTIONS_PATH_KEYS: Record<string, string> = {
@@ -62,7 +62,7 @@ export function agentRoutes(db: Db) {
   const heartbeat = heartbeatService(db);
   const issueApprovalsSvc = issueApprovalService(db);
   const secretsSvc = secretService(db);
-  const strictSecretsMode = process.env.SWARMIFYX_SECRETS_STRICT_MODE === "true";
+  const strictSecretsMode = process.env.PAPERTAPE_SECRETS_STRICT_MODE === "true";
 
   function canCreateAgents(agent: { role: string; permissions: Record<string, unknown> | null | undefined }) {
     if (!agent.permissions || typeof agent.permissions !== "object") return false;

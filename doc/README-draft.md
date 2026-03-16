@@ -8,7 +8,7 @@ Use the copy from the website in cases where we need some.
 ## Outline
 
 - image header up top
-- Swarmifyx
+- Papertape
 - Manage autonomous AI Businesses
 - The open-source AI-agent orchestrator teams of agents that run companies
 
@@ -16,7 +16,7 @@ Use the copy from the website in cases where we need some.
 
 # What is it
 
-Swarmifyx is a node server & UI that orchestrates a team of agents to run businesses.
+Papertape is a node server & UI that orchestrates a team of agents to run businesses.
 
 Bring-your-own agents, assign goals, and track your agent's work and costs.
 
@@ -24,7 +24,7 @@ It looks like a task manager but has specialized skills and agent coordination
 
 **It's high taste, and feels good to use**
 
-# Swarmifyx is right for you if:
+# Papertape is right for you if:
 
 - You want to build autonomous companies
 - You want to coordinate many different types agents (OpenClaw, Codex, Claude, Cursor, etc.) to collaborate towards a common goal
@@ -36,7 +36,7 @@ It looks like a task manager but has specialized skills and agent coordination
 
 # What is not
 
-Swarmifyx is not:
+Papertape is not:
 
 - a code review tool
 - opinionated about what agent you use

@@ -1,6 +1,6 @@
 # Task Management MCP Interface
 
-Function contracts for the Swarmifyx task management system. Defines the
+Function contracts for the Papertape task management system. Defines the
 operations available to agents (and external tools) via MCP. Refer to
 [TASKS.md](./TASKS.md) for the underlying data model.
 

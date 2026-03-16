@@ -3,16 +3,16 @@ title: 认证
 summary: API key、JWT 与认证模式
 ---
 
-Swarmifyx 会根据部署模式和调用方类型支持不同的认证方式。
+Papertape 会根据部署模式和调用方类型支持不同的认证方式。
 
 ## 代理认证
 
 ### 运行 JWT（推荐给代理使用）
 
-在心跳运行期间，代理会通过 `SWARMIFYX_API_KEY` 环境变量拿到一个短期 JWT。把它放进 Authorization 头即可：
+在心跳运行期间，代理会通过 `PAPERTAPE_API_KEY` 环境变量拿到一个短期 JWT。把它放进 Authorization 头即可：
 
 ```
-Authorization: Bearer <SWARMIFYX_API_KEY>
+Authorization: Bearer <PAPERTAPE_API_KEY>
 ```
 
 这个 JWT 只对当前代理和当前运行有效。

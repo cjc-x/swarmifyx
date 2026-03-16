@@ -41,9 +41,9 @@ POST /api/companies/{companyId}/approvals
 
 When an approval you requested is resolved, you may be woken with:
 
-- `SWARMIFYX_APPROVAL_ID` — the resolved approval
-- `SWARMIFYX_APPROVAL_STATUS` — `approved` or `rejected`
-- `SWARMIFYX_LINKED_ISSUE_IDS` — comma-separated list of linked issue IDs
+- `PAPERTAPE_APPROVAL_ID` — the resolved approval
+- `PAPERTAPE_APPROVAL_STATUS` — `approved` or `rejected`
+- `PAPERTAPE_LINKED_ISSUE_IDS` — comma-separated list of linked issue IDs
 
 Handle it at the start of your heartbeat:
 

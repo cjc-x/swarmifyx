@@ -1,8 +1,8 @@
 import path from "node:path";
-import type { SwarmifyxConfig } from "../config/schema.js";
+import type { PapertapeConfig } from "../config/schema.js";
 import { expandHomePrefix } from "../config/home.js";
 
-export const DEFAULT_WORKTREE_HOME = "~/.swarmifyx-worktrees";
+export const DEFAULT_WORKTREE_HOME = "~/.papertape-worktrees";
 export const WORKTREE_SEED_MODES = ["minimal", "full"] as const;
 
 export type WorktreeSeedMode = (typeof WORKTREE_SEED_MODES)[number];
@@ -95,7 +95,7 @@ export function resolveWorktreeLocalPaths(opts: {
   const cwd = path.resolve(opts.cwd);
   const homeDir = path.resolve(expandHomePrefix(opts.homeDir ?? DEFAULT_WORKTREE_HOME));
   const instanceRoot = path.resolve(homeDir, "instances", opts.instanceId);
-  const repoConfigDir = path.resolve(cwd, ".swarmifyx");
+  const repoConfigDir = path.resolve(cwd, ".papertape");
   return {
     cwd,
     repoConfigDir,
@@ -126,12 +126,12 @@ export function rewriteLocalUrlPort(rawUrl: string | undefined, port: number): s
 }
 
 export function buildWorktreeConfig(input: {
-  sourceConfig: SwarmifyxConfig | null;
+  sourceConfig: PapertapeConfig | null;
   paths: WorktreeLocalPaths;
   serverPort: number;
   databasePort: number;
   now?: Date;
-}): SwarmifyxConfig {
+}): PapertapeConfig {
   const { sourceConfig, paths, serverPort, databasePort } = input;
   const nowIso = (input.now ?? new Date()).toISOString();
 
@@ -179,7 +179,7 @@ export function buildWorktreeConfig(input: {
         baseDir: paths.storageDir,
       },
       s3: {
-        bucket: source?.storage.s3.bucket ?? "swarmifyx",
+        bucket: source?.storage.s3.bucket ?? "papertape",
         region: source?.storage.s3.region ?? "us-east-1",
         endpoint: source?.storage.s3.endpoint,
         prefix: source?.storage.s3.prefix ?? "",
@@ -198,11 +198,11 @@ export function buildWorktreeConfig(input: {
 
 export function buildWorktreeEnvEntries(paths: WorktreeLocalPaths): Record<string, string> {
   return {
-    SWARMIFYX_HOME: paths.homeDir,
-    SWARMIFYX_INSTANCE_ID: paths.instanceId,
-    SWARMIFYX_CONFIG: paths.configPath,
-    SWARMIFYX_CONTEXT: paths.contextPath,
-    SWARMIFYX_IN_WORKTREE: "true",
+    PAPERTAPE_HOME: paths.homeDir,
+    PAPERTAPE_INSTANCE_ID: paths.instanceId,
+    PAPERTAPE_CONFIG: paths.configPath,
+    PAPERTAPE_CONTEXT: paths.contextPath,
+    PAPERTAPE_IN_WORKTREE: "true",
   };
 }
 
