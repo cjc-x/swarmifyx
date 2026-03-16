@@ -89,8 +89,8 @@ async function main() {
   // 5. Create an issue and assign to PM
   const pmId = agentIds["pm"];
   const issuePayload = {
-    title: "分析比亚迪(002594)股票并提供研究报告",
-    description: "请分析比亚迪(002594)近期的基本面、技术面、新闻面和情绪面情况。请协调 Long Researcher, Short Researcher, Fundamental Analyst, Sentiment Analyst, News Analyst, Technical Analyst 团队成员共同完成。分析完成后，请生成一份完整的综合分析报告。\n\n<plan>\n1. 交派任务给各下属分析师/研究员\n2. 收集多维度分析数据\n3. 汇总成综合研究报告\n</plan>",
+    title: "分析力源信息(300184)股票并提供研究报告",
+    description: "请分析力源信息(300184)近期的基本面、技术面、新闻面和情绪面情况。请协调 Long Researcher, Short Researcher, Fundamental Analyst, Sentiment Analyst, News Analyst, Technical Analyst 团队成员共同完成。分析完成后，请生成一份完整的综合分析报告。\n\n<plan>\n1. 交派任务给各下属分析师/研究员\n2. 收集多维度分析数据\n3. 汇总成综合研究报告\n</plan>",
     status: "todo",
     assigneeAgentId: pmId
   };
