@@ -255,7 +255,7 @@ export function Layout() {
   }, [location.hash, location.pathname, location.search]);
 
   const docsLabel = t("Documentation");
-  const instanceSettingsLabel = t("Instance settings");
+  const instanceSettingsLabel = t("Instance Settings");
   const themeToggleLabel = t(`Switch to ${nextTheme} mode`);
   const closeSidebarLabel = t("Close sidebar");
 

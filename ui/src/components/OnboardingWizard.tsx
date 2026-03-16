@@ -81,7 +81,7 @@ const DEFAULT_TASK_TITLE = "Create your CEO HEARTBEAT.md";
 export function OnboardingWizard() {
   const { onboardingOpen, onboardingOptions, closeOnboarding } = useDialog();
   const { selectedCompanyId, companies, setSelectedCompanyId } = useCompany();
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
@@ -120,6 +120,11 @@ export function OnboardingWizard() {
   const [taskDescription, setTaskDescription] = useState(() =>
     t(DEFAULT_TASK_DESCRIPTION)
   );
+  const translatedDefaultsRef = useRef({
+    agentName: t(DEFAULT_AGENT_NAME),
+    taskTitle: t(DEFAULT_TASK_TITLE),
+    taskDescription: t(DEFAULT_TASK_DESCRIPTION),
+  });
 
   // Auto-grow textarea for task description
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -166,6 +171,26 @@ export function OnboardingWizard() {
   useEffect(() => {
     if (step === 3) autoResizeTextarea();
   }, [step, taskDescription, autoResizeTextarea]);
+
+  useEffect(() => {
+    const previousDefaults = translatedDefaultsRef.current;
+    const nextDefaults = {
+      agentName: t(DEFAULT_AGENT_NAME),
+      taskTitle: t(DEFAULT_TASK_TITLE),
+      taskDescription: t(DEFAULT_TASK_DESCRIPTION),
+    };
+
+    setAgentName((current) =>
+      current === previousDefaults.agentName ? nextDefaults.agentName : current
+    );
+    setTaskTitle((current) =>
+      current === previousDefaults.taskTitle ? nextDefaults.taskTitle : current
+    );
+    setTaskDescription((current) =>
+      current === previousDefaults.taskDescription ? nextDefaults.taskDescription : current
+    );
+    translatedDefaultsRef.current = nextDefaults;
+  }, [locale, t]);
 
   const {
     data: adapterModels,
