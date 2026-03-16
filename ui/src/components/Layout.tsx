@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { BookOpen, Languages, Moon, Settings, Sun } from "lucide-react";
+import { BookOpen, Moon, Settings, Sun } from "lucide-react";
 import { Link, Outlet, useLocation, useNavigate, useParams } from "@/lib/router";
 import { CompanyRail } from "./CompanyRail";
 import { Sidebar } from "./Sidebar";
 import { InstanceSidebar } from "./InstanceSidebar";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 import { BreadcrumbBar } from "./BreadcrumbBar";
 import { PropertiesPanel } from "./PropertiesPanel";
 import { CommandPalette } from "./CommandPalette";
@@ -74,7 +75,7 @@ export function Layout() {
     setSelectedCompanyId,
   } = useCompany();
   const { theme, toggleTheme } = useTheme();
-  const { locale, localeOptions, setLocale, t } = useI18n();
+  const { t } = useI18n();
   const { companyPrefix } = useParams<{ companyPrefix: string }>();
   const navigate = useNavigate();
   const location = useLocation();
@@ -84,22 +85,6 @@ export function Layout() {
   const [mobileNavVisible, setMobileNavVisible] = useState(true);
   const [instanceSettingsTarget, setInstanceSettingsTarget] = useState<string>(() => readRememberedInstanceSettingsPath());
   const nextTheme = theme === "dark" ? "light" : "dark";
-  const nextLocaleOption = useMemo(() => {
-    if (localeOptions.length === 0) return null;
-    const currentIndex = localeOptions.findIndex((option) => option.value === locale);
-    const safeIndex = currentIndex >= 0 ? currentIndex : 0;
-    return localeOptions[(safeIndex + 1) % localeOptions.length] ?? localeOptions[0];
-  }, [locale, localeOptions]);
-  const nextLocaleLabel = nextLocaleOption
-    ? nextLocaleOption.value === "zh-CN"
-      ? "中文"
-      : nextLocaleOption.value === "en-US"
-        ? "EN"
-        : nextLocaleOption.nativeLabel
-    : null;
-  const languageToggleTitle = nextLocaleOption
-    ? t("Switch language to {language}", { language: nextLocaleOption.nativeLabel })
-    : t("Language");
   const matchedCompany = useMemo(() => {
     if (!companyPrefix) return null;
     const requestedPrefix = companyPrefix.toUpperCase();
@@ -270,7 +255,7 @@ export function Layout() {
   }, [location.hash, location.pathname, location.search]);
 
   const docsLabel = t("Documentation");
-  const instanceSettingsLabel = t("Instance settings");
+  const instanceSettingsLabel = t("Instance Settings");
   const themeToggleLabel = t(`Switch to ${nextTheme} mode`);
   const closeSidebarLabel = t("Close sidebar");
 
@@ -297,20 +282,7 @@ export function Layout() {
           <Settings className="h-4 w-4" />
         </Link>
       </Button>
-      {nextLocaleOption && nextLocaleLabel ? (
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className="h-9 rounded-full px-3 text-[11px] font-semibold text-muted-foreground shrink-0"
-          onClick={() => setLocale(nextLocaleOption.value)}
-          aria-label={languageToggleTitle}
-          title={languageToggleTitle}
-        >
-          <Languages className="h-3.5 w-3.5" />
-          <span>{nextLocaleLabel}</span>
-        </Button>
-      ) : null}
+      <LanguageSwitcher side="top" />
       <Button
         type="button"
         variant="ghost"

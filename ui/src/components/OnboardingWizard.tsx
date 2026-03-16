@@ -22,6 +22,7 @@ import { extractModelName, extractProviderIdWithFallback } from "../lib/model-ut
 import { translateText } from "../lib/i18n";
 import { getUIAdapter } from "../adapters";
 import { defaultCreateValues } from "./agent-config-defaults";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 import { parseOnboardingGoalInput } from "../lib/onboarding-goal";
 import { DEFAULT_CODEBUDDY_LOCAL_MODEL } from "@swarmifyx/adapter-codebuddy-local";
 import {
@@ -51,7 +52,6 @@ import {
   Loader2,
   FolderOpen,
   ChevronDown,
-  Languages,
   X
 } from "lucide-react";
 
@@ -81,7 +81,7 @@ const DEFAULT_TASK_TITLE = "Create your CEO HEARTBEAT.md";
 export function OnboardingWizard() {
   const { onboardingOpen, onboardingOptions, closeOnboarding } = useDialog();
   const { selectedCompanyId, companies, setSelectedCompanyId } = useCompany();
-  const { locale, localeOptions, setLocale, t } = useI18n();
+  const { locale, t } = useI18n();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
@@ -91,7 +91,6 @@ export function OnboardingWizard() {
   const [step, setStep] = useState<Step>(initialStep);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [languageMenuOpen, setLanguageMenuOpen] = useState(false);
   const [modelOpen, setModelOpen] = useState(false);
   const [modelSearch, setModelSearch] = useState("");
 
@@ -121,6 +120,11 @@ export function OnboardingWizard() {
   const [taskDescription, setTaskDescription] = useState(() =>
     t(DEFAULT_TASK_DESCRIPTION)
   );
+  const translatedDefaultsRef = useRef({
+    agentName: t(DEFAULT_AGENT_NAME),
+    taskTitle: t(DEFAULT_TASK_TITLE),
+    taskDescription: t(DEFAULT_TASK_DESCRIPTION),
+  });
 
   // Auto-grow textarea for task description
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -167,6 +171,26 @@ export function OnboardingWizard() {
   useEffect(() => {
     if (step === 3) autoResizeTextarea();
   }, [step, taskDescription, autoResizeTextarea]);
+
+  useEffect(() => {
+    const previousDefaults = translatedDefaultsRef.current;
+    const nextDefaults = {
+      agentName: t(DEFAULT_AGENT_NAME),
+      taskTitle: t(DEFAULT_TASK_TITLE),
+      taskDescription: t(DEFAULT_TASK_DESCRIPTION),
+    };
+
+    setAgentName((current) =>
+      current === previousDefaults.agentName ? nextDefaults.agentName : current
+    );
+    setTaskTitle((current) =>
+      current === previousDefaults.taskTitle ? nextDefaults.taskTitle : current
+    );
+    setTaskDescription((current) =>
+      current === previousDefaults.taskDescription ? nextDefaults.taskDescription : current
+    );
+    translatedDefaultsRef.current = nextDefaults;
+  }, [locale, t]);
 
   const {
     data: adapterModels,
@@ -603,51 +627,7 @@ export function OnboardingWizard() {
           >
             <div className="w-full max-w-md mx-auto my-auto px-8 py-12 shrink-0">
               <div className="mb-5 flex justify-end">
-                <Popover open={languageMenuOpen} onOpenChange={setLanguageMenuOpen}>
-                  <PopoverTrigger asChild>
-                    <button
-                      type="button"
-                      aria-label={t("Language")}
-                      className="group inline-flex h-9 w-9 items-center justify-center rounded-full border border-border/70 bg-background/60 text-muted-foreground shadow-sm backdrop-blur-sm transition-all hover:border-foreground/20 hover:bg-accent/50 hover:text-foreground"
-                    >
-                      <Languages className="h-4 w-4 transition-transform duration-200 group-hover:scale-105" />
-                    </button>
-                  </PopoverTrigger>
-                  <PopoverContent
-                    disablePortal
-                    align="end"
-                    sideOffset={10}
-                    className="w-44 rounded-2xl border-border/70 bg-background/92 p-1.5 shadow-xl backdrop-blur-xl"
-                  >
-                    <div className="px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
-                      {t("Language")}
-                    </div>
-                    <div className="space-y-1">
-                      {localeOptions.map((option) => {
-                        const selected = locale === option.value;
-                        return (
-                          <button
-                            key={option.value}
-                            type="button"
-                            onClick={() => {
-                              setLocale(option.value as typeof locale);
-                              setLanguageMenuOpen(false);
-                            }}
-                            className={cn(
-                              "flex w-full items-center justify-between rounded-xl px-2.5 py-2 text-sm transition-colors",
-                              selected
-                                ? "bg-accent text-foreground"
-                                : "text-muted-foreground hover:bg-accent/60 hover:text-foreground",
-                            )}
-                          >
-                            <span>{option.nativeLabel}</span>
-                            {selected ? <Check className="h-3.5 w-3.5" /> : null}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </PopoverContent>
-                </Popover>
+                <LanguageSwitcher disablePortal />
               </div>
               {/* Progress tabs */}
               <div className="flex items-center gap-0 mb-8 border-b border-border">
