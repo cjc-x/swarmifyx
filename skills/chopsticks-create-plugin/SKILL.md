@@ -33,14 +33,14 @@ Current runtime assumptions:
 Use the scaffold package instead of hand-writing the boilerplate:
 
 ```bash
-pnpm --filter @chopsticks/create-chopsticks-plugin build
+pnpm --filter @chopsticksai/create-chopsticks-plugin build
 node packages/plugins/create-chopsticks-plugin/dist/index.js <npm-package-name> --output <target-dir>
 ```
 
 For a plugin that lives outside the Chopsticks repo, pass `--sdk-path` and let the scaffold snapshot the local SDK/shared packages into `.chopsticks-sdk/`:
 
 ```bash
-pnpm --filter @chopsticks/create-chopsticks-plugin build
+pnpm --filter @chopsticksai/create-chopsticks-plugin build
 node packages/plugins/create-chopsticks-plugin/dist/index.js @acme/plugin-name \
   --output /absolute/path/to/plugin-repos \
   --sdk-path /absolute/path/to/chopsticks/packages/plugins/sdk
