@@ -1740,12 +1740,16 @@ const translations: Record<AppLocale, Record<string, string>> = {
     "bash ./scripts/provision-worktree.sh": "bash ./scripts/provision-worktree.sh",
     "bash ./scripts/teardown-worktree.sh": "bash ./scripts/teardown-worktree.sh",
     [`Create your CEO HEARTBEAT.md`]: "创建你的 CEO HEARTBEAT.md",
-    [`Setup yourself as the CEO. Use the ceo persona found here: [https://github.com/chopsticksai/companies/blob/main/default/ceo/AGENTS.md](https://github.com/chopsticksai/companies/blob/main/default/ceo/AGENTS.md)
+    [`Setup yourself as the CEO. Use the ceo persona found here: 
+
+https://github.com/chopsticksai/companies/blob/main/default/ceo/AGENTS.md
 
 Ensure you have a folder agents/ceo and then download this AGENTS.md as well as the sibling HEARTBEAT.md, SOUL.md, and TOOLS.md. and set that AGENTS.md as the path to your agents instruction file
 
 And after you've finished that, hire yourself a Founding Engineer agent`]:
-      `先把自己设定为 CEO。使用这里的 ceo persona：[https://github.com/chopsticksai/companies/blob/main/default/ceo/AGENTS.md](https://github.com/chopsticksai/companies/blob/main/default/ceo/AGENTS.md)
+      `先把自己设定为 CEO。使用这里的 ceo persona：
+
+https://github.com/chopsticksai/companies/blob/main/default/ceo/AGENTS.md
 
 请确保你有一个 agents/ceo 文件夹，然后下载这个 AGENTS.md，以及同级的 HEARTBEAT.md、SOUL.md 和 TOOLS.md，并把这个 AGENTS.md 设为你的代理说明文件路径。
 
