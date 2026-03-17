@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import type { AdapterExecutionContext, AdapterExecutionResult } from "@chopsticks/adapter-utils";
+import { inferOpenAiCompatibleBiller, type AdapterExecutionContext, type AdapterExecutionResult } from "@chopsticks/adapter-utils";
 import {
   asString,
   asNumber,
@@ -65,6 +65,12 @@ function codexHomeDir(): string {
   const fromEnv = process.env.CODEX_HOME;
   if (typeof fromEnv === "string" && fromEnv.trim().length > 0) return fromEnv.trim();
   return path.join(os.homedir(), ".codex");
+}
+
+function resolveCodexBiller(env: Record<string, string>, billingType: "api" | "subscription"): string {
+  const openAiCompatibleBiller = inferOpenAiCompatibleBiller(env, "openai");
+  if (openAiCompatibleBiller === "openrouter") return "openrouter";
+  return billingType === "subscription" ? "chatgpt" : openAiCompatibleBiller ?? "openai";
 }
 
 async function resolveChopsticksSkillsDir(): Promise<string | null> {
@@ -246,8 +252,13 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   if (!hasExplicitApiKey && authToken) {
     env.CHOPSTICKS_API_KEY = authToken;
   }
-  const billingType = resolveCodexBillingType(env);
-  const runtimeEnv = ensurePathInEnv({ ...process.env, ...env });
+  const effectiveEnv = Object.fromEntries(
+    Object.entries({ ...process.env, ...env }).filter(
+      (entry): entry is [string, string] => typeof entry[1] === "string",
+    ),
+  );
+  const billingType = resolveCodexBillingType(effectiveEnv);
+  const runtimeEnv = ensurePathInEnv(effectiveEnv);
   await ensureCommandResolvable(command, cwd, runtimeEnv);
 
   const timeoutSec = asNumber(config.timeoutSec, 0);
@@ -417,6 +428,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       sessionParams: resolvedSessionParams,
       sessionDisplayId: resolvedSessionId,
       provider: "openai",
+      biller: resolveCodexBiller(effectiveEnv, billingType),
       model,
       billingType,
       costUsd: null,

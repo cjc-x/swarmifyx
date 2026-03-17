@@ -4,8 +4,8 @@ import os from "node:os";
 import path from "node:path";
 import { execute } from "@chopsticks/adapter-gemini-local/server";
 
-async function writeFakeGeminiCommand(commandPath: string): Promise<void> {
-  const script = `#!/usr/bin/env node
+async function writeFakeGeminiCommand(basePath: string): Promise<string> {
+  const script = `
 const fs = require("node:fs");
 
 const capturePath = process.env.CHOPSTICKS_TEST_CAPTURE_PATH;
@@ -35,8 +35,21 @@ console.log(JSON.stringify({
   result: "ok",
 }));
 `;
-  await fs.writeFile(commandPath, script, "utf8");
-  await fs.chmod(commandPath, 0o755);
+  if (process.platform === "win32") {
+    const scriptPath = `${basePath}.js`;
+    const commandPath = `${basePath}.cmd`;
+    await fs.writeFile(scriptPath, script, "utf8");
+    await fs.writeFile(
+      commandPath,
+      `@echo off\r\n"${process.execPath}" "${scriptPath}" %*\r\n`,
+      "utf8",
+    );
+    return commandPath;
+  }
+
+  await fs.writeFile(basePath, `#!/usr/bin/env node\n${script}`, "utf8");
+  await fs.chmod(basePath, 0o755);
+  return basePath;
 }
 
 type CapturePayload = {
@@ -48,10 +61,9 @@ describe("gemini execute", () => {
   it("passes prompt as final argument and injects chopsticks env vars", async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), "chopsticks-gemini-execute-"));
     const workspace = path.join(root, "workspace");
-    const commandPath = path.join(root, "gemini");
+    const commandPath = await writeFakeGeminiCommand(path.join(root, "gemini"));
     const capturePath = path.join(root, "capture.json");
     await fs.mkdir(workspace, { recursive: true });
-    await writeFakeGeminiCommand(commandPath);
 
     const previousHome = process.env.HOME;
     process.env.HOME = root;
@@ -98,8 +110,13 @@ describe("gemini execute", () => {
       expect(capture.argv).toContain("stream-json");
       expect(capture.argv).toContain("--approval-mode");
       expect(capture.argv).toContain("yolo");
-      expect(capture.argv.at(-1)).toContain("Follow the chopsticks heartbeat.");
-      expect(capture.argv.at(-1)).toContain("Chopsticks runtime note:");
+      if (process.platform === "win32") {
+        expect(invocationPrompt).toContain("Follow the chopsticks heartbeat.");
+        expect(invocationPrompt).toContain("Chopsticks runtime note:");
+      } else {
+        expect(capture.argv.at(-1)).toContain("Follow the chopsticks heartbeat.");
+        expect(capture.argv.at(-1)).toContain("Chopsticks runtime note:");
+      }
       expect(capture.chopsticksEnvKeys).toEqual(
         expect.arrayContaining([
           "CHOPSTICKS_AGENT_ID",
@@ -127,10 +144,9 @@ describe("gemini execute", () => {
   it("always passes --approval-mode yolo", async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), "chopsticks-gemini-yolo-"));
     const workspace = path.join(root, "workspace");
-    const commandPath = path.join(root, "gemini");
+    const commandPath = await writeFakeGeminiCommand(path.join(root, "gemini"));
     const capturePath = path.join(root, "capture.json");
     await fs.mkdir(workspace, { recursive: true });
-    await writeFakeGeminiCommand(commandPath);
 
     const previousHome = process.env.HOME;
     process.env.HOME = root;

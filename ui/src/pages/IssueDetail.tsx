@@ -15,7 +15,7 @@ import { getPriorityLabel, getStatusLabel, translateText } from "../lib/i18n";
 import { queryKeys } from "../lib/queryKeys";
 import { readIssueDetailBreadcrumb } from "../lib/issueDetailBreadcrumb";
 import { useProjectOrder } from "../hooks/useProjectOrder";
-import { relativeTime, cn, formatTokens } from "../lib/utils";
+import { relativeTime, cn, formatTokens, visibleRunCostUsd } from "../lib/utils";
 import { InlineEditor } from "../components/InlineEditor";
 import { CommentThread } from "../components/CommentThread";
 import { IssueDocumentsSection } from "../components/IssueDocumentsSection";
@@ -422,9 +422,7 @@ export function IssueDetail() {
         "cached_input_tokens",
         "cache_read_input_tokens",
       );
-      const runCost =
-        usageNumber(usage, "costUsd", "cost_usd", "total_cost_usd") ||
-        usageNumber(result, "total_cost_usd", "cost_usd", "costUsd");
+      const runCost = visibleRunCostUsd(usage, result);
       if (runCost > 0) hasCost = true;
       if (runInput + runOutput + runCached > 0) hasTokens = true;
       input += runInput;

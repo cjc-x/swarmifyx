@@ -4,8 +4,8 @@ import os from "node:os";
 import path from "node:path";
 import { execute } from "@chopsticks/adapter-cursor-local/server";
 
-async function writeFakeCursorCommand(commandPath: string): Promise<void> {
-  const script = `#!/usr/bin/env node
+async function writeFakeCursorCommand(basePath: string): Promise<string> {
+  const script = `
 const fs = require("node:fs");
 
 const capturePath = process.env.CHOPSTICKS_TEST_CAPTURE_PATH;
@@ -36,8 +36,21 @@ console.log(JSON.stringify({
   result: "ok",
 }));
 `;
-  await fs.writeFile(commandPath, script, "utf8");
-  await fs.chmod(commandPath, 0o755);
+  if (process.platform === "win32") {
+    const scriptPath = `${basePath}.js`;
+    const commandPath = `${basePath}.cmd`;
+    await fs.writeFile(scriptPath, script, "utf8");
+    await fs.writeFile(
+      commandPath,
+      `@echo off\r\n"${process.execPath}" "${scriptPath}" %*\r\n`,
+      "utf8",
+    );
+    return commandPath;
+  }
+
+  await fs.writeFile(basePath, `#!/usr/bin/env node\n${script}`, "utf8");
+  await fs.chmod(basePath, 0o755);
+  return basePath;
 }
 
 type CapturePayload = {
@@ -50,10 +63,9 @@ describe("cursor execute", () => {
   it("injects chopsticks env vars and prompt note by default", async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), "chopsticks-cursor-execute-"));
     const workspace = path.join(root, "workspace");
-    const commandPath = path.join(root, "agent");
+    const commandPath = await writeFakeCursorCommand(path.join(root, "agent"));
     const capturePath = path.join(root, "capture.json");
     await fs.mkdir(workspace, { recursive: true });
-    await writeFakeCursorCommand(commandPath);
 
     const previousHome = process.env.HOME;
     process.env.HOME = root;
@@ -125,10 +137,9 @@ describe("cursor execute", () => {
   it("passes --mode when explicitly configured", async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), "chopsticks-cursor-execute-mode-"));
     const workspace = path.join(root, "workspace");
-    const commandPath = path.join(root, "agent");
+    const commandPath = await writeFakeCursorCommand(path.join(root, "agent"));
     const capturePath = path.join(root, "capture.json");
     await fs.mkdir(workspace, { recursive: true });
-    await writeFakeCursorCommand(commandPath);
 
     const previousHome = process.env.HOME;
     process.env.HOME = root;

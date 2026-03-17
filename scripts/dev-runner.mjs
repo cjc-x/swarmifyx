@@ -34,6 +34,11 @@ const env = {
   CHOPSTICKS_UI_DEV_MIDDLEWARE: "true",
 };
 
+if (mode === "watch") {
+  env.CHOPSTICKS_MIGRATION_PROMPT ??= "never";
+  env.CHOPSTICKS_MIGRATION_AUTO_APPLY ??= "true";
+}
+
 if (tailscaleAuth) {
   env.CHOPSTICKS_DEPLOYMENT_MODE = "authenticated";
   env.CHOPSTICKS_DEPLOYMENT_EXPOSURE = "private";
@@ -60,6 +65,29 @@ function spawnPnpm(args, options = {}) {
   });
 }
 
+function toError(error, context = "Dev runner command failed") {
+  if (error instanceof Error) return error;
+  if (error === undefined) return new Error(context);
+  if (typeof error === "string") return new Error(`${context}: ${error}`);
+
+  try {
+    return new Error(`${context}: ${JSON.stringify(error)}`);
+  } catch {
+    return new Error(`${context}: ${String(error)}`);
+  }
+}
+
+process.on("uncaughtException", (error) => {
+  const err = toError(error, "Uncaught exception in dev runner");
+  process.stderr.write(`${err.stack ?? err.message}\n`);
+  process.exit(1);
+});
+
+process.on("unhandledRejection", (reason) => {
+  const err = toError(reason, "Unhandled promise rejection in dev runner");
+  process.stderr.write(`${err.stack ?? err.message}\n`);
+  process.exit(1);
+});
 function formatPendingMigrationSummary(migrations) {
   if (migrations.length === 0) return "none";
   return migrations.length > 3
@@ -109,7 +137,11 @@ async function maybePreflightMigrations() {
     { env },
   );
   if (status.code !== 0) {
-    process.stderr.write(status.stderr || status.stdout);
+    process.stderr.write(
+      status.stderr ||
+        status.stdout ||
+        `[chopsticks] Command failed with code ${status.code}: pnpm --filter @chopsticks/db exec tsx src/migration-status.ts --json\n`,
+    );
     process.exit(status.code);
   }
 
@@ -117,8 +149,12 @@ async function maybePreflightMigrations() {
   try {
     payload = JSON.parse(status.stdout.trim());
   } catch (error) {
-    process.stderr.write(status.stderr || status.stdout);
-    throw error;
+    process.stderr.write(
+      status.stderr ||
+        status.stdout ||
+        "[chopsticks] migration-status returned invalid JSON payload\n",
+    );
+    throw toError(error, "Unable to parse migration-status JSON output");
   }
 
   if (payload.status !== "needsMigrations" || payload.pendingMigrations.length === 0) {
@@ -148,7 +184,13 @@ async function maybePreflightMigrations() {
     }
   }
 
-  if (!shouldApply) return;
+  if (!shouldApply) {
+    process.stderr.write(
+      `[chopsticks] Pending migrations detected (${formatPendingMigrationSummary(payload.pendingMigrations)}). ` +
+        "Refusing to start watch mode against a stale schema.\n",
+    );
+    process.exit(1);
+  }
 
   const migrate = spawnPnpm(["db:migrate"], {
     stdio: "inherit",
@@ -189,7 +231,6 @@ await buildPluginSdk();
 if (mode === "watch") {
   env.CHOPSTICKS_MIGRATION_PROMPT = "never";
 }
-
 const serverScript = mode === "watch" ? "dev:watch" : "dev";
 const child = spawnPnpm(["--filter", "@chopsticks/server", serverScript, ...forwardedArgs], {
   stdio: "inherit",

@@ -2,6 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { and, asc, desc, eq, gt, inArray, sql } from "drizzle-orm";
 import type { Db } from "@chopsticks/db";
+import type { BillingType } from "@chopsticks/shared";
 import {
   agents,
   agentRuntimeState,
@@ -18,10 +19,11 @@ import { logger } from "../middleware/logger.js";
 import { publishLiveEvent } from "./live-events.js";
 import { getRunLogStore, type RunLogHandle } from "./run-log-store.js";
 import { getServerAdapter, runningProcesses } from "../adapters/index.js";
-import type { AdapterExecutionResult, AdapterInvocationMeta, AdapterSessionCodec } from "../adapters/index.js";
+import type { AdapterExecutionResult, AdapterInvocationMeta, AdapterSessionCodec, UsageSummary } from "../adapters/index.js";
 import { createLocalAgentJwt } from "../agent-auth-jwt.js";
 import { parseObject, asBoolean, asNumber, appendWithCap, MAX_EXCERPT_BYTES } from "../adapters/utils.js";
 import { costService } from "./costs.js";
+import { budgetService, type BudgetEnforcementScope } from "./budgets.js";
 import { secretService } from "./secrets.js";
 import { resolveDefaultAgentWorkspaceDir } from "../home-paths.js";
 import { summarizeHeartbeatRunResultJson } from "./heartbeat-run-summary.js";
@@ -170,6 +172,75 @@ function readNonEmptyString(value: unknown): string | null {
   return typeof value === "string" && value.trim().length > 0 ? value : null;
 }
 
+function normalizeLedgerBillingType(value: unknown): BillingType {
+  const raw = readNonEmptyString(value);
+  switch (raw) {
+    case "api":
+    case "metered_api":
+      return "metered_api";
+    case "subscription":
+    case "subscription_included":
+      return "subscription_included";
+    case "subscription_overage":
+      return "subscription_overage";
+    case "credits":
+      return "credits";
+    case "fixed":
+      return "fixed";
+    default:
+      return "unknown";
+  }
+}
+
+function resolveLedgerBiller(result: AdapterExecutionResult): string {
+  return readNonEmptyString(result.biller) ?? readNonEmptyString(result.provider) ?? "unknown";
+}
+
+function normalizeBilledCostCents(costUsd: number | null | undefined, billingType: BillingType): number {
+  if (billingType === "subscription_included") return 0;
+  if (typeof costUsd !== "number" || !Number.isFinite(costUsd)) return 0;
+  return Math.max(0, Math.round(costUsd * 100));
+}
+
+async function resolveLedgerScopeForRun(
+  db: Db,
+  companyId: string,
+  run: typeof heartbeatRuns.$inferSelect,
+) {
+  const context = parseObject(run.contextSnapshot);
+  const contextIssueId = readNonEmptyString(context.issueId);
+  const contextProjectId = readNonEmptyString(context.projectId);
+
+  if (!contextIssueId) {
+    return {
+      issueId: null,
+      projectId: contextProjectId,
+    };
+  }
+
+  const issue = await db
+    .select({
+      id: issues.id,
+      projectId: issues.projectId,
+    })
+    .from(issues)
+    .where(and(eq(issues.id, contextIssueId), eq(issues.companyId, companyId)))
+    .then((rows) => rows[0] ?? null);
+
+  return {
+    issueId: issue?.id ?? null,
+    projectId: issue?.projectId ?? contextProjectId,
+  };
+}
+
+function normalizeUsageTotals(usage: UsageSummary | null | undefined): UsageTotals | null {
+  if (!usage) return null;
+  return {
+    inputTokens: Math.max(0, Math.floor(asNumber(usage.inputTokens, 0))),
+    cachedInputTokens: Math.max(0, Math.floor(asNumber(usage.cachedInputTokens, 0))),
+    outputTokens: Math.max(0, Math.floor(asNumber(usage.outputTokens, 0))),
+  };
+}
 function readRawUsageTotals(usageJson: unknown): UsageTotals | null {
   const parsed = parseObject(usageJson);
   if (Object.keys(parsed).length === 0) return null;
@@ -195,6 +266,27 @@ function readRawUsageTotals(usageJson: unknown): UsageTotals | null {
     inputTokens,
     cachedInputTokens,
     outputTokens,
+  };
+}
+
+function deriveNormalizedUsageDelta(current: UsageTotals | null, previous: UsageTotals | null): UsageTotals | null {
+  if (!current) return null;
+  if (!previous) return { ...current };
+
+  const inputTokens = current.inputTokens >= previous.inputTokens
+    ? current.inputTokens - previous.inputTokens
+    : current.inputTokens;
+  const cachedInputTokens = current.cachedInputTokens >= previous.cachedInputTokens
+    ? current.cachedInputTokens - previous.cachedInputTokens
+    : current.cachedInputTokens;
+  const outputTokens = current.outputTokens >= previous.outputTokens
+    ? current.outputTokens - previous.outputTokens
+    : current.outputTokens;
+
+  return {
+    inputTokens: Math.max(0, inputTokens),
+    cachedInputTokens: Math.max(0, cachedInputTokens),
+    outputTokens: Math.max(0, outputTokens),
   };
 }
 
@@ -527,6 +619,10 @@ export function heartbeatService(db: Db) {
   const secretsSvc = secretService(db);
   const issuesSvc = issueService(db);
   const activeRunExecutions = new Set<string>();
+  const budgetHooks = {
+    cancelWorkForScope: cancelBudgetScopeWork,
+  };
+  const budgets = budgetService(db, budgetHooks);
 
   async function getAgent(agentId: string) {
     return db
@@ -591,6 +687,30 @@ export function heartbeatService(db: Db) {
       .orderBy(desc(heartbeatRuns.createdAt))
       .limit(1)
       .then((rows) => rows[0] ?? null);
+  }
+
+  async function resolveNormalizedUsageForSession(input: {
+    agentId: string;
+    runId: string;
+    sessionId: string | null;
+    rawUsage: UsageTotals | null;
+  }) {
+    const { agentId, runId, sessionId, rawUsage } = input;
+    if (!sessionId || !rawUsage) {
+      return {
+        normalizedUsage: rawUsage,
+        previousRawUsage: null as UsageTotals | null,
+        derivedFromSessionTotals: false,
+      };
+    }
+
+    const previousRun = await getLatestRunForSession(agentId, sessionId, { excludeRunId: runId });
+    const previousRawUsage = readRawUsageTotals(previousRun?.usageJson);
+    return {
+      normalizedUsage: deriveNormalizedUsageDelta(rawUsage, previousRawUsage),
+      previousRawUsage,
+      derivedFromSessionTotals: previousRawUsage !== null,
+    };
   }
 
   async function getOldestRunForSession(agentId: string, sessionId: string) {
@@ -1085,6 +1205,26 @@ export function heartbeatService(db: Db) {
 
   async function claimQueuedRun(run: typeof heartbeatRuns.$inferSelect) {
     if (run.status !== "queued") return run;
+    const agent = await getAgent(run.agentId);
+    if (!agent) {
+      await cancelRunInternal(run.id, "Cancelled because the agent no longer exists");
+      return null;
+    }
+    if (agent.status === "paused" || agent.status === "terminated" || agent.status === "pending_approval") {
+      await cancelRunInternal(run.id, "Cancelled because the agent is not invokable");
+      return null;
+    }
+
+    const context = parseObject(run.contextSnapshot);
+    const budgetBlock = await budgets.getInvocationBlock(run.companyId, run.agentId, {
+      issueId: readNonEmptyString(context.issueId),
+      projectId: readNonEmptyString(context.projectId),
+    });
+    if (budgetBlock) {
+      await cancelRunInternal(run.id, budgetBlock.reason);
+      return null;
+    }
+
     const claimedAt = new Date();
     const claimed = await db
       .update(heartbeatRuns)
@@ -1233,14 +1373,19 @@ export function heartbeatService(db: Db) {
     run: typeof heartbeatRuns.$inferSelect,
     result: AdapterExecutionResult,
     session: { legacySessionId: string | null },
+    normalizedUsage?: UsageTotals | null,
   ) {
     await ensureRuntimeState(agent);
-    const usage = result.usage;
+    const usage = normalizedUsage ?? normalizeUsageTotals(result.usage);
     const inputTokens = usage?.inputTokens ?? 0;
     const outputTokens = usage?.outputTokens ?? 0;
     const cachedInputTokens = usage?.cachedInputTokens ?? 0;
-    const additionalCostCents = Math.max(0, Math.round((result.costUsd ?? 0) * 100));
+    const billingType = normalizeLedgerBillingType(result.billingType);
+    const additionalCostCents = normalizeBilledCostCents(result.costUsd, billingType);
     const hasTokenUsage = inputTokens > 0 || outputTokens > 0 || cachedInputTokens > 0;
+    const provider = result.provider ?? "unknown";
+    const biller = resolveLedgerBiller(result);
+    const ledgerScope = await resolveLedgerScopeForRun(db, agent.companyId, run);
 
     await db
       .update(agentRuntimeState)
@@ -1259,12 +1404,18 @@ export function heartbeatService(db: Db) {
       .where(eq(agentRuntimeState.agentId, agent.id));
 
     if (additionalCostCents > 0 || hasTokenUsage) {
-      const costs = costService(db);
+      const costs = costService(db, budgetHooks);
       await costs.createEvent(agent.companyId, {
+        heartbeatRunId: run.id,
         agentId: agent.id,
-        provider: result.provider ?? "unknown",
+        issueId: ledgerScope.issueId,
+        projectId: ledgerScope.projectId,
+        provider,
+        biller,
+        billingType,
         model: result.model ?? "unknown",
         inputTokens,
+        cachedInputTokens,
         outputTokens,
         costCents: additionalCostCents,
         occurredAt: new Date(),
@@ -1276,6 +1427,9 @@ export function heartbeatService(db: Db) {
     return withAgentStartLock(agentId, async () => {
       const agent = await getAgent(agentId);
       if (!agent) return [];
+      if (agent.status === "paused" || agent.status === "terminated" || agent.status === "pending_approval") {
+        return [];
+      }
       const policy = parseHeartbeatPolicy(agent);
       const runningCount = await countRunningRunsForAgent(agentId);
       const availableSlots = Math.max(0, policy.maxConcurrentRuns - runningCount);
@@ -1767,6 +1921,14 @@ export function heartbeatService(db: Db) {
           previousDisplayId: runtimeForAdapter.sessionDisplayId,
           previousLegacySessionId: runtimeForAdapter.sessionId,
         });
+        const rawUsage = normalizeUsageTotals(adapterResult.usage);
+        const sessionUsageResolution = await resolveNormalizedUsageForSession({
+          agentId: agent.id,
+          runId: run.id,
+          sessionId: nextSessionState.displayId ?? nextSessionState.legacySessionId,
+          rawUsage,
+        });
+        const normalizedUsage = sessionUsageResolution.normalizedUsage;
 
         let outcome: "succeeded" | "failed" | "cancelled" | "timed_out";
         const latestRun = await getRun(run.id);
@@ -1795,12 +1957,31 @@ export function heartbeatService(db: Db) {
                 : "failed";
 
         const usageJson =
-          adapterResult.usage || adapterResult.costUsd != null
+          normalizedUsage || adapterResult.costUsd != null
             ? ({
-              ...(adapterResult.usage ?? {}),
-              ...(adapterResult.costUsd != null ? { costUsd: adapterResult.costUsd } : {}),
-              ...(adapterResult.billingType ? { billingType: adapterResult.billingType } : {}),
-            } as Record<string, unknown>)
+                ...(normalizedUsage ?? {}),
+                ...(rawUsage
+                  ? {
+                      rawInputTokens: rawUsage.inputTokens,
+                      rawCachedInputTokens: rawUsage.cachedInputTokens,
+                      rawOutputTokens: rawUsage.outputTokens,
+                    }
+                  : {}),
+                ...(sessionUsageResolution.derivedFromSessionTotals ? { usageSource: "session_delta" } : {}),
+                ...((nextSessionState.displayId ?? nextSessionState.legacySessionId)
+                  ? { persistedSessionId: nextSessionState.displayId ?? nextSessionState.legacySessionId }
+                  : {}),
+                sessionReused: runtimeForAdapter.sessionId != null || runtimeForAdapter.sessionDisplayId != null,
+                taskSessionReused: taskSessionForRun != null,
+                freshSession: runtimeForAdapter.sessionId == null && runtimeForAdapter.sessionDisplayId == null,
+                sessionRotated: sessionCompaction.rotate,
+                sessionRotationReason: sessionCompaction.reason,
+                provider: readNonEmptyString(adapterResult.provider) ?? "unknown",
+                biller: resolveLedgerBiller(adapterResult),
+                model: readNonEmptyString(adapterResult.model) ?? "unknown",
+                ...(adapterResult.costUsd != null ? { costUsd: adapterResult.costUsd } : {}),
+                billingType: normalizeLedgerBillingType(adapterResult.billingType),
+              } as Record<string, unknown>)
             : null;
 
         await setRunStatus(run.id, status, {
@@ -1854,7 +2035,7 @@ export function heartbeatService(db: Db) {
         if (finalizedRun) {
           await updateRuntimeState(agent, finalizedRun, adapterResult, {
             legacySessionId: nextSessionState.legacySessionId,
-          });
+          }, normalizedUsage);
           if (taskKey) {
             if (adapterResult.clearSession || (!nextSessionState.params && !nextSessionState.displayId)) {
               await clearTaskSessions(agent.companyId, agent.id, {
@@ -2149,6 +2330,43 @@ export function heartbeatService(db: Db) {
     const agent = await getAgent(agentId);
     if (!agent) throw notFound("Agent not found");
 
+    const writeSkippedRequest = async (skipReason: string) => {
+      await db.insert(agentWakeupRequests).values({
+        companyId: agent.companyId,
+        agentId,
+        source,
+        triggerDetail,
+        reason: skipReason,
+        payload,
+        status: "skipped",
+        requestedByActorType: opts.requestedByActorType ?? null,
+        requestedByActorId: opts.requestedByActorId ?? null,
+        idempotencyKey: opts.idempotencyKey ?? null,
+        finishedAt: new Date(),
+      });
+    };
+
+    let projectId = readNonEmptyString(enrichedContextSnapshot.projectId);
+    if (!projectId && issueId) {
+      projectId = await db
+        .select({ projectId: issues.projectId })
+        .from(issues)
+        .where(and(eq(issues.id, issueId), eq(issues.companyId, agent.companyId)))
+        .then((rows) => rows[0]?.projectId ?? null);
+    }
+
+    const budgetBlock = await budgets.getInvocationBlock(agent.companyId, agentId, {
+      issueId,
+      projectId,
+    });
+    if (budgetBlock) {
+      await writeSkippedRequest("budget.blocked");
+      throw conflict(budgetBlock.reason, {
+        scopeType: budgetBlock.scopeType,
+        scopeId: budgetBlock.scopeId,
+      });
+    }
+
     if (
       agent.status === "paused" ||
       agent.status === "terminated" ||
@@ -2158,21 +2376,6 @@ export function heartbeatService(db: Db) {
     }
 
     const policy = parseHeartbeatPolicy(agent);
-    const writeSkippedRequest = async (reason: string) => {
-      await db.insert(agentWakeupRequests).values({
-        companyId: agent.companyId,
-        agentId,
-        source,
-        triggerDetail,
-        reason,
-        payload,
-        status: "skipped",
-        requestedByActorType: opts.requestedByActorType ?? null,
-        requestedByActorId: opts.requestedByActorId ?? null,
-        idempotencyKey: opts.idempotencyKey ?? null,
-        finishedAt: new Date(),
-      });
-    };
 
     if (source === "timer" && !policy.enabled) {
       await writeSkippedRequest("heartbeat.disabled");
@@ -2582,6 +2785,205 @@ export function heartbeatService(db: Db) {
     return newRun;
   }
 
+  async function listProjectScopedRunIds(companyId: string, projectId: string) {
+    const runIssueId = sql<string | null>`${heartbeatRuns.contextSnapshot} ->> 'issueId'`;
+    const effectiveProjectId = sql<string | null>`coalesce(${heartbeatRuns.contextSnapshot} ->> 'projectId', ${issues.projectId}::text)`;
+
+    const rows = await db
+      .selectDistinctOn([heartbeatRuns.id], { id: heartbeatRuns.id })
+      .from(heartbeatRuns)
+      .leftJoin(
+        issues,
+        and(
+          eq(issues.companyId, companyId),
+          sql`${issues.id}::text = ${runIssueId}`,
+        ),
+      )
+      .where(
+        and(
+          eq(heartbeatRuns.companyId, companyId),
+          inArray(heartbeatRuns.status, ["queued", "running"]),
+          sql`${effectiveProjectId} = ${projectId}`,
+        ),
+      );
+
+    return rows.map((row) => row.id);
+  }
+
+  async function listProjectScopedWakeupIds(companyId: string, projectId: string) {
+    const wakeIssueId = sql<string | null>`${agentWakeupRequests.payload} ->> 'issueId'`;
+    const effectiveProjectId = sql<string | null>`coalesce(${agentWakeupRequests.payload} ->> 'projectId', ${issues.projectId}::text)`;
+
+    const rows = await db
+      .selectDistinctOn([agentWakeupRequests.id], { id: agentWakeupRequests.id })
+      .from(agentWakeupRequests)
+      .leftJoin(
+        issues,
+        and(
+          eq(issues.companyId, companyId),
+          sql`${issues.id}::text = ${wakeIssueId}`,
+        ),
+      )
+      .where(
+        and(
+          eq(agentWakeupRequests.companyId, companyId),
+          inArray(agentWakeupRequests.status, ["queued", "deferred_issue_execution"]),
+          sql`${agentWakeupRequests.runId} is null`,
+          sql`${effectiveProjectId} = ${projectId}`,
+        ),
+      );
+
+    return rows.map((row) => row.id);
+  }
+
+  async function cancelPendingWakeupsForBudgetScope(scope: BudgetEnforcementScope) {
+    const now = new Date();
+    let wakeupIds: string[] = [];
+
+    if (scope.scopeType === "company") {
+      wakeupIds = await db
+        .select({ id: agentWakeupRequests.id })
+        .from(agentWakeupRequests)
+        .where(
+          and(
+            eq(agentWakeupRequests.companyId, scope.companyId),
+            inArray(agentWakeupRequests.status, ["queued", "deferred_issue_execution"]),
+            sql`${agentWakeupRequests.runId} is null`,
+          ),
+        )
+        .then((rows) => rows.map((row) => row.id));
+    } else if (scope.scopeType === "agent") {
+      wakeupIds = await db
+        .select({ id: agentWakeupRequests.id })
+        .from(agentWakeupRequests)
+        .where(
+          and(
+            eq(agentWakeupRequests.companyId, scope.companyId),
+            eq(agentWakeupRequests.agentId, scope.scopeId),
+            inArray(agentWakeupRequests.status, ["queued", "deferred_issue_execution"]),
+            sql`${agentWakeupRequests.runId} is null`,
+          ),
+        )
+        .then((rows) => rows.map((row) => row.id));
+    } else {
+      wakeupIds = await listProjectScopedWakeupIds(scope.companyId, scope.scopeId);
+    }
+
+    if (wakeupIds.length === 0) return 0;
+
+    await db
+      .update(agentWakeupRequests)
+      .set({
+        status: "cancelled",
+        finishedAt: now,
+        error: "Cancelled due to budget pause",
+        updatedAt: now,
+      })
+      .where(inArray(agentWakeupRequests.id, wakeupIds));
+
+    return wakeupIds.length;
+  }
+
+  async function cancelRunInternal(runId: string, reason = "Cancelled by control plane") {
+    const run = await getRun(runId);
+    if (!run) throw notFound("Heartbeat run not found");
+    if (run.status !== "running" && run.status !== "queued") return run;
+
+    const running = runningProcesses.get(run.id);
+    if (running) {
+      running.child.kill("SIGTERM");
+      const graceMs = Math.max(1, running.graceSec) * 1000;
+      setTimeout(() => {
+        if (!running.child.killed) {
+          running.child.kill("SIGKILL");
+        }
+      }, graceMs);
+    }
+
+    const cancelled = await setRunStatus(run.id, "cancelled", {
+      finishedAt: new Date(),
+      error: reason,
+      errorCode: "cancelled",
+    });
+
+    await setWakeupStatus(run.wakeupRequestId, "cancelled", {
+      finishedAt: new Date(),
+      error: reason,
+    });
+
+    if (cancelled) {
+      await appendRunEvent(cancelled, 1, {
+        eventType: "lifecycle",
+        stream: "system",
+        level: "warn",
+        message: "run cancelled",
+      });
+      await releaseIssueExecutionAndPromote(cancelled);
+    }
+
+    runningProcesses.delete(run.id);
+    await finalizeAgentStatus(run.agentId, "cancelled");
+    await startNextQueuedRunForAgent(run.agentId);
+    return cancelled;
+  }
+
+  async function cancelActiveForAgentInternal(agentId: string, reason = "Cancelled due to agent pause") {
+    const runs = await db
+      .select()
+      .from(heartbeatRuns)
+      .where(and(eq(heartbeatRuns.agentId, agentId), inArray(heartbeatRuns.status, ["queued", "running"])));
+
+    for (const run of runs) {
+      await setRunStatus(run.id, "cancelled", {
+        finishedAt: new Date(),
+        error: reason,
+        errorCode: "cancelled",
+      });
+
+      await setWakeupStatus(run.wakeupRequestId, "cancelled", {
+        finishedAt: new Date(),
+        error: reason,
+      });
+
+      const running = runningProcesses.get(run.id);
+      if (running) {
+        running.child.kill("SIGTERM");
+        runningProcesses.delete(run.id);
+      }
+      await releaseIssueExecutionAndPromote(run);
+    }
+
+    return runs.length;
+  }
+
+  async function cancelBudgetScopeWork(scope: BudgetEnforcementScope) {
+    if (scope.scopeType === "agent") {
+      await cancelActiveForAgentInternal(scope.scopeId, "Cancelled due to budget pause");
+      await cancelPendingWakeupsForBudgetScope(scope);
+      return;
+    }
+
+    const runIds =
+      scope.scopeType === "company"
+        ? await db
+          .select({ id: heartbeatRuns.id })
+          .from(heartbeatRuns)
+          .where(
+            and(
+              eq(heartbeatRuns.companyId, scope.companyId),
+              inArray(heartbeatRuns.status, ["queued", "running"]),
+            ),
+          )
+          .then((rows) => rows.map((row) => row.id))
+        : await listProjectScopedRunIds(scope.companyId, scope.scopeId);
+
+    for (const runId of runIds) {
+      await cancelRunInternal(runId, "Cancelled due to budget pause");
+    }
+
+    await cancelPendingWakeupsForBudgetScope(scope);
+  }
+
   return {
     list: async (companyId: string, agentId?: string, limit?: number) => {
       const query = db
@@ -2754,77 +3156,11 @@ export function heartbeatService(db: Db) {
       return { checked, enqueued, skipped };
     },
 
-    cancelRun: async (runId: string) => {
-      const run = await getRun(runId);
-      if (!run) throw notFound("Heartbeat run not found");
-      if (run.status !== "running" && run.status !== "queued") return run;
+    cancelRun: (runId: string) => cancelRunInternal(runId),
 
-      const running = runningProcesses.get(run.id);
-      if (running) {
-        running.child.kill("SIGTERM");
-        const graceMs = Math.max(1, running.graceSec) * 1000;
-        setTimeout(() => {
-          if (!running.child.killed) {
-            running.child.kill("SIGKILL");
-          }
-        }, graceMs);
-      }
+    cancelActiveForAgent: (agentId: string) => cancelActiveForAgentInternal(agentId),
 
-      const cancelled = await setRunStatus(run.id, "cancelled", {
-        finishedAt: new Date(),
-        error: "Cancelled by control plane",
-        errorCode: "cancelled",
-      });
-
-      await setWakeupStatus(run.wakeupRequestId, "cancelled", {
-        finishedAt: new Date(),
-        error: "Cancelled by control plane",
-      });
-
-      if (cancelled) {
-        await appendRunEvent(cancelled, 1, {
-          eventType: "lifecycle",
-          stream: "system",
-          level: "warn",
-          message: "run cancelled",
-        });
-        await releaseIssueExecutionAndPromote(cancelled);
-      }
-
-      runningProcesses.delete(run.id);
-      await finalizeAgentStatus(run.agentId, "cancelled");
-      await startNextQueuedRunForAgent(run.agentId);
-      return cancelled;
-    },
-
-    cancelActiveForAgent: async (agentId: string) => {
-      const runs = await db
-        .select()
-        .from(heartbeatRuns)
-        .where(and(eq(heartbeatRuns.agentId, agentId), inArray(heartbeatRuns.status, ["queued", "running"])));
-
-      for (const run of runs) {
-        await setRunStatus(run.id, "cancelled", {
-          finishedAt: new Date(),
-          error: "Cancelled due to agent pause",
-          errorCode: "cancelled",
-        });
-
-        await setWakeupStatus(run.wakeupRequestId, "cancelled", {
-          finishedAt: new Date(),
-          error: "Cancelled due to agent pause",
-        });
-
-        const running = runningProcesses.get(run.id);
-        if (running) {
-          running.child.kill("SIGTERM");
-          runningProcesses.delete(run.id);
-        }
-        await releaseIssueExecutionAndPromote(run);
-      }
-
-      return runs.length;
-    },
+    cancelBudgetScopeWork,
 
     getActiveRunForAgent: async (agentId: string) => {
       const [run] = await db

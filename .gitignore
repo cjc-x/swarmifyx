@@ -38,6 +38,7 @@ tmp/
 *.tmp
 .claude/settings.local.json
 .chopsticks-local/
+/.agents/
 
 # Doc maintenance cursor
 .doc-review-cursor
@@ -45,3 +46,4 @@ tmp/
 # Playwright
 tests/e2e/test-results/
 tests/e2e/playwright-report/
+.superset/

@@ -27,6 +27,8 @@ const WORKDIR_PLACEHOLDER = "/path/to/project";
 const TASK_TITLE_PLACEHOLDER = /^(e\.g\. Research competitor pricing|例如：调研竞品定价)$/;
 const TASK_DESCRIPTION_PLACEHOLDER =
   /^(Add more detail about what the agent should do\.\.\.|补充更多关于代理要做什么的细节\.\.\.)$/;
+const CREATE_AND_OPEN_ISSUE_BUTTON = /^(Create & Open Issue|创建并打开任务)$/;
+const THEME_TOGGLE_BUTTON = /^(Switch to light mode|Switch to dark mode|切换到浅色模式|切换到深色模式)$/;
 
 async function openOnboarding(page: Page) {
   await page.goto("/");
@@ -71,6 +73,45 @@ async function configureCodexAgent(page: Page) {
 
   const workdirInput = page.locator(`input[placeholder="${WORKDIR_PLACEHOLDER}"]`);
   await workdirInput.fill(process.cwd());
+}
+
+async function completeOnboardingToIssue(page: Page, companyName: string, taskTitle: string) {
+  const { wizardHeading } = await openOnboarding(page);
+
+  await expect(wizardHeading).toBeVisible({ timeout: 5_000 });
+
+  const companyNameInput = page.locator('input[placeholder="Acme Corp"]');
+  await companyNameInput.fill(companyName);
+
+  await page.getByRole("button", { name: NEXT_BUTTON }).click();
+
+  await expect(
+    page.locator("h3", { hasText: "Create your first agent" }),
+  ).toBeVisible({ timeout: 10_000 });
+
+  await expect(page.locator('input[placeholder="CEO"]')).toHaveValue(AGENT_NAME);
+  await expect(page.getByRole("button", { name: /Codex/ })).toBeVisible();
+  await configureCodexAgent(page);
+
+  await page.getByRole("button", { name: NEXT_BUTTON }).click();
+
+  await expect(
+    page.locator("h3", { hasText: "Give it something to do" }),
+  ).toBeVisible({ timeout: 60_000 });
+
+  const titleInput = taskTitleInput(page);
+  await expect(titleInput).toBeVisible({ timeout: 10_000 });
+  await titleInput.clear();
+  await titleInput.fill(taskTitle);
+
+  await page.getByRole("button", { name: NEXT_BUTTON }).click();
+
+  await expect(
+    page.locator("h3", { hasText: "Ready to launch" }),
+  ).toBeVisible({ timeout: 10_000 });
+
+  await page.getByRole("button", { name: CREATE_AND_OPEN_ISSUE_BUTTON }).click();
+  await expect(page).toHaveURL(/\/issues\//, { timeout: 10_000 });
 }
 
 function onboardingLanguageButton(page: Page) {
@@ -204,5 +245,50 @@ test.describe("Onboarding wizard", () => {
     await onboardingLanguageButton(page).click();
     await page.getByRole("button", { name: "简体中文" }).click();
     await expect(titleInput).toHaveValue("custom onboarding task");
+  });
+
+  test("switches layout language beside the theme toggle and persists after refresh", async ({ page }) => {
+    test.setTimeout(180_000);
+
+    await completeOnboardingToIssue(page, `${COMPANY_NAME}-shell`, `${TASK_TITLE} shell`);
+    await page.goto("/dashboard");
+
+    const languageButton = page.getByRole("button", { name: LANGUAGE_BUTTON }).first();
+    const themeButton = page.getByRole("button", { name: THEME_TOGGLE_BUTTON }).first();
+
+    await expect(languageButton).toBeVisible({ timeout: 15_000 });
+    await expect(themeButton).toBeVisible({ timeout: 15_000 });
+
+    const footerButtonsAreAdjacent = await page.evaluate(() => {
+      const buttons = Array.from(document.querySelectorAll("button"));
+      const language = buttons.find((button) => /^(Language|语言)$/.test(button.textContent?.trim() ?? ""));
+      const theme = buttons.find((button) =>
+        /^(Switch to light mode|Switch to dark mode|切换到浅色模式|切换到深色模式)$/.test(
+          button.getAttribute("aria-label") ?? "",
+        ),
+      );
+      if (!language || !theme || language.parentElement == null || language.parentElement !== theme.parentElement) {
+        return false;
+      }
+      const siblings = Array.from(language.parentElement.children);
+      return Math.abs(siblings.indexOf(language) - siblings.indexOf(theme)) === 1;
+    });
+    expect(footerButtonsAreAdjacent).toBe(true);
+
+    await languageButton.click();
+    await page.getByRole("button", { name: "简体中文" }).click();
+    await expect(page.getByText("仪表盘").first()).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByText("项目").first()).toBeVisible({ timeout: 15_000 });
+
+    await page.reload();
+    await expect(page.getByRole("button", { name: /^(语言|Language)$/ }).first()).toBeVisible({
+      timeout: 15_000,
+    });
+    await expect(page.getByText("仪表盘").first()).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByText("项目").first()).toBeVisible({ timeout: 15_000 });
+
+    await page.getByRole("button", { name: /^(语言|Language)$/ }).first().click();
+    await page.getByRole("button", { name: "English" }).click();
+    await expect(page.getByText("Dashboard").first()).toBeVisible({ timeout: 15_000 });
   });
 });
