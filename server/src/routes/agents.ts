@@ -29,6 +29,7 @@ import {
   issueService,
   logActivity,
   secretService,
+  workspaceOperationService,
 } from "../services/index.js";
 import { conflict, forbidden, notFound, unprocessable } from "../errors.js";
 import { assertBoard, assertCompanyAccess, getActorInfo } from "./authz.js";
@@ -36,25 +37,25 @@ import { findServerAdapter, listAdapterModels } from "../adapters/index.js";
 import { redactEventPayload } from "../redaction.js";
 import { redactCurrentUserValue } from "../log-redaction.js";
 import { runClaudeLogin } from "@chopsticks/adapter-claude-local/server";
-import { DEFAULT_CODEBUDDY_LOCAL_MODEL } from "@chopsticks/adapter-codebuddy-local";
 import {
   DEFAULT_CODEX_LOCAL_BYPASS_APPROVALS_AND_SANDBOX,
   DEFAULT_CODEX_LOCAL_MODEL,
 } from "@chopsticks/adapter-codex-local";
+import { DEFAULT_CODEBUDDY_LOCAL_MODEL } from "@chopsticks/adapter-codebuddy-local";
 import { DEFAULT_CURSOR_LOCAL_MODEL } from "@chopsticks/adapter-cursor-local";
 import { DEFAULT_GEMINI_LOCAL_MODEL } from "@chopsticks/adapter-gemini-local";
-import { DEFAULT_QWEN_LOCAL_MODEL } from "@chopsticks/adapter-qwen-local";
 import { ensureOpenCodeModelConfiguredAndAvailable } from "@chopsticks/adapter-opencode-local/server";
+import { DEFAULT_QWEN_LOCAL_MODEL } from "@chopsticks/adapter-qwen-local";
 
 export function agentRoutes(db: Db) {
   const DEFAULT_INSTRUCTIONS_PATH_KEYS: Record<string, string> = {
     claude_local: "instructionsFilePath",
     codebuddy_local: "instructionsFilePath",
     codex_local: "instructionsFilePath",
-    gemini_local: "instructionsFilePath",
-    qwen_local: "instructionsFilePath",
-    opencode_local: "instructionsFilePath",
     cursor: "instructionsFilePath",
+    gemini_local: "instructionsFilePath",
+    opencode_local: "instructionsFilePath",
+    qwen_local: "instructionsFilePath",
   };
   const KNOWN_INSTRUCTIONS_PATH_KEYS = new Set(["instructionsFilePath", "agentsMdPath"]);
 
@@ -66,6 +67,7 @@ export function agentRoutes(db: Db) {
   const heartbeat = heartbeatService(db);
   const issueApprovalsSvc = issueApprovalService(db);
   const secretsSvc = secretService(db);
+  const workspaceOperations = workspaceOperationService(db);
   const strictSecretsMode = process.env.CHOPSTICKS_SECRETS_STRICT_MODE === "true";
 
   function canCreateAgents(agent: { role: string; permissions: Record<string, unknown> | null | undefined }) {
@@ -246,10 +248,6 @@ export function agentRoutes(db: Db) {
     adapterConfig: Record<string, unknown>,
   ): Record<string, unknown> {
     const next = { ...adapterConfig };
-    if (adapterType === "codebuddy_local" && !asNonEmptyString(next.model)) {
-      next.model = DEFAULT_CODEBUDDY_LOCAL_MODEL;
-      return ensureGatewayDeviceKey(adapterType, next);
-    }
     if (adapterType === "codex_local") {
       if (!asNonEmptyString(next.model)) {
         next.model = DEFAULT_CODEX_LOCAL_MODEL;
@@ -266,13 +264,17 @@ export function agentRoutes(db: Db) {
       next.model = DEFAULT_GEMINI_LOCAL_MODEL;
       return ensureGatewayDeviceKey(adapterType, next);
     }
-    if (adapterType === "qwen_local" && !asNonEmptyString(next.model)) {
-      next.model = DEFAULT_QWEN_LOCAL_MODEL;
+    if (adapterType === "codebuddy_local" && !asNonEmptyString(next.model)) {
+      next.model = DEFAULT_CODEBUDDY_LOCAL_MODEL;
       return ensureGatewayDeviceKey(adapterType, next);
     }
     // OpenCode requires explicit model selection — no default
     if (adapterType === "cursor" && !asNonEmptyString(next.model)) {
       next.model = DEFAULT_CURSOR_LOCAL_MODEL;
+      return ensureGatewayDeviceKey(adapterType, next);
+    }
+    if (adapterType === "qwen_local" && !asNonEmptyString(next.model)) {
+      next.model = DEFAULT_QWEN_LOCAL_MODEL;
     }
     return ensureGatewayDeviceKey(adapterType, next);
   }
@@ -1565,6 +1567,40 @@ export function agentRoutes(db: Db) {
     const offset = Number(req.query.offset ?? 0);
     const limitBytes = Number(req.query.limitBytes ?? 256000);
     const result = await heartbeat.readLog(runId, {
+      offset: Number.isFinite(offset) ? offset : 0,
+      limitBytes: Number.isFinite(limitBytes) ? limitBytes : 256000,
+    });
+
+    res.json(result);
+  });
+
+  router.get("/heartbeat-runs/:runId/workspace-operations", async (req, res) => {
+    const runId = req.params.runId as string;
+    const run = await heartbeat.getRun(runId);
+    if (!run) {
+      res.status(404).json({ error: "Heartbeat run not found" });
+      return;
+    }
+    assertCompanyAccess(req, run.companyId);
+
+    const context = asRecord(run.contextSnapshot);
+    const executionWorkspaceId = asNonEmptyString(context?.executionWorkspaceId);
+    const operations = await workspaceOperations.listForRun(runId, executionWorkspaceId);
+    res.json(redactCurrentUserValue(operations));
+  });
+
+  router.get("/workspace-operations/:operationId/log", async (req, res) => {
+    const operationId = req.params.operationId as string;
+    const operation = await workspaceOperations.getById(operationId);
+    if (!operation) {
+      res.status(404).json({ error: "Workspace operation not found" });
+      return;
+    }
+    assertCompanyAccess(req, operation.companyId);
+
+    const offset = Number(req.query.offset ?? 0);
+    const limitBytes = Number(req.query.limitBytes ?? 256000);
+    const result = await workspaceOperations.readLog(operationId, {
       offset: Number.isFinite(offset) ? offset : 0,
       limitBytes: Number.isFinite(limitBytes) ? limitBytes : 256000,
     });

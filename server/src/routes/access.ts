@@ -97,7 +97,12 @@ function requestBaseUrl(req: Request) {
 
 function readSkillMarkdown(skillName: string): string | null {
   const normalized = skillName.trim().toLowerCase();
-  if (normalized !== "chopsticks" && normalized !== "chopsticks-create-agent")
+  if (
+    normalized !== "chopsticks" &&
+    normalized !== "chopsticks-create-agent" &&
+    normalized !== "chopsticks-create-plugin" &&
+    normalized !== "para-memory-files"
+  )
     return null;
   const moduleDir = path.dirname(fileURLToPath(import.meta.url));
   const candidates = [
@@ -113,6 +118,90 @@ function readSkillMarkdown(skillName: string): string | null {
     }
   }
   return null;
+}
+
+/** Resolve the Chopsticks repo skills directory (built-in / managed skills). */
+function resolveChopsticksSkillsDir(): string | null {
+  const moduleDir = path.dirname(fileURLToPath(import.meta.url));
+  const candidates = [
+    path.resolve(moduleDir, "../../skills"),         // published
+    path.resolve(process.cwd(), "skills"),           // cwd (monorepo root)
+    path.resolve(moduleDir, "../../../skills"),       // dev
+  ];
+  for (const candidate of candidates) {
+    try {
+      if (fs.statSync(candidate).isDirectory()) return candidate;
+    } catch { /* skip */ }
+  }
+  return null;
+}
+
+/** Parse YAML frontmatter from a SKILL.md file to extract the description. */
+function parseSkillFrontmatter(markdown: string): { description: string } {
+  const match = markdown.match(/^---\n([\s\S]*?)\n---/);
+  if (!match) return { description: "" };
+  const yaml = match[1];
+  // Extract description — handles both single-line and multi-line YAML values
+  const descMatch = yaml.match(
+    /^description:\s*(?:>\s*\n((?:\s{2,}[^\n]*\n?)+)|[|]\s*\n((?:\s{2,}[^\n]*\n?)+)|["']?(.*?)["']?\s*$)/m
+  );
+  if (!descMatch) return { description: "" };
+  const raw = descMatch[1] ?? descMatch[2] ?? descMatch[3] ?? "";
+  return {
+    description: raw
+      .split("\n")
+      .map((l: string) => l.trim())
+      .filter(Boolean)
+      .join(" ")
+      .trim(),
+  };
+}
+
+interface AvailableSkill {
+  name: string;
+  description: string;
+  isChopsticksManaged: boolean;
+}
+
+/** Discover all available Claude Code skills from ~/.claude/skills/. */
+function listAvailableSkills(): AvailableSkill[] {
+  const homeDir = process.env.HOME || process.env.USERPROFILE || "";
+  const claudeSkillsDir = path.join(homeDir, ".claude", "skills");
+  const chopsticksSkillsDir = resolveChopsticksSkillsDir();
+
+  // Build set of Chopsticks-managed skill names
+  const chopsticksSkillNames = new Set<string>();
+  if (chopsticksSkillsDir) {
+    try {
+      for (const entry of fs.readdirSync(chopsticksSkillsDir, { withFileTypes: true })) {
+        if (entry.isDirectory()) chopsticksSkillNames.add(entry.name);
+      }
+    } catch { /* skip */ }
+  }
+
+  const skills: AvailableSkill[] = [];
+
+  try {
+    const entries = fs.readdirSync(claudeSkillsDir, { withFileTypes: true });
+    for (const entry of entries) {
+      if (!entry.isDirectory() && !entry.isSymbolicLink()) continue;
+      if (entry.name.startsWith(".")) continue;
+      const skillMdPath = path.join(claudeSkillsDir, entry.name, "SKILL.md");
+      let description = "";
+      try {
+        const md = fs.readFileSync(skillMdPath, "utf8");
+        description = parseSkillFrontmatter(md).description;
+      } catch { /* no SKILL.md or unreadable */ }
+      skills.push({
+        name: entry.name,
+        description,
+        isChopsticksManaged: chopsticksSkillNames.has(entry.name),
+      });
+    }
+  } catch { /* ~/.claude/skills/ doesn't exist */ }
+
+  skills.sort((a, b) => a.name.localeCompare(b.name));
+  return skills;
 }
 
 function toJoinRequestResponse(row: typeof joinRequests.$inferSelect) {
@@ -234,10 +323,10 @@ function extractHeaderEntries(input: unknown): Array<[string, unknown]> {
       )
         ? mapped.value
         : Object.prototype.hasOwnProperty.call(mapped, "token")
-          ? mapped.token
-          : Object.prototype.hasOwnProperty.call(mapped, "secret")
-            ? mapped.secret
-            : mapped;
+        ? mapped.token
+        : Object.prototype.hasOwnProperty.call(mapped, "secret")
+        ? mapped.secret
+        : mapped;
       entries.push([explicitKey, explicitValue]);
       continue;
     }
@@ -474,10 +563,10 @@ function summarizeOpenClawGatewayDefaultsForLog(defaultsPayload: unknown) {
   const headers = defaults ? normalizeHeaderMap(defaults.headers) : undefined;
   const gatewayTokenValue = headers
     ? headerMapGetIgnoreCase(headers, "x-openclaw-token") ??
-    headerMapGetIgnoreCase(headers, "x-openclaw-auth") ??
-    tokenFromAuthorizationHeader(
-      headerMapGetIgnoreCase(headers, "authorization")
-    )
+      headerMapGetIgnoreCase(headers, "x-openclaw-auth") ??
+      tokenFromAuthorizationHeader(
+        headerMapGetIgnoreCase(headers, "authorization")
+      )
     : null;
   return {
     present: Boolean(defaults),
@@ -659,8 +748,9 @@ export function normalizeAgentDefaultsForJoin(input: {
       diagnostics.push({
         code: "openclaw_gateway_device_key_generate_failed",
         level: "warn",
-        message: `Failed to generate gateway device key: ${err instanceof Error ? err.message : String(err)
-          }`,
+        message: `Failed to generate gateway device key: ${
+          err instanceof Error ? err.message : String(err)
+        }`,
         hint:
           "Set agentDefaultsPayload.devicePrivateKeyPem explicitly or set disableDeviceAuth=true."
       });
@@ -672,11 +762,11 @@ export function normalizeAgentDefaultsForJoin(input: {
 
   const waitTimeoutMs =
     typeof defaults.waitTimeoutMs === "number" &&
-      Number.isFinite(defaults.waitTimeoutMs)
+    Number.isFinite(defaults.waitTimeoutMs)
       ? Math.floor(defaults.waitTimeoutMs)
       : typeof defaults.waitTimeoutMs === "string"
-        ? Number.parseInt(defaults.waitTimeoutMs.trim(), 10)
-        : NaN;
+      ? Number.parseInt(defaults.waitTimeoutMs.trim(), 10)
+      : NaN;
   if (Number.isFinite(waitTimeoutMs) && waitTimeoutMs > 0) {
     normalized.waitTimeoutMs = waitTimeoutMs;
   }
@@ -685,8 +775,8 @@ export function normalizeAgentDefaultsForJoin(input: {
     typeof defaults.timeoutSec === "number" && Number.isFinite(defaults.timeoutSec)
       ? Math.floor(defaults.timeoutSec)
       : typeof defaults.timeoutSec === "string"
-        ? Number.parseInt(defaults.timeoutSec.trim(), 10)
-        : NaN;
+      ? Number.parseInt(defaults.timeoutSec.trim(), 10)
+      : NaN;
   if (Number.isFinite(timeoutSec) && timeoutSec > 0) {
     normalized.timeoutSec = timeoutSec;
   }
@@ -963,7 +1053,7 @@ function buildInviteOnboardingManifest(
         diagnostics: discoveryDiagnostics,
         guidance:
           opts.deploymentMode === "authenticated" &&
-            opts.deploymentExposure === "private"
+          opts.deploymentExposure === "private"
             ? "If OpenClaw runs on another machine, ensure the Chopsticks hostname is reachable and allowed via `pnpm chopsticks allowed-hostname <host>`."
             : "Ensure OpenClaw can reach this Chopsticks API base URL for invite, claim, and skill bootstrap calls."
       },
@@ -1083,8 +1173,9 @@ export function buildInviteOnboardingTextDocument(
     ' "$TOKEN")"
 
     ## Step 1: Submit agent join request
-    ${onboarding.registrationEndpoint.method} ${onboarding.registrationEndpoint.url
-    }
+    ${onboarding.registrationEndpoint.method} ${
+    onboarding.registrationEndpoint.url
+  }
 
     IMPORTANT: You MUST include agentDefaultsPayload.headers.x-openclaw-token with your gateway token.
     Legacy x-openclaw-auth is also accepted, but x-openclaw-token is preferred.
@@ -1121,7 +1212,8 @@ export function buildInviteOnboardingTextDocument(
     The board approves the join request in Chopsticks before key claim is allowed.
 
     ## Step 3: Claim API key (one-time)
-    ${onboarding.claimEndpointTemplate.method
+    ${
+      onboarding.claimEndpointTemplate.method
     } /api/join-requests/{requestId}/claim-api-key
 
     Body (JSON):
@@ -1163,8 +1255,9 @@ export function buildInviteOnboardingTextDocument(
     ${onboarding.textInstructions.url}
 
     ## Connectivity guidance
-    ${onboarding.connectivity?.guidance ??
-    "Ensure Chopsticks is reachable from your OpenClaw runtime."
+    ${
+      onboarding.connectivity?.guidance ??
+      "Ensure Chopsticks is reachable from your OpenClaw runtime."
     }
   `);
 
@@ -1172,8 +1265,8 @@ export function buildInviteOnboardingTextDocument(
     onboarding.connectivity?.connectionCandidates
   )
     ? onboarding.connectivity.connectionCandidates.filter(
-      (entry): entry is string => Boolean(entry)
-    )
+        (entry): entry is string => Boolean(entry)
+      )
     : [];
 
   if (connectionCandidates.length > 0) {
@@ -1302,8 +1395,8 @@ function grantsFromDefaults(
       permissionKey: record.permissionKey as (typeof PERMISSION_KEYS)[number],
       scope:
         record.scope &&
-          typeof record.scope === "object" &&
-          !Array.isArray(record.scope)
+        typeof record.scope === "object" &&
+        !Array.isArray(record.scope)
           ? (record.scope as Record<string, unknown>)
           : null
     });
@@ -1602,10 +1695,18 @@ export function accessRoutes(
     return { token, created, normalizedAgentMessage };
   }
 
+  router.get("/skills/available", (_req, res) => {
+    res.json({ skills: listAvailableSkills() });
+  });
+
   router.get("/skills/index", (_req, res) => {
     res.json({
       skills: [
         { name: "chopsticks", path: "/api/skills/chopsticks" },
+        {
+          name: "para-memory-files",
+          path: "/api/skills/para-memory-files"
+        },
         {
           name: "chopsticks-create-agent",
           path: "/api/skills/chopsticks-create-agent"
@@ -1823,10 +1924,10 @@ export function accessRoutes(
       const inviteAlreadyAccepted = Boolean(invite.acceptedAt);
       const existingJoinRequestForInvite = inviteAlreadyAccepted
         ? await db
-          .select()
-          .from(joinRequests)
-          .where(eq(joinRequests.inviteId, invite.id))
-          .then((rows) => rows[0] ?? null)
+            .select()
+            .from(joinRequests)
+            .where(eq(joinRequests.inviteId, invite.id))
+            .then((rows) => rows[0] ?? null)
         : null;
 
       if (invite.inviteType === "bootstrap_ceo") {
@@ -1913,37 +2014,37 @@ export function accessRoutes(
 
       const replayMergedDefaults = inviteAlreadyAccepted
         ? mergeJoinDefaultsPayloadForReplay(
-          existingJoinRequestForInvite?.agentDefaultsPayload ?? null,
-          req.body.agentDefaultsPayload ?? null
-        )
+            existingJoinRequestForInvite?.agentDefaultsPayload ?? null,
+            req.body.agentDefaultsPayload ?? null
+          )
         : req.body.agentDefaultsPayload ?? null;
 
       const gatewayDefaultsPayload =
         requestType === "agent"
           ? buildJoinDefaultsPayloadForAccept({
-            adapterType,
-            defaultsPayload: replayMergedDefaults,
-            chopsticksApiUrl: req.body.chopsticksApiUrl ?? null,
-            inboundOpenClawAuthHeader: req.header("x-openclaw-auth") ?? null,
-            inboundOpenClawTokenHeader: req.header("x-openclaw-token") ?? null
-          })
+              adapterType,
+              defaultsPayload: replayMergedDefaults,
+              chopsticksApiUrl: req.body.chopsticksApiUrl ?? null,
+              inboundOpenClawAuthHeader: req.header("x-openclaw-auth") ?? null,
+              inboundOpenClawTokenHeader: req.header("x-openclaw-token") ?? null
+            })
           : null;
 
       const joinDefaults =
         requestType === "agent"
           ? normalizeAgentDefaultsForJoin({
-            adapterType,
-            defaultsPayload: gatewayDefaultsPayload,
-            deploymentMode: opts.deploymentMode,
-            deploymentExposure: opts.deploymentExposure,
-            bindHost: opts.bindHost,
-            allowedHostnames: opts.allowedHostnames
-          })
+              adapterType,
+              defaultsPayload: gatewayDefaultsPayload,
+              deploymentMode: opts.deploymentMode,
+              deploymentExposure: opts.deploymentExposure,
+              bindHost: opts.bindHost,
+              allowedHostnames: opts.allowedHostnames
+            })
           : {
-            normalized: null as Record<string, unknown> | null,
-            diagnostics: [] as JoinDiagnostic[],
-            fatalErrors: [] as string[]
-          };
+              normalized: null as Record<string, unknown> | null,
+              diagnostics: [] as JoinDiagnostic[],
+              fatalErrors: [] as string[]
+            };
 
       if (requestType === "agent" && joinDefaults.fatalErrors.length > 0) {
         throw badRequest(joinDefaults.fatalErrors.join("; "));
@@ -1978,70 +2079,70 @@ export function accessRoutes(
         requestType === "human" ? await resolveActorEmail(db, req) : null;
       const created = !inviteAlreadyAccepted
         ? await db.transaction(async (tx) => {
-          await tx
-            .update(invites)
-            .set({ acceptedAt: new Date(), updatedAt: new Date() })
-            .where(
-              and(
-                eq(invites.id, invite.id),
-                isNull(invites.acceptedAt),
-                isNull(invites.revokedAt)
-              )
-            );
+            await tx
+              .update(invites)
+              .set({ acceptedAt: new Date(), updatedAt: new Date() })
+              .where(
+                and(
+                  eq(invites.id, invite.id),
+                  isNull(invites.acceptedAt),
+                  isNull(invites.revokedAt)
+                )
+              );
 
-          const row = await tx
-            .insert(joinRequests)
-            .values({
-              inviteId: invite.id,
-              companyId,
-              requestType,
-              status: "pending_approval",
+            const row = await tx
+              .insert(joinRequests)
+              .values({
+                inviteId: invite.id,
+                companyId,
+                requestType,
+                status: "pending_approval",
+                requestIp: requestIp(req),
+                requestingUserId:
+                  requestType === "human"
+                    ? req.actor.userId ?? "local-board"
+                    : null,
+                requestEmailSnapshot:
+                  requestType === "human" ? actorEmail : null,
+                agentName: requestType === "agent" ? req.body.agentName : null,
+                adapterType: requestType === "agent" ? adapterType : null,
+                capabilities:
+                  requestType === "agent"
+                    ? req.body.capabilities ?? null
+                    : null,
+                agentDefaultsPayload:
+                  requestType === "agent" ? joinDefaults.normalized : null,
+                claimSecretHash,
+                claimSecretExpiresAt
+              })
+              .returning()
+              .then((rows) => rows[0]);
+            return row;
+          })
+        : await db
+            .update(joinRequests)
+            .set({
               requestIp: requestIp(req),
-              requestingUserId:
-                requestType === "human"
-                  ? req.actor.userId ?? "local-board"
+              agentName:
+                requestType === "agent"
+                  ? req.body.agentName ??
+                    existingJoinRequestForInvite?.agentName ??
+                    null
                   : null,
-              requestEmailSnapshot:
-                requestType === "human" ? actorEmail : null,
-              agentName: requestType === "agent" ? req.body.agentName : null,
-              adapterType: requestType === "agent" ? adapterType : null,
               capabilities:
                 requestType === "agent"
-                  ? req.body.capabilities ?? null
+                  ? req.body.capabilities ??
+                    existingJoinRequestForInvite?.capabilities ??
+                    null
                   : null,
+              adapterType: requestType === "agent" ? adapterType : null,
               agentDefaultsPayload:
                 requestType === "agent" ? joinDefaults.normalized : null,
-              claimSecretHash,
-              claimSecretExpiresAt
+              updatedAt: new Date()
             })
+            .where(eq(joinRequests.id, replayJoinRequestId as string))
             .returning()
             .then((rows) => rows[0]);
-          return row;
-        })
-        : await db
-          .update(joinRequests)
-          .set({
-            requestIp: requestIp(req),
-            agentName:
-              requestType === "agent"
-                ? req.body.agentName ??
-                existingJoinRequestForInvite?.agentName ??
-                null
-                : null,
-            capabilities:
-              requestType === "agent"
-                ? req.body.capabilities ??
-                existingJoinRequestForInvite?.capabilities ??
-                null
-                : null,
-            adapterType: requestType === "agent" ? adapterType : null,
-            agentDefaultsPayload:
-              requestType === "agent" ? joinDefaults.normalized : null,
-            updatedAt: new Date()
-          })
-          .where(eq(joinRequests.id, replayJoinRequestId as string))
-          .returning()
-          .then((rows) => rows[0]);
 
       if (!created) {
         throw conflict("Join request not found");
@@ -2155,7 +2256,7 @@ export function accessRoutes(
           req.actor.type === "agent"
             ? req.actor.agentId ?? "invite-agent"
             : req.actor.userId ??
-            (requestType === "agent" ? "invite-anon" : "board"),
+              (requestType === "agent" ? "invite-anon" : "board"),
         action: inviteAlreadyAccepted
           ? "join.request_replayed"
           : "join.requested",
@@ -2331,7 +2432,7 @@ export function accessRoutes(
           adapterType: existing.adapterType ?? "process",
           adapterConfig:
             existing.agentDefaultsPayload &&
-              typeof existing.agentDefaultsPayload === "object"
+            typeof existing.agentDefaultsPayload === "object"
               ? (existing.agentDefaultsPayload as Record<string, unknown>)
               : {},
           runtimeConfig: {},
@@ -2393,7 +2494,7 @@ export function accessRoutes(
           source: "join_request",
           sourceId: requestId,
           approvedAt: new Date()
-        }).catch(() => { });
+        }).catch(() => {});
       }
 
       res.json(toJoinRequestResponse(approved));

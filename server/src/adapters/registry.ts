@@ -1,4 +1,5 @@
 import type { ServerAdapterModule } from "./types.js";
+import { getAdapterSessionManagement } from "@chopsticks/adapter-utils";
 import {
   execute as claudeExecute,
   testEnvironment as claudeTestEnvironment,
@@ -82,6 +83,7 @@ const claudeLocalAdapter: ServerAdapterModule = {
   execute: claudeExecute,
   testEnvironment: claudeTestEnvironment,
   sessionCodec: claudeSessionCodec,
+  sessionManagement: getAdapterSessionManagement("claude_local") ?? undefined,
   models: claudeModels,
   supportsLocalAgentJwt: true,
   agentConfigurationDoc: claudeAgentConfigurationDoc,
@@ -93,6 +95,7 @@ const codexLocalAdapter: ServerAdapterModule = {
   execute: codexExecute,
   testEnvironment: codexTestEnvironment,
   sessionCodec: codexSessionCodec,
+  sessionManagement: getAdapterSessionManagement("codex_local") ?? undefined,
   models: codexModels,
   listModels: listCodexModels,
   supportsLocalAgentJwt: true,
@@ -115,6 +118,7 @@ const cursorLocalAdapter: ServerAdapterModule = {
   execute: cursorExecute,
   testEnvironment: cursorTestEnvironment,
   sessionCodec: cursorSessionCodec,
+  sessionManagement: getAdapterSessionManagement("cursor") ?? undefined,
   models: cursorModels,
   listModels: listCursorModels,
   supportsLocalAgentJwt: true,
@@ -126,6 +130,7 @@ const geminiLocalAdapter: ServerAdapterModule = {
   execute: geminiExecute,
   testEnvironment: geminiTestEnvironment,
   sessionCodec: geminiSessionCodec,
+  sessionManagement: getAdapterSessionManagement("gemini_local") ?? undefined,
   models: geminiModels,
   supportsLocalAgentJwt: true,
   agentConfigurationDoc: geminiAgentConfigurationDoc,
@@ -155,6 +160,7 @@ const openCodeLocalAdapter: ServerAdapterModule = {
   execute: openCodeExecute,
   testEnvironment: openCodeTestEnvironment,
   sessionCodec: openCodeSessionCodec,
+  sessionManagement: getAdapterSessionManagement("opencode_local") ?? undefined,
   models: [],
   listModels: listOpenCodeModels,
   supportsLocalAgentJwt: true,
@@ -166,6 +172,7 @@ const piLocalAdapter: ServerAdapterModule = {
   execute: piExecute,
   testEnvironment: piTestEnvironment,
   sessionCodec: piSessionCodec,
+  sessionManagement: getAdapterSessionManagement("pi_local") ?? undefined,
   models: [],
   listModels: listPiModels,
   supportsLocalAgentJwt: true,

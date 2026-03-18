@@ -47,6 +47,11 @@ type CapturePayload = {
   chopsticksEnvKeys: string[];
 };
 
+type LogEntry = {
+  stream: "stdout" | "stderr";
+  chunk: string;
+};
+
 describe("codex execute", () => {
   it("preserves the configured CODEX_HOME while injecting shared auth, config, and skills", async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), "chopsticks-codex-execute-"));
@@ -72,6 +77,8 @@ describe("codex execute", () => {
     process.env.CODEX_HOME = sharedCodexHome;
 
     try {
+      const logs: LogEntry[] = [];
+      const isolatedCodexHome = path.join(chopsticksHome, "instances", "worktree-1", "codex-home");
       const result = await execute({
         runId: "run-1",
         agent: {
@@ -97,14 +104,16 @@ describe("codex execute", () => {
         },
         context: {},
         authToken: "run-jwt-token",
-        onLog: async () => { },
+        onLog: async (stream, chunk) => {
+          logs.push({ stream, chunk });
+        },
       });
 
       expect(result.exitCode).toBe(0);
       expect(result.errorMessage).toBeNull();
 
       const capture = JSON.parse(await fs.readFile(capturePath, "utf8")) as CapturePayload;
-      expect(capture.codexHome).toBe(sharedCodexHome);
+      expect(capture.codexHome).toBe(isolatedCodexHome);
       expect(capture.argv).toEqual(expect.arrayContaining(["exec", "--json", "-"]));
       expect(capture.prompt).toContain("Follow the chopsticks heartbeat.");
       expect(capture.chopsticksEnvKeys).toEqual(
@@ -117,13 +126,27 @@ describe("codex execute", () => {
         ]),
       );
 
-      const sharedAuth = path.join(sharedCodexHome, "auth.json");
-      const sharedConfig = path.join(sharedCodexHome, "config.toml");
-      const sharedSkill = path.join(sharedCodexHome, "skills", "chopsticks");
+      const isolatedAuth = path.join(isolatedCodexHome, "auth.json");
+      const isolatedConfig = path.join(isolatedCodexHome, "config.toml");
+      const isolatedSkill = path.join(isolatedCodexHome, "skills", "chopsticks");
 
-      expect((await fs.lstat(sharedAuth)).isFile()).toBe(true);
-      expect(await fs.readFile(sharedConfig, "utf8")).toBe('model = "codex-mini-latest"\n');
-      expect((await fs.lstat(sharedSkill)).isSymbolicLink()).toBe(true);
+      expect((await fs.lstat(isolatedAuth)).isSymbolicLink()).toBe(true);
+      expect(await fs.realpath(isolatedAuth)).toBe(await fs.realpath(path.join(sharedCodexHome, "auth.json")));
+      expect((await fs.lstat(isolatedConfig)).isFile()).toBe(true);
+      expect(await fs.readFile(isolatedConfig, "utf8")).toBe('model = "codex-mini-latest"\n');
+      expect((await fs.lstat(isolatedSkill)).isSymbolicLink()).toBe(true);
+      expect(logs).toContainEqual(
+        expect.objectContaining({
+          stream: "stdout",
+          chunk: expect.stringContaining("Using worktree-isolated Codex home"),
+        }),
+      );
+      expect(logs).toContainEqual(
+        expect.objectContaining({
+          stream: "stdout",
+          chunk: expect.stringContaining('Injected Codex skill "chopsticks"'),
+        }),
+      );
     } finally {
       if (previousHome === undefined) delete process.env.HOME;
       else process.env.HOME = previousHome;

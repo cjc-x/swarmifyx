@@ -22,15 +22,15 @@ export function resolveCodexHomeDir(env: NodeJS.ProcessEnv = process.env): strin
 }
 
 function isWorktreeMode(env: NodeJS.ProcessEnv): boolean {
-  const marker = env.CHOPSTICKS_IN_WORKTREE ?? env.CHOPSTICKS_IN_WORKTREE ?? "";
+  const marker = env.CHOPSTICKS_IN_WORKTREE ?? "";
   return TRUTHY_ENV_RE.test(marker);
 }
 
 function resolveWorktreeCodexHomeDir(env: NodeJS.ProcessEnv): string | null {
   if (!isWorktreeMode(env)) return null;
-  const chopsticksHome = nonEmpty(env.CHOPSTICKS_HOME ?? env.CHOPSTICKS_HOME);
+  const chopsticksHome = nonEmpty(env.CHOPSTICKS_HOME);
   if (!chopsticksHome) return null;
-  const instanceId = nonEmpty(env.CHOPSTICKS_INSTANCE_ID ?? env.CHOPSTICKS_INSTANCE_ID);
+  const instanceId = nonEmpty(env.CHOPSTICKS_INSTANCE_ID);
   if (instanceId) {
     return path.resolve(chopsticksHome, "instances", instanceId, "codex-home");
   }
@@ -95,7 +95,7 @@ export async function prepareWorktreeCodexHome(
   }
 
   await onLog(
-    "stderr",
+    "stdout",
     `[chopsticks] Using worktree-isolated Codex home "${targetHome}" (seeded from "${sourceHome}").\n`,
   );
   return targetHome;

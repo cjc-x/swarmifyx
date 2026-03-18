@@ -20,6 +20,9 @@
     "directory": "cli"
   },
   "homepage": "https://github.com/chopsticksai/chopsticks",
+  "bugs": {
+    "url": "https://github.com/chopsticksai/chopsticks/issues"
+  },
   "files": [
     "dist"
   ],

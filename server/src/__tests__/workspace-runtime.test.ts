@@ -5,12 +5,16 @@ import path from "node:path";
 import { promisify } from "node:util";
 import { afterEach, describe, expect, it } from "vitest";
 import {
+  cleanupExecutionWorkspaceArtifacts,
   ensureRuntimeServicesForRun,
   normalizeAdapterManagedRuntimeServices,
   realizeExecutionWorkspace,
   releaseRuntimeServicesForRun,
+  stopRuntimeServicesForExecutionWorkspace,
   type RealizedExecutionWorkspace,
 } from "../services/workspace-runtime.ts";
+import type { WorkspaceOperation } from "@chopsticks/shared";
+import type { WorkspaceOperationRecorder } from "../services/workspace-operations.ts";
 
 const execFileAsync = promisify(execFile);
 const leasedRunIds = new Set<string>();
@@ -48,6 +52,83 @@ function buildWorkspace(cwd: string): RealizedExecutionWorkspace {
   };
 }
 
+async function waitForFetchFailure(url: string, timeoutMs = 5_000) {
+  const deadline = Date.now() + timeoutMs;
+  let lastStatus: number | null = null;
+  while (Date.now() < deadline) {
+    try {
+      const response = await fetch(url);
+      lastStatus = response.status;
+    } catch {
+      return;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+  throw new Error(`Expected ${url} to stop responding, but it kept returning HTTP ${lastStatus ?? "unknown"}`);
+}
+
+function createWorkspaceOperationRecorderDouble() {
+  const operations: Array<{
+    phase: string;
+    command: string | null;
+    cwd: string | null;
+    metadata: Record<string, unknown> | null;
+    result: {
+      status?: string;
+      exitCode?: number | null;
+      stdout?: string | null;
+      stderr?: string | null;
+      system?: string | null;
+      metadata?: Record<string, unknown> | null;
+    };
+  }> = [];
+  let executionWorkspaceId: string | null = null;
+
+  const recorder: WorkspaceOperationRecorder = {
+    attachExecutionWorkspaceId: async (nextExecutionWorkspaceId) => {
+      executionWorkspaceId = nextExecutionWorkspaceId;
+    },
+    recordOperation: async (input) => {
+      const result = await input.run();
+      operations.push({
+        phase: input.phase,
+        command: input.command ?? null,
+        cwd: input.cwd ?? null,
+        metadata: {
+          ...(input.metadata ?? {}),
+          ...(executionWorkspaceId ? { executionWorkspaceId } : {}),
+        },
+        result,
+      });
+      return {
+        id: `op-${operations.length}`,
+        companyId: "company-1",
+        executionWorkspaceId,
+        heartbeatRunId: "run-1",
+        phase: input.phase,
+        command: input.command ?? null,
+        cwd: input.cwd ?? null,
+        status: (result.status ?? "succeeded") as WorkspaceOperation["status"],
+        exitCode: result.exitCode ?? null,
+        logStore: "local_file",
+        logRef: `op-${operations.length}.ndjson`,
+        logBytes: 0,
+        logSha256: null,
+        logCompressed: false,
+        stdoutExcerpt: result.stdout ?? null,
+        stderrExcerpt: result.stderr ?? null,
+        metadata: input.metadata ?? null,
+        startedAt: new Date(),
+        finishedAt: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+    },
+  };
+
+  return { recorder, operations };
+}
+
 afterEach(async () => {
   await Promise.all(
     Array.from(leasedRunIds).map(async (runId) => {
@@ -55,6 +136,11 @@ afterEach(async () => {
       leasedRunIds.delete(runId);
     }),
   );
+  delete process.env.CHOPSTICKS_CONFIG;
+  delete process.env.CHOPSTICKS_HOME;
+  delete process.env.CHOPSTICKS_INSTANCE_ID;
+  delete process.env.CHOPSTICKS_SENTINEL;
+  delete process.env.DATABASE_URL;
 });
 
 describe("realizeExecutionWorkspace", () => {
@@ -250,6 +336,304 @@ describe("realizeExecutionWorkspace", () => {
         },
       }),
     ).rejects.toThrow(/already checked out/);
+  }, 15_000);
+
+  it("records worktree setup and provision operations when a recorder is provided", async () => {
+    const repoRoot = await createTempRepo();
+    const { recorder, operations } = createWorkspaceOperationRecorderDouble();
+
+    await fs.mkdir(path.join(repoRoot, "scripts"), { recursive: true });
+    await fs.writeFile(
+      path.join(repoRoot, "scripts", "provision.js"),
+      [
+        "require('node:process').stdout.write('provisioned\\n');",
+      ].join("\n"),
+      "utf8",
+    );
+    await runGit(repoRoot, ["add", "scripts/provision.js"]);
+    await runGit(repoRoot, ["commit", "-m", "Add recorder provision script"]);
+
+    await realizeExecutionWorkspace({
+      base: {
+        baseCwd: repoRoot,
+        source: "project_primary",
+        projectId: "project-1",
+        workspaceId: "workspace-1",
+        repoUrl: null,
+        repoRef: "HEAD",
+      },
+        config: {
+          workspaceStrategy: {
+            type: "git_worktree",
+            branchTemplate: "{{issue.identifier}}-{{slug}}",
+            provisionCommand: "node ./scripts/provision.js",
+          },
+        },
+      issue: {
+        id: "issue-1",
+        identifier: "PAP-540",
+        title: "Record workspace operations",
+      },
+      agent: {
+        id: "agent-1",
+        name: "Codex Coder",
+        companyId: "company-1",
+      },
+      recorder,
+    });
+
+    expect(operations.map((operation) => operation.phase)).toEqual([
+      "worktree_prepare",
+      "workspace_provision",
+    ]);
+    expect(operations[0]?.command).toContain("git worktree add");
+    expect(operations[0]?.metadata).toMatchObject({
+      branchName: "PAP-540-record-workspace-operations",
+      created: true,
+    });
+    expect(operations[1]?.command).toBe("node ./scripts/provision.js");
+  }, 15_000);
+
+  it("reuses an existing branch without resetting it when recreating a missing worktree", async () => {
+    const repoRoot = await createTempRepo();
+    const branchName = "PAP-450-recreate-missing-worktree";
+
+    await runGit(repoRoot, ["checkout", "-b", branchName]);
+    await fs.writeFile(path.join(repoRoot, "feature.txt"), "preserve me\n", "utf8");
+    await runGit(repoRoot, ["add", "feature.txt"]);
+    await runGit(repoRoot, ["commit", "-m", "Add preserved feature"]);
+    const expectedHead = (await execFileAsync("git", ["rev-parse", branchName], { cwd: repoRoot })).stdout.trim();
+    await runGit(repoRoot, ["checkout", "main"]);
+
+    const workspace = await realizeExecutionWorkspace({
+      base: {
+        baseCwd: repoRoot,
+        source: "project_primary",
+        projectId: "project-1",
+        workspaceId: "workspace-1",
+        repoUrl: null,
+        repoRef: "HEAD",
+      },
+      config: {
+        workspaceStrategy: {
+          type: "git_worktree",
+          branchTemplate: "{{issue.identifier}}-{{slug}}",
+        },
+      },
+      issue: {
+        id: "issue-1",
+        identifier: "PAP-450",
+        title: "Recreate missing worktree",
+      },
+      agent: {
+        id: "agent-1",
+        name: "Codex Coder",
+        companyId: "company-1",
+      },
+    });
+
+    expect(workspace.branchName).toBe(branchName);
+    await expect(
+      fs.readFile(path.join(workspace.cwd, "feature.txt"), "utf8").then((content) => content.replace(/\r\n/g, "\n")),
+    ).resolves.toBe("preserve me\n");
+    const actualHead = (await execFileAsync("git", ["rev-parse", "HEAD"], { cwd: workspace.cwd })).stdout.trim();
+    expect(actualHead).toBe(expectedHead);
+  });
+
+  it("removes a created git worktree and branch during cleanup", async () => {
+    const repoRoot = await createTempRepo();
+
+    const workspace = await realizeExecutionWorkspace({
+      base: {
+        baseCwd: repoRoot,
+        source: "project_primary",
+        projectId: "project-1",
+        workspaceId: "workspace-1",
+        repoUrl: null,
+        repoRef: "HEAD",
+      },
+      config: {
+        workspaceStrategy: {
+          type: "git_worktree",
+          branchTemplate: "{{issue.identifier}}-{{slug}}",
+        },
+      },
+      issue: {
+        id: "issue-1",
+        identifier: "PAP-449",
+        title: "Cleanup workspace",
+      },
+      agent: {
+        id: "agent-1",
+        name: "Codex Coder",
+        companyId: "company-1",
+      },
+    });
+
+    const cleanup = await cleanupExecutionWorkspaceArtifacts({
+      workspace: {
+        id: "execution-workspace-1",
+        cwd: workspace.cwd,
+        providerType: "git_worktree",
+        providerRef: workspace.worktreePath,
+        branchName: workspace.branchName,
+        repoUrl: workspace.repoUrl,
+        baseRef: workspace.repoRef,
+        projectId: workspace.projectId,
+        projectWorkspaceId: workspace.workspaceId,
+        sourceIssueId: "issue-1",
+        metadata: {
+          createdByRuntime: true,
+        },
+      },
+      projectWorkspace: {
+        cwd: repoRoot,
+        cleanupCommand: null,
+      },
+    });
+
+    expect(cleanup.cleaned).toBe(true);
+    expect(cleanup.warnings).toEqual([]);
+    await expect(fs.stat(workspace.cwd)).rejects.toThrow();
+    await expect(
+      execFileAsync("git", ["branch", "--list", workspace.branchName!], { cwd: repoRoot }),
+    ).resolves.toMatchObject({
+      stdout: "",
+    });
+  });
+
+  it("keeps an unmerged runtime-created branch and warns instead of force deleting it", async () => {
+    const repoRoot = await createTempRepo();
+
+    const workspace = await realizeExecutionWorkspace({
+      base: {
+        baseCwd: repoRoot,
+        source: "project_primary",
+        projectId: "project-1",
+        workspaceId: "workspace-1",
+        repoUrl: null,
+        repoRef: "HEAD",
+      },
+      config: {
+        workspaceStrategy: {
+          type: "git_worktree",
+          branchTemplate: "{{issue.identifier}}-{{slug}}",
+        },
+      },
+      issue: {
+        id: "issue-1",
+        identifier: "PAP-451",
+        title: "Keep unmerged branch",
+      },
+      agent: {
+        id: "agent-1",
+        name: "Codex Coder",
+        companyId: "company-1",
+      },
+    });
+
+    await fs.writeFile(path.join(workspace.cwd, "unmerged.txt"), "still here\n", "utf8");
+    await runGit(workspace.cwd, ["add", "unmerged.txt"]);
+    await runGit(workspace.cwd, ["commit", "-m", "Keep unmerged work"]);
+
+    const cleanup = await cleanupExecutionWorkspaceArtifacts({
+      workspace: {
+        id: "execution-workspace-1",
+        cwd: workspace.cwd,
+        providerType: "git_worktree",
+        providerRef: workspace.worktreePath,
+        branchName: workspace.branchName,
+        repoUrl: workspace.repoUrl,
+        baseRef: workspace.repoRef,
+        projectId: workspace.projectId,
+        projectWorkspaceId: workspace.workspaceId,
+        sourceIssueId: "issue-1",
+        metadata: {
+          createdByRuntime: true,
+        },
+      },
+      projectWorkspace: {
+        cwd: repoRoot,
+        cleanupCommand: null,
+      },
+    });
+
+    expect(cleanup.cleaned).toBe(true);
+    expect(cleanup.warnings).toHaveLength(1);
+    expect(cleanup.warnings[0]).toContain(`Skipped deleting branch "${workspace.branchName}"`);
+    await expect(
+      execFileAsync("git", ["branch", "--list", workspace.branchName!], { cwd: repoRoot }),
+    ).resolves.toMatchObject({
+      stdout: expect.stringContaining(workspace.branchName!),
+    });
+  });
+
+  it("records teardown and cleanup operations when a recorder is provided", async () => {
+    const repoRoot = await createTempRepo();
+    const { recorder, operations } = createWorkspaceOperationRecorderDouble();
+
+    const workspace = await realizeExecutionWorkspace({
+      base: {
+        baseCwd: repoRoot,
+        source: "project_primary",
+        projectId: "project-1",
+        workspaceId: "workspace-1",
+        repoUrl: null,
+        repoRef: "HEAD",
+      },
+      config: {
+        workspaceStrategy: {
+          type: "git_worktree",
+          branchTemplate: "{{issue.identifier}}-{{slug}}",
+        },
+      },
+      issue: {
+        id: "issue-1",
+        identifier: "PAP-541",
+        title: "Cleanup recorder",
+      },
+      agent: {
+        id: "agent-1",
+        name: "Codex Coder",
+        companyId: "company-1",
+      },
+    });
+
+    await cleanupExecutionWorkspaceArtifacts({
+      workspace: {
+        id: "execution-workspace-1",
+        cwd: workspace.cwd,
+        providerType: "git_worktree",
+        providerRef: workspace.worktreePath,
+        branchName: workspace.branchName,
+        repoUrl: workspace.repoUrl,
+        baseRef: workspace.repoRef,
+        projectId: workspace.projectId,
+        projectWorkspaceId: workspace.workspaceId,
+        sourceIssueId: "issue-1",
+        metadata: {
+          createdByRuntime: true,
+        },
+      },
+      projectWorkspace: {
+        cwd: repoRoot,
+        cleanupCommand: "printf 'cleanup ok\\n'",
+      },
+      recorder,
+    });
+
+    expect(operations.map((operation) => operation.phase)).toEqual([
+      "workspace_teardown",
+      "worktree_cleanup",
+      "worktree_cleanup",
+    ]);
+    expect(operations[0]?.command).toBe("printf 'cleanup ok\\n'");
+    expect(operations[1]?.metadata).toMatchObject({
+      cleanupAction: "worktree_remove",
+    });
+    expect(operations[2]?.metadata).toMatchObject({
+      cleanupAction: "branch_delete",
+    });
   });
 });
 
@@ -360,6 +744,209 @@ describe("ensureRuntimeServicesForRun", () => {
     expect(third[0]?.reused).toBe(false);
     expect(third[0]?.id).not.toBe(first[0]?.id);
   }, 15_000);
+
+  it("does not leak parent Chopsticks instance env into runtime service commands", async () => {
+    const workspaceRoot = await fs.mkdtemp(path.join(os.tmpdir(), "chopsticks-runtime-env-"));
+    const workspace = buildWorkspace(workspaceRoot);
+    const envCapturePath = path.join(workspaceRoot, "captured-env.json");
+    const serviceScriptPath = path.join(workspaceRoot, "capture-service.js");
+    await fs.writeFile(
+      serviceScriptPath,
+      [
+        "const fs = require('node:fs');",
+        `fs.writeFileSync(${JSON.stringify(envCapturePath)}, JSON.stringify({`,
+        "  chopsticksConfig: process.env.CHOPSTICKS_CONFIG ?? null,",
+        "  chopsticksHome: process.env.CHOPSTICKS_HOME ?? null,",
+        "  chopsticksInstanceId: process.env.CHOPSTICKS_INSTANCE_ID ?? null,",
+        "  chopsticksSentinel: process.env.CHOPSTICKS_SENTINEL ?? null,",
+        "  databaseUrl: process.env.DATABASE_URL ?? null,",
+        "  customEnv: process.env.RUNTIME_CUSTOM_ENV ?? null,",
+        "  port: process.env.PORT ?? null,",
+        "}));",
+        "require('node:http').createServer((req, res) => res.end('ok')).listen(Number(process.env.PORT), '127.0.0.1');",
+      ].join("\n"),
+      "utf8",
+    );
+    const serviceCommand = "node ./capture-service.js";
+
+    process.env.CHOPSTICKS_CONFIG = "/tmp/base-chopsticks-config.json";
+    process.env.CHOPSTICKS_HOME = "/tmp/base-chopsticks-home";
+    process.env.CHOPSTICKS_INSTANCE_ID = "base-instance";
+    process.env.CHOPSTICKS_SENTINEL = "strip-me";
+    process.env.DATABASE_URL = "postgres://shared-db.example.com/chopsticks";
+
+    const runId = "run-env";
+    leasedRunIds.add(runId);
+
+    const services = await ensureRuntimeServicesForRun({
+      runId,
+      agent: {
+        id: "agent-1",
+        name: "Codex Coder",
+        companyId: "company-1",
+      },
+      issue: null,
+      workspace,
+      executionWorkspaceId: "execution-workspace-1",
+      config: {
+        workspaceRuntime: {
+          services: [
+            {
+              name: "web",
+              command: serviceCommand,
+              port: { type: "auto" },
+              readiness: {
+                type: "http",
+                urlTemplate: "http://127.0.0.1:{{port}}",
+                timeoutSec: 10,
+                intervalMs: 100,
+              },
+              lifecycle: "shared",
+              reuseScope: "execution_workspace",
+              stopPolicy: {
+                type: "on_run_finish",
+              },
+            },
+          ],
+        },
+      },
+      adapterEnv: {
+        RUNTIME_CUSTOM_ENV: "from-adapter",
+      },
+    });
+
+    expect(services).toHaveLength(1);
+    const captured = JSON.parse(await fs.readFile(envCapturePath, "utf8")) as Record<string, string | null>;
+    expect(captured.chopsticksConfig).toBeNull();
+    expect(captured.chopsticksHome).toBeNull();
+    expect(captured.chopsticksInstanceId).toBeNull();
+    expect(captured.chopsticksSentinel).toBeNull();
+    expect(captured.databaseUrl).toBeNull();
+    expect(captured.customEnv).toBe("from-adapter");
+    expect(captured.port).toMatch(/^\d+$/);
+    expect(services[0]?.executionWorkspaceId).toBe("execution-workspace-1");
+    expect(services[0]?.scopeType).toBe("execution_workspace");
+    expect(services[0]?.scopeId).toBe("execution-workspace-1");
+  }, 15_000);
+
+  it("stops execution workspace runtime services by executionWorkspaceId", async () => {
+    const workspaceRoot = await fs.mkdtemp(path.join(os.tmpdir(), "chopsticks-runtime-stop-"));
+    const workspace = buildWorkspace(workspaceRoot);
+    await fs.writeFile(
+      path.join(workspaceRoot, "serve.js"),
+      "require('node:http').createServer((req,res)=>res.end('ok')).listen(Number(process.env.PORT), '127.0.0.1');\n",
+      "utf8",
+    );
+    const runId = "run-stop";
+    leasedRunIds.add(runId);
+
+    const services = await ensureRuntimeServicesForRun({
+      runId,
+      agent: {
+        id: "agent-1",
+        name: "Codex Coder",
+        companyId: "company-1",
+      },
+      issue: null,
+      workspace,
+      executionWorkspaceId: "execution-workspace-stop",
+      config: {
+        workspaceRuntime: {
+          services: [
+            {
+              name: "web",
+              command: "node ./serve.js",
+              port: { type: "auto" },
+              readiness: {
+                type: "http",
+                urlTemplate: "http://127.0.0.1:{{port}}",
+                timeoutSec: 10,
+                intervalMs: 100,
+              },
+              lifecycle: "shared",
+              reuseScope: "execution_workspace",
+              stopPolicy: {
+                type: "manual",
+              },
+            },
+          ],
+        },
+      },
+      adapterEnv: {},
+    });
+
+    expect(services[0]?.url).toBeTruthy();
+    await stopRuntimeServicesForExecutionWorkspace({
+      executionWorkspaceId: "execution-workspace-stop",
+      workspaceCwd: workspace.cwd,
+    });
+    await releaseRuntimeServicesForRun(runId);
+    leasedRunIds.delete(runId);
+    await waitForFetchFailure(services[0]!.url!);
+  }, 15_000);
+
+  it("does not stop services in sibling directories when matching by workspace cwd", async () => {
+    const workspaceParent = await fs.mkdtemp(path.join(os.tmpdir(), "chopsticks-runtime-sibling-"));
+    const targetWorkspaceRoot = path.join(workspaceParent, "project");
+    const siblingWorkspaceRoot = path.join(workspaceParent, "project-extended", "service");
+    await fs.mkdir(targetWorkspaceRoot, { recursive: true });
+    await fs.mkdir(siblingWorkspaceRoot, { recursive: true });
+    await fs.writeFile(
+      path.join(siblingWorkspaceRoot, "serve.js"),
+      "require('node:http').createServer((req,res)=>res.end('ok')).listen(Number(process.env.PORT), '127.0.0.1');\n",
+      "utf8",
+    );
+
+    const siblingWorkspace = buildWorkspace(siblingWorkspaceRoot);
+    const runId = "run-sibling";
+    leasedRunIds.add(runId);
+
+    const services = await ensureRuntimeServicesForRun({
+      runId,
+      agent: {
+        id: "agent-1",
+        name: "Codex Coder",
+        companyId: "company-1",
+      },
+      issue: null,
+      workspace: siblingWorkspace,
+      executionWorkspaceId: "execution-workspace-sibling",
+      config: {
+        workspaceRuntime: {
+          services: [
+            {
+              name: "web",
+              command: "node ./serve.js",
+              port: { type: "auto" },
+              readiness: {
+                type: "http",
+                urlTemplate: "http://127.0.0.1:{{port}}",
+                timeoutSec: 10,
+                intervalMs: 100,
+              },
+              lifecycle: "shared",
+              reuseScope: "execution_workspace",
+              stopPolicy: {
+                type: "manual",
+              },
+            },
+          ],
+        },
+      },
+      adapterEnv: {},
+    });
+
+    await stopRuntimeServicesForExecutionWorkspace({
+      executionWorkspaceId: "execution-workspace-target",
+      workspaceCwd: targetWorkspaceRoot,
+    });
+
+    const response = await fetch(services[0]!.url!);
+    expect(await response.text()).toBe("ok");
+
+    await releaseRuntimeServicesForRun(runId);
+    leasedRunIds.delete(runId);
+  }, 15_000);
 });
 
 describe("normalizeAdapterManagedRuntimeServices", () => {
@@ -422,6 +1009,7 @@ describe("normalizeAdapterManagedRuntimeServices", () => {
       companyId: "company-1",
       projectId: "project-1",
       projectWorkspaceId: "workspace-1",
+      executionWorkspaceId: null,
       issueId: "issue-1",
       serviceName: "preview",
       provider: "adapter_managed",
@@ -430,5 +1018,34 @@ describe("normalizeAdapterManagedRuntimeServices", () => {
       startedByRunId: "run-1",
     });
     expect(first[0]?.id).toBe(second[0]?.id);
+  });
+
+  it("prefers execution workspace ids over cwd for execution-scoped adapter services", () => {
+    const workspace = buildWorkspace("/tmp/project");
+
+    const refs = normalizeAdapterManagedRuntimeServices({
+      adapterType: "openclaw_gateway",
+      runId: "run-1",
+      agent: {
+        id: "agent-1",
+        name: "Gateway Agent",
+        companyId: "company-1",
+      },
+      issue: null,
+      workspace,
+      executionWorkspaceId: "execution-workspace-1",
+      reports: [
+        {
+          serviceName: "preview",
+          scopeType: "execution_workspace",
+        },
+      ],
+    });
+
+    expect(refs[0]).toMatchObject({
+      scopeType: "execution_workspace",
+      scopeId: "execution-workspace-1",
+      executionWorkspaceId: "execution-workspace-1",
+    });
   });
 });
