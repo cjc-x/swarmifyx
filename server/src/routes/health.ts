@@ -3,6 +3,7 @@ import type { Db } from "@chopsticks/db";
 import { and, count, eq, gt, isNull, sql } from "drizzle-orm";
 import { instanceUserRoles, invites } from "@chopsticks/db";
 import type { DeploymentExposure, DeploymentMode } from "@chopsticks/shared";
+import { serverVersion } from "../version.js";
 
 export function healthRoutes(
   db?: Db,
@@ -12,17 +13,17 @@ export function healthRoutes(
     authReady: boolean;
     companyDeletionEnabled: boolean;
   } = {
-      deploymentMode: "local_trusted",
-      deploymentExposure: "private",
-      authReady: true,
-      companyDeletionEnabled: true,
-    },
+    deploymentMode: "local_trusted",
+    deploymentExposure: "private",
+    authReady: true,
+    companyDeletionEnabled: true,
+  },
 ) {
   const router = Router();
 
   router.get("/", async (_req, res) => {
     if (!db) {
-      res.json({ status: "ok" });
+      res.json({ status: "ok", version: serverVersion });
       return;
     }
 
@@ -56,6 +57,7 @@ export function healthRoutes(
 
     res.json({
       status: "ok",
+      version: serverVersion,
       deploymentMode: opts.deploymentMode,
       deploymentExposure: opts.deploymentExposure,
       authReady: opts.authReady,

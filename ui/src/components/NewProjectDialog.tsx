@@ -176,7 +176,6 @@ export function NewProjectDialog() {
       } else if (repoRequired) {
         workspacePayloads.push({
           name: deriveWorkspaceNameFromRepo(repoUrl),
-          cwd: REPO_ONLY_CWD_SENTINEL,
           repoUrl,
         });
       }

@@ -1,0 +1,50 @@
+{
+  "name": "@chopsticks/create-chopsticks-plugin",
+  "version": "0.1.0",
+  "license": "MIT",
+  "homepage": "https://github.com/chopsticksai/chopsticks",
+  "bugs": {
+    "url": "https://github.com/chopsticksai/chopsticks/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/chopsticksai/chopsticks",
+    "directory": "packages/plugins/create-paperclip-plugin"
+  },
+  "type": "module",
+  "bin": {
+    "create-chopsticks-plugin": "./dist/index.js"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "publishConfig": {
+    "access": "public",
+    "bin": {
+      "create-chopsticks-plugin": "./dist/index.js"
+    },
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js"
+      }
+    },
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@chopsticks/plugin-sdk": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^24.6.0",
+    "typescript": "^5.7.3"
+  }
+}

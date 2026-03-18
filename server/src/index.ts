@@ -10,6 +10,7 @@ import { and, eq } from "drizzle-orm";
 import {
   createDb,
   ensurePostgresDatabase,
+  getPostgresDataDirectory,
   inspectMigrations,
   applyPendingMigrations,
   reconcilePendingMigrationHistory,
@@ -78,25 +79,25 @@ export async function startServer(): Promise<StartedServer> {
   if (process.env.CHOPSTICKS_SECRETS_MASTER_KEY_FILE === undefined) {
     process.env.CHOPSTICKS_SECRETS_MASTER_KEY_FILE = config.secretsMasterKeyFilePath;
   }
-
+  
   type MigrationSummary =
     | "skipped"
     | "already applied"
     | "applied (empty database)"
-    | "applied (pending migrations)"
-    | "pending migrations skipped";
+    | "applied (pending migrations)";
+  
   function formatPendingMigrationSummary(migrations: string[]): string {
     if (migrations.length === 0) return "none";
     return migrations.length > 3
       ? `${migrations.slice(0, 3).join(", ")} (+${migrations.length - 3} more)`
       : migrations.join(", ");
   }
-
+  
   async function promptApplyMigrations(migrations: string[]): Promise<boolean> {
     if (process.env.CHOPSTICKS_MIGRATION_PROMPT === "never") return false;
     if (process.env.CHOPSTICKS_MIGRATION_AUTO_APPLY === "true") return true;
     if (!stdin.isTTY || !stdout.isTTY) return true;
-
+  
     const prompt = createInterface({ input: stdin, output: stdout });
     try {
       const answer = (await prompt.question(
@@ -107,11 +108,11 @@ export async function startServer(): Promise<StartedServer> {
       prompt.close();
     }
   }
-
+  
   type EnsureMigrationsOptions = {
     autoApply?: boolean;
   };
-
+  
   async function ensureMigrations(
     connectionString: string,
     label: string,
@@ -143,12 +144,12 @@ export async function startServer(): Promise<StartedServer> {
             "Refusing to start against a stale schema. Run pnpm db:migrate or set CHOPSTICKS_MIGRATION_AUTO_APPLY=true.",
         );
       }
-
+  
       logger.info({ pendingMigrations: state.pendingMigrations }, `Applying ${state.pendingMigrations.length} pending migrations for ${label}`);
       await applyPendingMigrations(connectionString);
       return "applied (pending migrations)";
     }
-
+  
     const apply = autoApply ? true : await promptApplyMigrations(state.pendingMigrations);
     if (!apply) {
       throw new Error(
@@ -156,25 +157,21 @@ export async function startServer(): Promise<StartedServer> {
           "Refusing to start against a stale schema. Run pnpm db:migrate or set CHOPSTICKS_MIGRATION_AUTO_APPLY=true.",
       );
     }
-
+  
     logger.info({ pendingMigrations: state.pendingMigrations }, `Applying ${state.pendingMigrations.length} pending migrations for ${label}`);
     await applyPendingMigrations(connectionString);
     return "applied (pending migrations)";
   }
-
+  
   function isLoopbackHost(host: string): boolean {
     const normalized = host.trim().toLowerCase();
     return normalized === "127.0.0.1" || normalized === "localhost" || normalized === "::1";
   }
-
-  function buildEmbeddedPostgresConnectionString(port: number, databaseName: string): string {
-    return `postgres://${encodeURIComponent("chopsticks")}:${encodeURIComponent("chopsticks")}@127.0.0.1:${port}/${databaseName}`;
-  }
-
+  
   const LOCAL_BOARD_USER_ID = "local-board";
   const LOCAL_BOARD_USER_EMAIL = "local@chopsticks.local";
   const LOCAL_BOARD_USER_NAME = "Board";
-
+  
   async function ensureLocalTrustedBoardPrincipal(db: any): Promise<void> {
     const now = new Date();
     const existingUser = await db
@@ -182,7 +179,7 @@ export async function startServer(): Promise<StartedServer> {
       .from(authUsers)
       .where(eq(authUsers.id, LOCAL_BOARD_USER_ID))
       .then((rows: Array<{ id: string }>) => rows[0] ?? null);
-
+  
     if (!existingUser) {
       await db.insert(authUsers).values({
         id: LOCAL_BOARD_USER_ID,
@@ -194,7 +191,7 @@ export async function startServer(): Promise<StartedServer> {
         updatedAt: now,
       });
     }
-
+  
     const role = await db
       .select({ id: instanceUserRoles.id })
       .from(instanceUserRoles)
@@ -206,7 +203,7 @@ export async function startServer(): Promise<StartedServer> {
         role: "instance_admin",
       });
     }
-
+  
     const companyRows = await db.select({ id: companies.id }).from(companies);
     for (const company of companyRows) {
       const membership = await db
@@ -230,7 +227,7 @@ export async function startServer(): Promise<StartedServer> {
       });
     }
   }
-
+  
   let db;
   let embeddedPostgres: EmbeddedPostgresInstance | null = null;
   let embeddedPostgresStartedByThisProcess = false;
@@ -241,7 +238,7 @@ export async function startServer(): Promise<StartedServer> {
     | { mode: "embedded-postgres"; dataDir: string; port: number };
   if (config.databaseUrl) {
     migrationSummary = await ensureMigrations(config.databaseUrl, "PostgreSQL");
-
+  
     db = createDb(config.databaseUrl);
     logger.info("Using external PostgreSQL via DATABASE_URL/config");
     activeDatabaseConnectionString = config.databaseUrl;
@@ -257,7 +254,7 @@ export async function startServer(): Promise<StartedServer> {
         "Embedded PostgreSQL mode requires dependency `embedded-postgres`. Reinstall dependencies (without omitting required packages), or set DATABASE_URL for external Postgres.",
       );
     }
-
+  
     const dataDir = resolve(config.embeddedPostgresDataDir);
     const configuredPort = config.embeddedPostgresPort;
     let port = configuredPort;
@@ -290,11 +287,11 @@ export async function startServer(): Promise<StartedServer> {
         );
       }
     };
-
+  
     if (config.databaseMode === "postgres") {
       logger.warn("Database mode is postgres but no connection string was set; falling back to embedded PostgreSQL");
     }
-
+  
     const clusterVersionFile = resolve(dataDir, "PG_VERSION");
     const clusterAlreadyInitialized = existsSync(clusterVersionFile);
     const postmasterPidFile = resolve(dataDir, "postmaster.pid");
@@ -306,7 +303,7 @@ export async function startServer(): Promise<StartedServer> {
         return false;
       }
     };
-
+  
     const getRunningPid = (): number | null => {
       if (!existsSync(postmasterPidFile)) return null;
       try {
@@ -319,88 +316,99 @@ export async function startServer(): Promise<StartedServer> {
         return null;
       }
     };
-
+  
     const runningPid = getRunningPid();
     if (runningPid) {
       logger.warn(`Embedded PostgreSQL already running; reusing existing process (pid=${runningPid}, port=${port})`);
     } else {
-      const detectedPort = await detectPort(configuredPort);
-      if (detectedPort !== configuredPort) {
-        logger.warn(`Embedded PostgreSQL port is in use; using next free port (requestedPort=${configuredPort}, selectedPort=${detectedPort})`);
-      }
-      port = detectedPort;
-      logger.info(`Using embedded PostgreSQL because no DATABASE_URL set (dataDir=${dataDir}, port=${port})`);
-      embeddedPostgres = new EmbeddedPostgres({
-        databaseDir: dataDir,
-        user: "chopsticks",
-        password: "chopsticks",
-        port,
-        persistent: true,
-        initdbFlags: ["--encoding=UTF8", "--locale=C"],
-        onLog: appendEmbeddedPostgresLog,
-        onError: appendEmbeddedPostgresLog,
-      });
+      const configuredAdminConnectionString = `postgres://chopsticks:chopsticks@127.0.0.1:${configuredPort}/postgres`;
+      try {
+        const actualDataDir = await getPostgresDataDirectory(configuredAdminConnectionString);
+        if (
+          typeof actualDataDir !== "string" ||
+          resolve(actualDataDir) !== resolve(dataDir)
+        ) {
+          throw new Error("reachable postgres does not use the expected embedded data directory");
+        }
+        await ensurePostgresDatabase(configuredAdminConnectionString, "chopsticks");
+        logger.warn(
+          `Embedded PostgreSQL appears to already be reachable without a pid file; reusing existing server on configured port ${configuredPort}`,
+        );
+      } catch {
+        const detectedPort = await detectPort(configuredPort);
+        if (detectedPort !== configuredPort) {
+          logger.warn(`Embedded PostgreSQL port is in use; using next free port (requestedPort=${configuredPort}, selectedPort=${detectedPort})`);
+        }
+        port = detectedPort;
+        logger.info(`Using embedded PostgreSQL because no DATABASE_URL set (dataDir=${dataDir}, port=${port})`);
+        embeddedPostgres = new EmbeddedPostgres({
+          databaseDir: dataDir,
+          user: "chopsticks",
+          password: "chopsticks",
+          port,
+          persistent: true,
+          initdbFlags: ["--encoding=UTF8", "--locale=C"],
+          onLog: appendEmbeddedPostgresLog,
+          onError: appendEmbeddedPostgresLog,
+        });
 
-      if (!clusterAlreadyInitialized) {
+        if (!clusterAlreadyInitialized) {
+          try {
+            await embeddedPostgres.initialise();
+          } catch (err) {
+            logEmbeddedPostgresFailure("initialise", err);
+            throw err;
+          }
+        } else {
+          logger.info(`Embedded PostgreSQL cluster already exists (${clusterVersionFile}); skipping init`);
+        }
+
+        if (existsSync(postmasterPidFile)) {
+          logger.warn("Removing stale embedded PostgreSQL lock file");
+          rmSync(postmasterPidFile, { force: true });
+        }
         try {
-          await embeddedPostgres.initialise();
+          await embeddedPostgres.start();
         } catch (err) {
-          logEmbeddedPostgresFailure("initialise", err);
+          logEmbeddedPostgresFailure("start", err);
           throw err;
         }
-      } else {
-        logger.info(`Embedded PostgreSQL cluster already exists (${clusterVersionFile}); skipping init`);
+        embeddedPostgresStartedByThisProcess = true;
       }
-
-      if (existsSync(postmasterPidFile)) {
-        logger.warn("Removing stale embedded PostgreSQL lock file");
-        rmSync(postmasterPidFile, { force: true });
-      }
-      try {
-        await embeddedPostgres.start();
-      } catch (err) {
-        logEmbeddedPostgresFailure("start", err);
-        throw err;
-      }
-      embeddedPostgresStartedByThisProcess = true;
     }
-
-    const embeddedAdminConnectionString = buildEmbeddedPostgresConnectionString(port, "postgres");
-    const databaseStatus = await ensurePostgresDatabase(
-      embeddedAdminConnectionString,
-      "chopsticks",
-    );
-    if (databaseStatus === "created") {
+  
+    const embeddedAdminConnectionString = `postgres://chopsticks:chopsticks@127.0.0.1:${port}/postgres`;
+    const dbStatus = await ensurePostgresDatabase(embeddedAdminConnectionString, "chopsticks");
+    if (dbStatus === "created") {
       logger.info("Created embedded PostgreSQL database: chopsticks");
     }
-
-    const embeddedConnectionString = buildEmbeddedPostgresConnectionString(port, "chopsticks");
-    const shouldAutoApplyFirstRunMigrations =
-      !clusterAlreadyInitialized || databaseStatus === "created";
+  
+    const embeddedConnectionString = `postgres://chopsticks:chopsticks@127.0.0.1:${port}/chopsticks`;
+    const shouldAutoApplyFirstRunMigrations = !clusterAlreadyInitialized || dbStatus === "created";
     if (shouldAutoApplyFirstRunMigrations) {
       logger.info("Detected first-run embedded PostgreSQL setup; applying pending migrations automatically");
     }
     migrationSummary = await ensureMigrations(embeddedConnectionString, "Embedded PostgreSQL", {
       autoApply: shouldAutoApplyFirstRunMigrations,
     });
-
+  
     db = createDb(embeddedConnectionString);
     logger.info("Embedded PostgreSQL ready");
     activeDatabaseConnectionString = embeddedConnectionString;
     startupDbInfo = { mode: "embedded-postgres", dataDir, port };
   }
-
+  
   if (config.deploymentMode === "local_trusted" && !isLoopbackHost(config.host)) {
     throw new Error(
       `local_trusted mode requires loopback host binding (received: ${config.host}). ` +
-      "Use authenticated mode for non-loopback deployments.",
+        "Use authenticated mode for non-loopback deployments.",
     );
   }
-
+  
   if (config.deploymentMode === "local_trusted" && config.deploymentExposure !== "private") {
     throw new Error("local_trusted mode only supports private exposure");
   }
-
+  
   if (config.deploymentMode === "authenticated") {
     if (config.authBaseUrlMode === "explicit" && !config.authPublicBaseUrl) {
       throw new Error("auth.baseUrlMode=explicit requires auth.publicBaseUrl");
@@ -414,7 +422,7 @@ export async function startServer(): Promise<StartedServer> {
       }
     }
   }
-
+  
   let authReady = config.deploymentMode === "local_trusted";
   let betterAuthHandler: RequestHandler | undefined;
   let resolveSession:
@@ -466,7 +474,7 @@ export async function startServer(): Promise<StartedServer> {
     await initializeBoardClaimChallenge(db as any, { deploymentMode: config.deploymentMode });
     authReady = true;
   }
-
+  
   const listenPort = await detectPort(config.port);
   const uiMode = config.uiDevMiddleware ? "vite-dev" : config.serveUi ? "static" : "none";
   const storageService = createStorageServiceFromConfig(config);
@@ -484,11 +492,11 @@ export async function startServer(): Promise<StartedServer> {
     resolveSession,
   });
   const server = createServer(app as unknown as Parameters<typeof createServer>[0]);
-
+  
   if (listenPort !== config.port) {
     logger.warn(`Requested port is busy; using next free port (requestedPort=${config.port}, selectedPort=${listenPort})`);
   }
-
+  
   const runtimeListenHost = config.host;
   const runtimeApiHost =
     runtimeListenHost === "0.0.0.0" || runtimeListenHost === "::"
@@ -497,7 +505,7 @@ export async function startServer(): Promise<StartedServer> {
   process.env.CHOPSTICKS_LISTEN_HOST = runtimeListenHost;
   process.env.CHOPSTICKS_LISTEN_PORT = String(listenPort);
   process.env.CHOPSTICKS_API_URL = `http://${runtimeApiHost}:${listenPort}`;
-
+  
   setupLiveEventsWebSocketServer(server, db as any, {
     deploymentMode: config.deploymentMode,
     resolveSessionFromHeaders,
@@ -515,10 +523,10 @@ export async function startServer(): Promise<StartedServer> {
     .catch((err) => {
       logger.error({ err }, "startup reconciliation of persisted runtime services failed");
     });
-
+  
   if (config.heartbeatSchedulerEnabled) {
     const heartbeat = heartbeatService(db as any);
-
+  
     // Reap orphaned running runs at startup while in-memory execution state is empty,
     // then resume any persisted queued runs that were waiting on the previous process.
     void heartbeat
@@ -538,7 +546,7 @@ export async function startServer(): Promise<StartedServer> {
         .catch((err) => {
           logger.error({ err }, "heartbeat timer tick failed");
         });
-
+  
       // Periodically reap orphaned runs (5-min staleness threshold) and make sure
       // persisted queued work is still being driven forward.
       void heartbeat
@@ -549,17 +557,17 @@ export async function startServer(): Promise<StartedServer> {
         });
     }, config.heartbeatSchedulerIntervalMs);
   }
-
+  
   if (config.databaseBackupEnabled) {
     const backupIntervalMs = config.databaseBackupIntervalMinutes * 60 * 1000;
     let backupInFlight = false;
-
+  
     const runScheduledBackup = async () => {
       if (backupInFlight) {
         logger.warn("Skipping scheduled database backup because a previous backup is still running");
         return;
       }
-
+  
       backupInFlight = true;
       try {
         const result = await runDatabaseBackup({
@@ -584,7 +592,7 @@ export async function startServer(): Promise<StartedServer> {
         backupInFlight = false;
       }
     };
-
+  
     logger.info(
       {
         intervalMinutes: config.databaseBackupIntervalMinutes,
@@ -597,7 +605,7 @@ export async function startServer(): Promise<StartedServer> {
       void runScheduledBackup();
     }, backupIntervalMs);
   }
-
+  
   await new Promise<void>((resolveListen, rejectListen) => {
     const onError = (err: Error) => {
       server.off("error", onError);
@@ -657,7 +665,7 @@ export async function startServer(): Promise<StartedServer> {
       resolveListen();
     });
   });
-
+  
   if (embeddedPostgres && embeddedPostgresStartedByThisProcess) {
     const shutdown = async (signal: "SIGINT" | "SIGTERM") => {
       logger.info({ signal }, "Stopping embedded PostgreSQL");
@@ -669,7 +677,7 @@ export async function startServer(): Promise<StartedServer> {
         process.exit(0);
       }
     };
-
+  
     process.once("SIGINT", () => {
       void shutdown("SIGINT");
     });

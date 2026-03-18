@@ -20,6 +20,19 @@ async function createCustomSkill(root: string, skillName: string) {
   );
 }
 
+async function createChopsticksRepoSkill(root: string, skillName: string) {
+  await fs.mkdir(path.join(root, "server"), { recursive: true });
+  await fs.mkdir(path.join(root, "packages", "adapter-utils"), { recursive: true });
+  await fs.mkdir(path.join(root, "skills", skillName), { recursive: true });
+  await fs.writeFile(path.join(root, "pnpm-workspace.yaml"), "packages:\n  - packages/*\n", "utf8");
+  await fs.writeFile(path.join(root, "package.json"), '{"name":"chopsticks"}\n', "utf8");
+  await fs.writeFile(
+    path.join(root, "skills", skillName, "SKILL.md"),
+    `---\nname: ${skillName}\n---\n`,
+    "utf8",
+  );
+}
+
 describe("codex local adapter skill injection", () => {
   const cleanupDirs = new Set<string>();
 
@@ -50,6 +63,40 @@ describe("codex local adapter skill injection", () => {
       if (previousCodexHome === undefined) delete process.env.CODEX_HOME;
       else process.env.CODEX_HOME = previousCodexHome;
     }
+  });
+
+  it("repairs a Codex Chopsticks skill symlink that still points at another live checkout", async () => {
+    const currentRepo = await makeTempDir("chopsticks-codex-current-");
+    const oldRepo = await makeTempDir("chopsticks-codex-old-");
+    const skillsHome = await makeTempDir("chopsticks-codex-home-");
+    cleanupDirs.add(currentRepo);
+    cleanupDirs.add(oldRepo);
+    cleanupDirs.add(skillsHome);
+
+    await createChopsticksRepoSkill(currentRepo, "chopsticks");
+    await createChopsticksRepoSkill(oldRepo, "chopsticks");
+    await fs.symlink(path.join(oldRepo, "skills", "chopsticks"), path.join(skillsHome, "chopsticks"));
+
+    const logs: Array<{ stream: "stdout" | "stderr"; chunk: string }> = [];
+    await ensureCodexSkillsInjected(
+      async (stream, chunk) => {
+        logs.push({ stream, chunk });
+      },
+      {
+        skillsHome,
+        skillsEntries: [{ name: "chopsticks", source: path.join(currentRepo, "skills", "chopsticks") }],
+      },
+    );
+
+    expect(await fs.realpath(path.join(skillsHome, "chopsticks"))).toBe(
+      await fs.realpath(path.join(currentRepo, "skills", "chopsticks")),
+    );
+    expect(logs).toContainEqual(
+      expect.objectContaining({
+        stream: "stdout",
+        chunk: expect.stringContaining('Repaired Codex skill "chopsticks"'),
+      }),
+    );
   });
 
   it("preserves a custom Codex skill symlink outside Chopsticks repo checkouts", async () => {
