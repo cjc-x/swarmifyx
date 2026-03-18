@@ -10,10 +10,6 @@ import {
   isGeminiUnknownSessionError,
 } from "@chopsticks/adapter-gemini-local/server";
 import {
-  sessionCodec as qwenSessionCodec,
-  isQwenUnknownSessionError,
-} from "@chopsticks/adapter-qwen-local/server";
-import {
   sessionCodec as opencodeSessionCodec,
   isOpenCodeUnknownSessionError,
 } from "@chopsticks/adapter-opencode-local/server";
@@ -108,24 +104,6 @@ describe("adapter session codecs", () => {
     });
     expect(geminiSessionCodec.getDisplayId?.(serialized ?? null)).toBe("gemini-session-1");
   });
-
-  it("normalizes qwen session params with cwd", () => {
-    const parsed = qwenSessionCodec.deserialize({
-      session_id: "qwen-session-1",
-      cwd: "/tmp/qwen",
-    });
-    expect(parsed).toEqual({
-      sessionId: "qwen-session-1",
-      cwd: "/tmp/qwen",
-    });
-
-    const serialized = qwenSessionCodec.serialize(parsed);
-    expect(serialized).toEqual({
-      sessionId: "qwen-session-1",
-      cwd: "/tmp/qwen",
-    });
-    expect(qwenSessionCodec.getDisplayId?.(serialized ?? null)).toBe("qwen-session-1");
-  });
 });
 
 describe("codex resume recovery detection", () => {
@@ -207,29 +185,6 @@ describe("gemini resume recovery detection", () => {
     ).toBe(true);
     expect(
       isGeminiUnknownSessionError(
-        "{\"type\":\"result\",\"subtype\":\"success\"}",
-        "",
-      ),
-    ).toBe(false);
-  });
-});
-
-describe("qwen resume recovery detection", () => {
-  it("detects unknown session errors from qwen output", () => {
-    expect(
-      isQwenUnknownSessionError(
-        "",
-        "Session not found for id: abc",
-      ),
-    ).toBe(true);
-    expect(
-      isQwenUnknownSessionError(
-        "",
-        "Session not found: abc",
-      ),
-    ).toBe(true);
-    expect(
-      isQwenUnknownSessionError(
         "{\"type\":\"result\",\"subtype\":\"success\"}",
         "",
       ),

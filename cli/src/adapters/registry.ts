@@ -6,7 +6,6 @@ import { printCursorStreamEvent } from "@chopsticks/adapter-cursor-local/cli";
 import { printGeminiStreamEvent } from "@chopsticks/adapter-gemini-local/cli";
 import { printOpenCodeStreamEvent } from "@chopsticks/adapter-opencode-local/cli";
 import { printPiStreamEvent } from "@chopsticks/adapter-pi-local/cli";
-import { printQwenStreamEvent } from "@chopsticks/adapter-qwen-local/cli";
 import { printOpenClawGatewayStreamEvent } from "@chopsticks/adapter-openclaw-gateway/cli";
 import { processCLIAdapter } from "./process/index.js";
 import { httpCLIAdapter } from "./http/index.js";
@@ -46,11 +45,6 @@ const geminiLocalCLIAdapter: CLIAdapterModule = {
   formatStdoutEvent: printGeminiStreamEvent,
 };
 
-const qwenLocalCLIAdapter: CLIAdapterModule = {
-  type: "qwen_local",
-  formatStdoutEvent: printQwenStreamEvent,
-};
-
 const openclawGatewayCLIAdapter: CLIAdapterModule = {
   type: "openclaw_gateway",
   formatStdoutEvent: printOpenClawGatewayStreamEvent,
@@ -65,7 +59,6 @@ const adaptersByType = new Map<string, CLIAdapterModule>(
     piLocalCLIAdapter,
     cursorLocalCLIAdapter,
     geminiLocalCLIAdapter,
-    qwenLocalCLIAdapter,
     openclawGatewayCLIAdapter,
     processCLIAdapter,
     httpCLIAdapter,

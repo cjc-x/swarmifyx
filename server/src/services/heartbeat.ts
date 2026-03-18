@@ -71,7 +71,6 @@ const SESSIONED_LOCAL_ADAPTERS = new Set([
   "gemini_local",
   "opencode_local",
   "pi_local",
-  "qwen_local",
 ]);
 
 function deriveRepoNameFromRepoUrl(repoUrl: string | null): string | null {

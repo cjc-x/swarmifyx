@@ -33,12 +33,6 @@ import {
 } from "@chopsticks/adapter-gemini-local/server";
 import { agentConfigurationDoc as geminiAgentConfigurationDoc, models as geminiModels } from "@chopsticks/adapter-gemini-local";
 import {
-  execute as qwenExecute,
-  testEnvironment as qwenTestEnvironment,
-  sessionCodec as qwenSessionCodec,
-} from "@chopsticks/adapter-qwen-local/server";
-import { agentConfigurationDoc as qwenAgentConfigurationDoc, models as qwenModels } from "@chopsticks/adapter-qwen-local";
-import {
   execute as openCodeExecute,
   testEnvironment as openCodeTestEnvironment,
   sessionCodec as openCodeSessionCodec,
@@ -136,16 +130,6 @@ const geminiLocalAdapter: ServerAdapterModule = {
   agentConfigurationDoc: geminiAgentConfigurationDoc,
 };
 
-const qwenLocalAdapter: ServerAdapterModule = {
-  type: "qwen_local",
-  execute: qwenExecute,
-  testEnvironment: qwenTestEnvironment,
-  sessionCodec: qwenSessionCodec,
-  models: qwenModels,
-  supportsLocalAgentJwt: true,
-  agentConfigurationDoc: qwenAgentConfigurationDoc,
-};
-
 const openclawGatewayAdapter: ServerAdapterModule = {
   type: "openclaw_gateway",
   execute: openclawGatewayExecute,
@@ -198,7 +182,6 @@ const adaptersByType = new Map<string, ServerAdapterModule>(
     piLocalAdapter,
     cursorLocalAdapter,
     geminiLocalAdapter,
-    qwenLocalAdapter,
     openclawGatewayAdapter,
     hermesLocalAdapter,
     processAdapter,

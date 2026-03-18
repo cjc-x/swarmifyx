@@ -24,14 +24,12 @@ import { cn } from "@/lib/utils";
 import { CodeBuddyLogoIcon } from "./CodeBuddyLogoIcon";
 import { GeminiLogoIcon } from "./GeminiLogoIcon";
 import { OpenCodeLogoIcon } from "./OpenCodeLogoIcon";
-import { QwenLogoIcon } from "./QwenLogoIcon";
 
 type AdvancedAdapterType =
   | "claude_local"
   | "codebuddy_local"
   | "codex_local"
   | "gemini_local"
-  | "qwen_local"
   | "opencode_local"
   | "pi_local"
   | "cursor"
@@ -73,13 +71,6 @@ const ADVANCED_ADAPTER_OPTIONS: Array<{
     label: "Gemini CLI",
     icon: GeminiLogoIcon,
     desc: "Local Gemini agent",
-    group: "more",
-  },
-  {
-    value: "qwen_local",
-    label: "Qwen Code",
-    icon: QwenLogoIcon,
-    desc: "Local Qwen agent",
     group: "more",
   },
   {

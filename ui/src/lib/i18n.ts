@@ -1587,8 +1587,8 @@ const translations: Record<AppLocale, Record<string, string>> = {
     "The agent this one reports to in the org hierarchy.": "该代理在组织层级中的汇报对象。",
     "Describes what this agent can do. Shown in the org chart and used for task routing.":
       "描述该代理可以做什么。会显示在组织图中，并用于任务路由。",
-    "How this agent runs: local CLI (Claude/CodeBuddy/Codex/Gemini/Qwen/OpenCode/Cursor), OpenClaw Gateway, spawned process, or generic HTTP webhook.":
-      "该代理的运行方式：本地 CLI（Claude/CodeBuddy/Codex/Gemini/Qwen/OpenCode/Cursor）、OpenClaw 网关、派生进程或通用 HTTP Webhook。",
+    "How this agent runs: local CLI (Claude/CodeBuddy/Codex/Gemini/OpenCode/Cursor), OpenClaw Gateway, spawned process, or generic HTTP webhook.":
+      "该代理的运行方式：本地 CLI（Claude/CodeBuddy/Codex/Gemini/OpenCode/Cursor）、OpenClaw 网关、派生进程或通用 HTTP Webhook。",
     "Default working directory fallback for local adapters. Use an absolute path on the machine running Chopsticks.":
       "本地适配器的默认工作目录回退值。请填写运行 Chopsticks 的机器上的绝对路径。",
     "The prompt sent to the agent on each heartbeat. Supports {{ agent.id }}, {{ agent.name }}, {{ agent.role }} variables.":
@@ -1616,8 +1616,8 @@ const translations: Record<AppLocale, Record<string, string>> = {
     "Maximum number of agentic turns (tool calls) per heartbeat run.":
       "每次心跳运行允许的最大代理轮数（工具调用次数）。",
     "The command to execute (e.g. node, python).": "要执行的命令（例如 node、python）。",
-    "Override the path to the CLI command you want the adapter to call (e.g. /usr/local/bin/claude, codebuddy, codex, gemini, qwen, agent, opencode).":
-      "覆盖适配器要调用的 CLI 命令路径（例如 /usr/local/bin/claude、codebuddy、codex、gemini、qwen、agent、opencode）。",
+    "Override the path to the CLI command you want the adapter to call (e.g. /usr/local/bin/claude, codebuddy, codex, gemini, agent, opencode).":
+      "覆盖适配器要调用的 CLI 命令路径（例如 /usr/local/bin/claude、codebuddy、codex、gemini、agent、opencode）。",
     "Command-line arguments, comma-separated.": "命令行参数，使用逗号分隔。",
     "Extra CLI arguments for local adapters, comma-separated.": "本地适配器的额外 CLI 参数，使用逗号分隔。",
     "Environment variables injected into the adapter process. Use plain values or secret references.":
@@ -1686,12 +1686,6 @@ const translations: Record<AppLocale, Record<string, string>> = {
     "Enable search": "启用搜索",
     "OpenClaw gateway token": "OpenClaw 网关令牌",
     "CODEBUDDY_API_KEY (optional)": "CODEBUDDY_API_KEY（可选）",
-    "Qwen Code": "Qwen Code",
-    "Qwen Code (local)": "Qwen Code（本地）",
-    "Local Qwen agent": "本地 Qwen 代理",
-    "Absolute path to a markdown file (e.g. AGENTS.md) that defines this agent's behavior. Prepended to the Qwen prompt at runtime.":
-      "定义该代理行为的 Markdown 文件绝对路径（例如 AGENTS.md）。运行时会预置到 Qwen 提示词前面。",
-    "or configure ~/.qwen/settings.json and retry.": "或配置 ~/.qwen/settings.json 后重试。",
     "Select a company to view org chart.": "选择一家公司以查看组织图。",
     "No agents in the organization. Create agents to build your org chart.":
       "组织中还没有代理。创建代理来搭建你的组织图。",

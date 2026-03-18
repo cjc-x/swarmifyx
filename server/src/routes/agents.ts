@@ -45,7 +45,6 @@ import { DEFAULT_CODEBUDDY_LOCAL_MODEL } from "@chopsticks/adapter-codebuddy-loc
 import { DEFAULT_CURSOR_LOCAL_MODEL } from "@chopsticks/adapter-cursor-local";
 import { DEFAULT_GEMINI_LOCAL_MODEL } from "@chopsticks/adapter-gemini-local";
 import { ensureOpenCodeModelConfiguredAndAvailable } from "@chopsticks/adapter-opencode-local/server";
-import { DEFAULT_QWEN_LOCAL_MODEL } from "@chopsticks/adapter-qwen-local";
 
 export function agentRoutes(db: Db) {
   const DEFAULT_INSTRUCTIONS_PATH_KEYS: Record<string, string> = {
@@ -55,7 +54,6 @@ export function agentRoutes(db: Db) {
     cursor: "instructionsFilePath",
     gemini_local: "instructionsFilePath",
     opencode_local: "instructionsFilePath",
-    qwen_local: "instructionsFilePath",
   };
   const KNOWN_INSTRUCTIONS_PATH_KEYS = new Set(["instructionsFilePath", "agentsMdPath"]);
 
@@ -272,9 +270,6 @@ export function agentRoutes(db: Db) {
     if (adapterType === "cursor" && !asNonEmptyString(next.model)) {
       next.model = DEFAULT_CURSOR_LOCAL_MODEL;
       return ensureGatewayDeviceKey(adapterType, next);
-    }
-    if (adapterType === "qwen_local" && !asNonEmptyString(next.model)) {
-      next.model = DEFAULT_QWEN_LOCAL_MODEL;
     }
     return ensureGatewayDeviceKey(adapterType, next);
   }

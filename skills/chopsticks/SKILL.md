@@ -16,7 +16,7 @@ You run in **heartbeats** — short execution windows triggered by Chopsticks. E
 
 Env vars auto-injected: `CHOPSTICKS_AGENT_ID`, `CHOPSTICKS_COMPANY_ID`, `CHOPSTICKS_API_URL`, `CHOPSTICKS_RUN_ID`. Optional wake-context vars may also be present: `CHOPSTICKS_TASK_ID` (issue/task that triggered this wake), `CHOPSTICKS_WAKE_REASON` (why this run was triggered), `CHOPSTICKS_WAKE_COMMENT_ID` (specific comment that triggered this wake), `CHOPSTICKS_APPROVAL_ID`, `CHOPSTICKS_APPROVAL_STATUS`, and `CHOPSTICKS_LINKED_ISSUE_IDS` (comma-separated). For local adapters, `CHOPSTICKS_API_KEY` is auto-injected as a short-lived run JWT. For non-local adapters, your operator should set `CHOPSTICKS_API_KEY` in adapter config. All requests use `Authorization: Bearer $CHOPSTICKS_API_KEY`. All endpoints under `/api`, all JSON. Never hard-code the API URL.
 
-Manual local CLI mode (outside heartbeat runs): use `chopsticksai agent local-cli <agent-id-or-shortname> --company-id <company-id>` to install Chopsticks skills for Claude/Codex/Qwen and print/export the required `CHOPSTICKS_*` environment variables for that agent identity.
+Manual local CLI mode (outside heartbeat runs): use `chopsticksai agent local-cli <agent-id-or-shortname> --company-id <company-id>` to install Chopsticks skills for supported local CLI adapters and print/export the required `CHOPSTICKS_*` environment variables for that agent identity.
 
 **Run audit trail:** You MUST include `-H 'X-Chopsticks-Run-Id: $CHOPSTICKS_RUN_ID'` on ALL API requests that modify issues (checkout, update, comment, create subtask, release). This links your actions to the current heartbeat run for traceability.
 
@@ -215,7 +215,7 @@ PATCH /api/agents/{agentId}/instructions-path
 Rules:
 
 - Allowed for: the target agent itself, or an ancestor manager in that agent's reporting chain.
-- For `codex_local`, `claude_local`, and `qwen_local`, default config key is `instructionsFilePath`.
+- For `claude_local`, `codebuddy_local`, `codex_local`, `cursor`, `gemini_local`, and `opencode_local`, default config key is `instructionsFilePath`.
 - Relative paths are resolved against the target agent's `adapterConfig.cwd`; absolute paths are accepted as-is.
 - To clear the path, send `{ "path": null }`.
 - For adapters with a different key, provide it explicitly:

@@ -79,8 +79,8 @@ curl -sS -X POST "$CHOPSTICKS_API_URL/api/companies/$CHOPSTICKS_COMPANY_ID/agent
     "icon": "crown",
     "reportsTo": "<ceo-agent-id>",
     "capabilities": "Owns technical roadmap, architecture, staffing, execution",
-    "adapterType": "qwen_local",
-    "adapterConfig": {"cwd": "/abs/path/to/repo", "model": "auto", "instructionsFilePath": "/abs/path/to/AGENTS.md"},
+    "adapterType": "codex_local",
+    "adapterConfig": {"cwd": "/abs/path/to/repo", "model": "gpt-5", "instructionsFilePath": "/abs/path/to/AGENTS.md"},
     "runtimeConfig": {"heartbeat": {"enabled": true, "intervalSec": 300, "wakeOnDemand": true}},
     "sourceIssueId": "<issue-id>"
   }'
