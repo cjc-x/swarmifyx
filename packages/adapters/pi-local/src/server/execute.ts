@@ -9,10 +9,14 @@ import {
   asStringArray,
   parseObject,
   buildChopsticksEnv,
+  joinPromptSections,
   redactEnvForLogs,
   ensureAbsoluteDirectory,
   ensureCommandResolvable,
+  ensureChopsticksSkillSymlink,
   ensurePathInEnv,
+  listChopsticksSkillEntries,
+  removeMaintainerOnlySkillSymlinks,
   renderTemplate,
   runChildProcess,
 } from "@chopsticks/adapter-utils/server-utils";
@@ -20,12 +24,8 @@ import { isPiUnknownSessionError, parsePiJsonl } from "./parse.js";
 import { ensurePiModelConfiguredAndAvailable } from "./models.js";
 
 const __moduleDir = path.dirname(fileURLToPath(import.meta.url));
-const CHOPSTICKS_SKILLS_CANDIDATES = [
-  path.resolve(__moduleDir, "../../skills"),
-  path.resolve(__moduleDir, "../../../../../skills"),
-];
-
 const CHOPSTICKS_SESSIONS_DIR = path.join(os.homedir(), ".pi", "chopstickss");
+const PI_AGENT_SKILLS_DIR = path.join(os.homedir(), ".pi", "agent", "skills");
 
 function firstNonEmptyLine(text: string): string {
   return (
@@ -50,43 +50,40 @@ function parseModelId(model: string | null): string | null {
   return trimmed.slice(trimmed.indexOf("/") + 1).trim() || null;
 }
 
-async function resolveChopsticksSkillsDir(): Promise<string | null> {
-  for (const candidate of CHOPSTICKS_SKILLS_CANDIDATES) {
-    const isDir = await fs.stat(candidate).then((s) => s.isDirectory()).catch(() => false);
-    if (isDir) return candidate;
-  }
-  return null;
-}
-
 function resolvePiBiller(env: Record<string, string>, provider: string | null): string {
   return inferOpenAiCompatibleBiller(env, null) ?? provider ?? "unknown";
 }
 
 async function ensurePiSkillsInjected(onLog: AdapterExecutionContext["onLog"]) {
-  const skillsDir = await resolveChopsticksSkillsDir();
-  if (!skillsDir) return;
+  const skillsEntries = await listChopsticksSkillEntries(__moduleDir);
+  await fs.mkdir(PI_AGENT_SKILLS_DIR, { recursive: true });
+  if (skillsEntries.length === 0) return;
 
-  const piSkillsHome = path.join(os.homedir(), ".pi", "agent", "skills");
-  await fs.mkdir(piSkillsHome, { recursive: true });
+  const removedSkills = await removeMaintainerOnlySkillSymlinks(
+    PI_AGENT_SKILLS_DIR,
+    skillsEntries.map((entry) => entry.name),
+  );
+  for (const skillName of removedSkills) {
+    await onLog(
+      "stderr",
+      `[chopsticks] Removed maintainer-only Pi skill "${skillName}" from ${PI_AGENT_SKILLS_DIR}\n`,
+    );
+  }
 
-  const entries = await fs.readdir(skillsDir, { withFileTypes: true });
-  for (const entry of entries) {
-    if (!entry.isDirectory()) continue;
-    const source = path.join(skillsDir, entry.name);
-    const target = path.join(piSkillsHome, entry.name);
-    const existing = await fs.lstat(target).catch(() => null);
-    if (existing) continue;
+  for (const entry of skillsEntries) {
+    const target = path.join(PI_AGENT_SKILLS_DIR, entry.name);
 
     try {
-      await fs.symlink(source, target);
+      const result = await ensureChopsticksSkillSymlink(entry.source, target);
+      if (result === "skipped") continue;
       await onLog(
         "stderr",
-        `[chopsticks] Injected Pi skill "${entry.name}" into ${piSkillsHome}\n`,
+        `[chopsticks] ${result === "repaired" ? "Repaired" : "Injected"} Pi skill "${entry.name}" into ${PI_AGENT_SKILLS_DIR}\n`,
       );
     } catch (err) {
       await onLog(
         "stderr",
-        `[chopsticks] Failed to inject Pi skill "${entry.name}" into ${piSkillsHome}: ${err instanceof Error ? err.message : String(err)}\n`,
+        `[chopsticks] Failed to inject Pi skill "${entry.name}" into ${PI_AGENT_SKILLS_DIR}: ${err instanceof Error ? err.message : String(err)}\n`,
       );
     }
   }
@@ -288,8 +285,8 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     context,
   });
 
-  // User prompt is simple - just the rendered prompt template without instructions
-  const userPrompt = renderTemplate(promptTemplate, {
+  const bootstrapPromptTemplate = asString(config.bootstrapPromptTemplate, "");
+  const templateData = {
     agentId: agent.id,
     companyId: agent.companyId,
     runId,
@@ -297,7 +294,25 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     agent,
     run: { id: runId, source: "on_demand" },
     context,
-  });
+  };
+  const renderedHeartbeatPrompt = renderTemplate(promptTemplate, templateData);
+  const renderedBootstrapPrompt =
+    !canResumeSession && bootstrapPromptTemplate.trim().length > 0
+      ? renderTemplate(bootstrapPromptTemplate, templateData).trim()
+      : "";
+  const sessionHandoffNote = asString(context.chopsticksSessionHandoffMarkdown, "").trim();
+  const userPrompt = joinPromptSections([
+    renderedBootstrapPrompt,
+    sessionHandoffNote,
+    renderedHeartbeatPrompt,
+  ]);
+  const promptMetrics = {
+    systemPromptChars: renderedSystemPromptExtension.length,
+    promptChars: userPrompt.length,
+    bootstrapPromptChars: renderedBootstrapPrompt.length,
+    sessionHandoffChars: sessionHandoffNote.length,
+    heartbeatPromptChars: renderedHeartbeatPrompt.length,
+  };
 
   const commandNotes = (() => {
     if (!resolvedInstructionsFilePath) return [] as string[];
@@ -328,6 +343,9 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     args.push("--tools", "read,bash,edit,write,grep,find,ls");
     args.push("--session", sessionFile);
 
+    // Add Chopsticks skills directory so Pi can load the managed skills.
+    args.push("--skill", PI_AGENT_SKILLS_DIR);
+
     if (extraArgs.length > 0) args.push(...extraArgs);
 
     return args;
@@ -353,6 +371,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
         commandArgs: args,
         env: redactEnvForLogs(env),
         prompt: userPrompt,
+        promptMetrics,
         context,
       });
     }

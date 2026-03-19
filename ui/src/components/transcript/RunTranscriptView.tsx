@@ -291,6 +291,16 @@ function translateEventLabel(label: string, t: TranslateFn): string {
   return label;
 }
 
+function translateSystemText(text: string, t: TranslateFn): string {
+  const normalized = compactWhitespace(text);
+  if (normalized === "Pi agent started") return t("Pi agent started");
+  if (normalized === "Pi agent finished") return t("Pi agent finished");
+  if (normalized === "Turn started") return t("Turn started");
+  if (normalized === "Turn ended") return t("Turn ended");
+  if (normalized === "Tool started") return t("Tool started");
+  return text;
+}
+
 function parseSystemActivity(text: string): { activityId?: string; name: string; status: "running" | "completed" } | null {
   const match = text.match(/^item (started|completed):\s*([a-z0-9_-]+)(?:\s+\(id=([^)]+)\))?$/i);
   if (!match) return null;
@@ -429,7 +439,7 @@ export function normalizeTranscript(
           type: "tool",
           ts: entry.ts,
           endTs: entry.ts,
-          name: t("Tool"),
+          name: entry.toolName ? displayToolName(entry.toolName, null, t) : t("Tool"),
           toolUseId: entry.toolUseId,
           input: null,
           result: entry.content,
@@ -511,7 +521,7 @@ export function normalizeTranscript(
         ts: entry.ts,
         label: "system",
         tone: "warn",
-        text: entry.text,
+        text: translateSystemText(entry.text, t),
       });
       continue;
     }
