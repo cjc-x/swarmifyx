@@ -193,6 +193,26 @@ This starts the API server at `http://localhost:3100`. An embedded PostgreSQL da
 
 > **Requirements:** Node.js 20+, pnpm 9.15+
 
+### Desktop Preview (Windows-first)
+
+Launch the local Electron wrapper:
+
+```bash
+pnpm desktop:dev
+```
+
+Useful overrides:
+
+```bash
+CHOPSTICKS_HOME=/custom/desktop-home PORT=3210 pnpm desktop:dev
+```
+
+Run the desktop smoke harness:
+
+```bash
+pnpm smoke:desktop
+```
+
 <br/>
 
 ## FAQ

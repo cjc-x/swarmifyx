@@ -42,6 +42,26 @@ This starts:
 - API server: `http://localhost:3100`
 - UI: served by the API server in dev middleware mode (same origin as API)
 
+## Desktop Wrapper (Windows-first)
+
+The repo also includes a local Electron shell for desktop verification:
+
+```sh
+pnpm desktop:dev
+```
+
+Supported user-facing overrides:
+
+```sh
+CHOPSTICKS_HOME=/custom/path PORT=3210 pnpm desktop:dev
+```
+
+For a repo-owned smoke check that launches Electron with remote debugging and validates the boot handoff, run:
+
+```sh
+pnpm smoke:desktop
+```
+
 `pnpm dev` runs the server in watch mode and restarts on changes from workspace packages (including adapter packages). Use `pnpm dev:once` to run without file watching.
 
 Tailscale/private-auth dev mode:
