@@ -1,4 +1,3 @@
-import { useEffect, useRef } from "react";
 import { Navigate, Outlet, Route, Routes, useLocation, useParams } from "@/lib/router";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -41,6 +40,7 @@ import { useCompany } from "./context/CompanyContext";
 import { useDialog } from "./context/DialogContext";
 import { useI18n } from "./context/I18nContext";
 import { loadLastInboxTab } from "./lib/inbox";
+import { shouldRedirectCompanylessRouteToOnboarding } from "./lib/onboarding-route";
 
 function BootstrapPendingPage({ hasActiveInvite = false }: { hasActiveInvite?: boolean }) {
   const { t } = useI18n();
@@ -180,24 +180,13 @@ function LegacySettingsRedirect() {
 
 function OnboardingRoutePage() {
   const { t } = useI18n();
-  const { companies, loading } = useCompany();
-  const { onboardingOpen, openOnboarding } = useDialog();
+  const { companies } = useCompany();
+  const { openOnboarding } = useDialog();
   const { companyPrefix } = useParams<{ companyPrefix?: string }>();
-  const opened = useRef(false);
   const hasRoutableCompanies = companies.some((company) => company.status !== "archived");
   const matchedCompany = companyPrefix
     ? companies.find((company) => company.issuePrefix.toUpperCase() === companyPrefix.toUpperCase()) ?? null
     : null;
-
-  useEffect(() => {
-    if (loading || opened.current || onboardingOpen) return;
-    opened.current = true;
-    if (matchedCompany) {
-      openOnboarding({ initialStep: 2, companyId: matchedCompany.id });
-      return;
-    }
-    openOnboarding();
-  }, [companyPrefix, loading, matchedCompany, onboardingOpen, openOnboarding]);
 
   const title = matchedCompany
     ? t("Add another agent to {name}", { name: matchedCompany.name })
@@ -233,6 +222,7 @@ function OnboardingRoutePage() {
 
 function CompanyRootRedirect() {
   const { t } = useI18n();
+  const location = useLocation();
   const { companies, selectedCompany, loading } = useCompany();
 
   if (loading) {
@@ -244,7 +234,15 @@ function CompanyRootRedirect() {
     companies.find((company) => company.status !== "archived") ??
     null;
   if (!targetCompany) {
-    return <Navigate to="/onboarding" replace />;
+    if (
+      shouldRedirectCompanylessRouteToOnboarding({
+        pathname: location.pathname,
+        hasCompanies: false,
+      })
+    ) {
+      return <Navigate to="/onboarding" replace />;
+    }
+    return <NoCompaniesStartPage />;
   }
 
   return <Navigate to={`/${targetCompany.issuePrefix}/dashboard`} replace />;
@@ -264,7 +262,15 @@ function UnprefixedBoardRedirect() {
     companies.find((company) => company.status !== "archived") ??
     null;
   if (!targetCompany) {
-    return <Navigate to="/onboarding" replace />;
+    if (
+      shouldRedirectCompanylessRouteToOnboarding({
+        pathname: location.pathname,
+        hasCompanies: false,
+      })
+    ) {
+      return <Navigate to="/onboarding" replace />;
+    }
+    return <NoCompaniesStartPage />;
   }
 
   return (
@@ -272,6 +278,25 @@ function UnprefixedBoardRedirect() {
       to={`/${targetCompany.issuePrefix}${location.pathname}${location.search}${location.hash}`}
       replace
     />
+  );
+}
+
+function NoCompaniesStartPage() {
+  const { t } = useI18n();
+  const { openOnboarding } = useDialog();
+
+  return (
+    <div className="mx-auto max-w-xl py-10">
+      <div className="rounded-lg border border-border bg-card p-6">
+        <h1 className="text-xl font-semibold">{t("Create your first company")}</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          {t("Get started by creating a company and your first agent.")}
+        </p>
+        <div className="mt-5">
+          <Button onClick={() => openOnboarding()}>{t("Start Onboarding")}</Button>
+        </div>
+      </div>
+    </div>
   );
 }
 

@@ -1,6 +1,6 @@
 # Release Automation Setup
 
-This document covers the GitHub and npm setup required for the current Paperclip release model:
+This document covers the GitHub and npm setup required for the current Chopsticks release model:
 
 - automatic canaries from `master`
 - manual stable promotion from a chosen source ref
@@ -29,12 +29,12 @@ Required files:
 
 ## 2. Configure npm Trusted Publishing
 
-Do this for every public package that Paperclip publishes.
+Do this for every public package that Chopsticks publishes.
 
 At minimum that includes:
 
-- `paperclipai`
-- `@paperclipai/server`
+- `chopsticks`
+- `@chopsticks/server`
 - public packages under `packages/`
 
 ### 2.1. In npm, open each package settings page
@@ -43,7 +43,7 @@ For each package:
 
 1. open npm as an owner of the package
 2. go to the package settings / publishing access area
-3. add a trusted publisher for the GitHub repository `paperclipai/paperclip`
+3. add a trusted publisher for the GitHub repository `chopsticksai/chopsticks`
 
 ### 2.2. Add one trusted publisher entry per package
 
@@ -55,7 +55,7 @@ Configure:
 
 Repository:
 
-- `paperclipai/paperclip`
+- `chopsticksai/chopsticks`
 
 Environment name:
 
@@ -82,7 +82,7 @@ Only after that should you remove old token-based access.
 After trusted publishing works:
 
 1. revoke any repository or organization `NPM_TOKEN` secrets used for publish
-2. revoke any personal automation token that used to publish Paperclip
+2. revoke any personal automation token that used to publish Chopsticks
 3. if npm offers a package-level setting to restrict publishing to trusted publishers, enable it
 
 Goal:
@@ -205,30 +205,37 @@ After setup:
 3. confirm it passes verification
 4. confirm publish succeeds under the `npm-canary` environment
 5. confirm npm now shows a new `canary` release
-6. confirm a git tag named `canary/vYYYY.M.D-canary.N` was pushed
+6. confirm a git tag named `canary/vYYYY.MDD.P-canary.N` was pushed
 
 Install-path check:
 
 ```bash
-npx paperclipai@canary onboard
+npx chopsticks@canary onboard
 ```
 
 ## 12. Verify the Stable Workflow
 
 After at least one good canary exists:
 
-1. prepare `releases/vYYYY.M.D.md` on the source commit you want to promote
-2. open `Actions` -> `Release`
-3. run it with:
+1. resolve the target stable version with `./scripts/release.sh stable --date YYYY-MM-DD --print-version`
+2. prepare `releases/vYYYY.MDD.P.md` on the source commit you want to promote
+3. open `Actions` -> `Release`
+4. run it with:
    - `source_ref`: the tested commit SHA or canary tag source commit
-   - `stable_date`: leave blank or set the intended UTC date
+   - `stable_date`: leave blank or set the intended UTC date like `2026-03-18`
+     do not enter a version like `2026.318.0`; the workflow computes that from the date
    - `dry_run`: `true`
-4. confirm the dry-run succeeds
-5. rerun with `dry_run: false`
-6. approve the `npm-stable` environment when prompted
-7. confirm npm `latest` points to the new stable version
-8. confirm git tag `vYYYY.M.D` exists
-9. confirm the GitHub Release was created
+5. confirm the dry-run succeeds
+6. rerun with `dry_run: false`
+7. approve the `npm-stable` environment when prompted
+8. confirm npm `latest` points to the new stable version
+9. confirm git tag `vYYYY.MDD.P` exists
+10. confirm the GitHub Release was created
+
+Implementation note:
+
+- the GitHub Actions stable workflow calls `create-github-release.sh` with `PUBLISH_REMOTE=origin`
+- local maintainer usage can still pass `PUBLISH_REMOTE=public-gh` explicitly when needed
 
 ## 13. Suggested Maintainer Policy
 

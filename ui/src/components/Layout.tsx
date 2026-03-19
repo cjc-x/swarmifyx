@@ -34,6 +34,7 @@ import { queryKeys } from "../lib/queryKeys";
 import { cn } from "../lib/utils";
 import { NotFoundPage } from "../pages/NotFound";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 const INSTANCE_SETTINGS_MEMORY_KEY = "chopsticks.lastInstanceSettingsPath";
 const DOCS_URL = "__KEEP_DOCS_CHOPSTICKS__";
@@ -255,7 +256,12 @@ export function Layout() {
         <span className="truncate">{docsLabel}</span>
       </a>
       {health?.version && (
-        <span className="px-2 text-xs text-muted-foreground shrink-0">v{health.version}</span>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className="px-2 text-xs text-muted-foreground shrink-0 cursor-default">v</span>
+          </TooltipTrigger>
+          <TooltipContent>v{health.version}</TooltipContent>
+        </Tooltip>
       )}
       <Button variant="ghost" size="icon-sm" className="text-muted-foreground shrink-0" asChild>
         <Link

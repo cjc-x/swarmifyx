@@ -1,11 +1,6 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AGENT_ADAPTER_TYPES } from "@chopsticks/shared";
-import {
-  hasSessionCompactionThresholds,
-  resolveSessionCompactionPolicy,
-  type ResolvedSessionCompactionPolicy,
-} from "@chopsticks/adapter-utils";
 import type {
   Agent,
   AdapterEnvironmentTestResult,
@@ -424,11 +419,6 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
       heartbeat: mergedHeartbeat,
     };
   }, [isCreate, overlay.heartbeat, runtimeConfig, val]);
-  const sessionCompaction = useMemo(
-    () => resolveSessionCompactionPolicy(adapterType, effectiveRuntimeConfig),
-    [adapterType, effectiveRuntimeConfig],
-  );
-  const showSessionCompactionCard = Boolean(sessionCompaction.adapterSessionManagement);
 
   return (
     <div className={cn("relative", cards && "space-y-6")}>
@@ -729,33 +719,34 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                   )}
               </>
             )}
-            <Field label="Bootstrap prompt (first run)" hint={help.bootstrapPrompt}>
-              <MarkdownEditor
-                value={
-                  isCreate
-                    ? val!.bootstrapPrompt
-                    : eff(
+            {!isCreate && typeof config.bootstrapPromptTemplate === "string" && config.bootstrapPromptTemplate && (
+              <>
+                <Field label={t("Bootstrap prompt (legacy)")} hint={help.bootstrapPrompt}>
+                  <MarkdownEditor
+                    value={eff(
                       "adapterConfig",
                       "bootstrapPromptTemplate",
                       String(config.bootstrapPromptTemplate ?? ""),
-                    )
-                }
-                onChange={(v) =>
-                  isCreate
-                    ? set!({ bootstrapPrompt: v })
-                    : mark("adapterConfig", "bootstrapPromptTemplate", v || undefined)
-                }
-                placeholder="Optional initial setup prompt for the first run"
-                contentClassName="min-h-[44px] text-sm font-mono"
-                imageUploadHandler={async (file) => {
-                  const namespace = isCreate
-                    ? "agents/drafts/bootstrap-prompt"
-                    : `agents/${props.agent.id}/bootstrap-prompt`;
-                  const asset = await uploadMarkdownImage.mutateAsync({ file, namespace });
-                  return asset.contentPath;
-                }}
-              />
-            </Field>
+                    )}
+                    onChange={(v) =>
+                      mark("adapterConfig", "bootstrapPromptTemplate", v || undefined)
+                    }
+                    placeholder={t("Optional initial setup prompt for the first run")}
+                    contentClassName="min-h-[44px] text-sm font-mono"
+                    imageUploadHandler={async (file) => {
+                      const namespace = `agents/${props.agent.id}/bootstrap-prompt`;
+                      const asset = await uploadMarkdownImage.mutateAsync({ file, namespace });
+                      return asset.contentPath;
+                    }}
+                  />
+                </Field>
+                <div className="rounded-md border border-amber-500/25 bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
+                  {t(
+                    "Bootstrap prompt is legacy and will be removed in a future release. Consider moving this content into the agent's prompt template or instructions file instead.",
+                  )}
+                </div>
+              </>
+            )}
             {adapterType === "claude_local" && (
               <ClaudeLocalAdvancedFields {...adapterFieldProps} />
             )}
@@ -852,12 +843,6 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
               numberHint={help.intervalSec}
               showNumber={val!.heartbeatEnabled}
             />
-            {showSessionCompactionCard && (
-              <SessionCompactionPolicyCard
-                adapterType={adapterType}
-                resolution={sessionCompaction}
-              />
-            )}
           </div>
         </div>
       ) : (
@@ -880,12 +865,6 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                 numberHint={help.intervalSec}
                 showNumber={eff("heartbeat", "enabled", heartbeat.enabled !== false)}
               />
-              {showSessionCompactionCard && (
-                <SessionCompactionPolicyCard
-                  adapterType={adapterType}
-                  resolution={sessionCompaction}
-                />
-              )}
             </div>
             <CollapsibleSection
               title="Advanced Run Policy"
@@ -974,70 +953,6 @@ function AdapterEnvironmentResult({ result }: { result: AdapterEnvironmentTestRe
           </div>
         ))}
       </div>
-    </div>
-  );
-}
-
-function formatSessionThreshold(value: number, suffix: string, offLabel: string, locale: string) {
-  if (value <= 0) return offLabel;
-  return `${value.toLocaleString(locale)} ${suffix}`;
-}
-
-function SessionCompactionPolicyCard({
-  adapterType,
-  resolution,
-}: {
-  adapterType: string;
-  resolution: ResolvedSessionCompactionPolicy;
-}) {
-  const { locale, t } = useI18n();
-  const { adapterSessionManagement, policy, source } = resolution;
-  if (!adapterSessionManagement) return null;
-
-  const adapterLabel = adapterLabels[adapterType] ?? adapterType;
-  const sourceLabel = source === "agent_override" ? t("Agent override") : t("Adapter default");
-  const rotationDisabled = !policy.enabled || !hasSessionCompactionThresholds(policy);
-  const nativeSummary =
-    adapterSessionManagement.nativeContextManagement === "confirmed"
-      ? t("{adapterLabel} is treated as natively managing long context, so Chopsticks fresh-session rotation defaults to off.", { adapterLabel })
-      : adapterSessionManagement.nativeContextManagement === "likely"
-        ? t("{adapterLabel} likely manages long context itself, but Chopsticks still keeps conservative rotation defaults for now.", { adapterLabel })
-        : t("{adapterLabel} does not have verified native compaction behavior, so Chopsticks keeps conservative rotation defaults.", { adapterLabel });
-
-  return (
-    <div className="rounded-md border border-sky-500/25 bg-sky-500/10 px-3 py-3 space-y-2">
-      <div className="flex items-center justify-between gap-3">
-        <div className="text-xs font-medium text-sky-50">{t("Session compaction")}</div>
-        <span className="rounded-full border border-sky-400/30 px-2 py-0.5 text-[11px] text-sky-100">
-          {sourceLabel}
-        </span>
-      </div>
-      <p className="text-xs text-sky-100/90">
-        {nativeSummary}
-      </p>
-      <p className="text-xs text-sky-100/80">
-        {rotationDisabled
-          ? t("No Chopsticks-managed fresh-session thresholds are active for this adapter.")
-          : t("Chopsticks will start a fresh session when one of these thresholds is reached.")}
-      </p>
-      <div className="grid grid-cols-3 gap-2 text-[11px] text-sky-100/85 tabular-nums">
-        <div>
-          <div className="text-sky-100/60">{t("Runs")}</div>
-          <div>{formatSessionThreshold(policy.maxSessionRuns, t("runs"), t("Off"), locale)}</div>
-        </div>
-        <div>
-          <div className="text-sky-100/60">{t("Raw input")}</div>
-          <div>{formatSessionThreshold(policy.maxRawInputTokens, t("tokens"), t("Off"), locale)}</div>
-        </div>
-        <div>
-          <div className="text-sky-100/60">{t("Age")}</div>
-          <div>{formatSessionThreshold(policy.maxSessionAgeHours, t("hours"), t("Off"), locale)}</div>
-        </div>
-      </div>
-      <p className="text-[11px] text-sky-100/75">
-        {t("A large cumulative raw token total does not mean the full session is resent on every heartbeat.")}
-        {source === "agent_override" && ` ${t("This agent has an explicit runtimeConfig session compaction override.")}`}
-      </p>
     </div>
   );
 }

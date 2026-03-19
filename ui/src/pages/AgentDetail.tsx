@@ -585,9 +585,7 @@ export function AgentDetail() {
     const canonicalTab =
       activeView === "configuration"
         ? "configuration"
-        : activeView === "skills"
-          ? "skills"
-          : activeView === "runs"
+        : activeView === "runs"
             ? "runs"
             : activeView === "budget"
               ? "budget"
@@ -706,8 +704,6 @@ export function AgentDetail() {
         crumbs.push({ label: translateText("Run {id}", { id: urlRunId.slice(0, 8) }) });
       } else if (activeView === "configuration") {
         crumbs.push({ label: translateText("Configuration") });
-      } else if (activeView === "skills") {
-        crumbs.push({ label: translateText("Skills") });
       } else if (activeView === "runs") {
         crumbs.push({ label: translateText("Runs") });
       } else if (activeView === "budget") {
@@ -869,7 +865,6 @@ export function AgentDetail() {
             items={[
               { value: "dashboard", label: translateText("Dashboard") },
               { value: "configuration", label: translateText("Configuration") },
-              { value: "skills", label: translateText("Skills") },
               { value: "runs", label: translateText("Runs") },
               { value: "budget", label: translateText("Budget") },
             ]}
@@ -959,12 +954,6 @@ export function AgentDetail() {
           onCancelActionChange={setCancelConfigAction}
           onSavingChange={setConfigSaving}
           updatePermissions={updatePermissions}
-        />
-      )}
-
-      {activeView === "skills" && (
-        <SkillsTab
-          agent={agent}
         />
       )}
 

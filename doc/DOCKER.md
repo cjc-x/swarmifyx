@@ -120,6 +120,7 @@ Useful overrides:
 ```sh
 HOST_PORT=3200 CHOPSTICKS_VERSION=latest ./scripts/docker-onboard-smoke.sh
 CHOPSTICKS_DEPLOYMENT_MODE=authenticated CHOPSTICKS_DEPLOYMENT_EXPOSURE=private ./scripts/docker-onboard-smoke.sh
+SMOKE_DETACH=true SMOKE_METADATA_FILE=/tmp/chopsticks-smoke.env CHOPSTICKS_VERSION=latest ./scripts/docker-onboard-smoke.sh
 ```
 
 Notes:
@@ -131,4 +132,5 @@ Notes:
 - Smoke script also defaults `CHOPSTICKS_PUBLIC_URL` to `http://localhost:<HOST_PORT>` so bootstrap invite URLs and auth callbacks use the reachable host port instead of the container's internal `3100`.
 - In authenticated mode, the smoke script defaults `SMOKE_AUTO_BOOTSTRAP=true` and drives the real bootstrap path automatically: it signs up a real user, runs `chopsticks auth bootstrap-ceo` inside the container to mint a real bootstrap invite, accepts that invite over HTTP, and verifies board session access.
 - Run the script in the foreground to watch the onboarding flow; stop with `Ctrl+C` after validation.
+- Set `SMOKE_DETACH=true` to leave the container running for automation and optionally write shell-ready metadata to `SMOKE_METADATA_FILE`.
 - The image definition is in `Dockerfile.onboard-smoke`.

@@ -17,9 +17,10 @@ import { StatusIcon } from "../components/StatusIcon";
 import { PriorityIcon } from "../components/PriorityIcon";
 import { EmptyState } from "../components/EmptyState";
 import { PageSkeleton } from "../components/PageSkeleton";
-import { ApprovalCard } from "../components/ApprovalCard";
+import { defaultTypeIcon, typeIcon, typeLabel } from "../components/ApprovalPayload";
 import { StatusBadge } from "../components/StatusBadge";
 import { timeAgo } from "../lib/timeAgo";
+import { getStatusLabel } from "../lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Tabs } from "@/components/ui/tabs";
@@ -41,11 +42,15 @@ import {
 } from "lucide-react";
 import { Identity } from "../components/Identity";
 import { PageTabBar } from "../components/PageTabBar";
-import type { HeartbeatRun, Issue, JoinRequest } from "@chopsticks/shared";
+import type { Approval, HeartbeatRun, Issue, JoinRequest } from "@chopsticks/shared";
 import {
   ACTIONABLE_APPROVAL_STATUSES,
+  getApprovalsForTab,
+  getInboxWorkItems,
   getLatestFailedRunsByAgent,
   getRecentTouchedIssues,
+  shouldShowInboxSection,
+  type InboxApprovalFilter,
   type InboxTab,
   saveLastInboxTab,
 } from "../lib/inbox";
@@ -59,11 +64,9 @@ type InboxCategoryFilter =
   | "failed_runs"
   | "alerts"
   | "stale_work";
-type InboxApprovalFilter = "all" | "actionable" | "resolved";
 type SectionKey =
-  | "issues_i_touched"
+  | "work_items"
   | "join_requests"
-  | "approvals"
   | "failed_runs"
   | "alerts"
   | "stale_work";
@@ -250,6 +253,198 @@ function FailedRunCard({
   );
 }
 
+function ApprovalInboxRow({
+  approval,
+  requesterName,
+  onApprove,
+  onReject,
+  isPending,
+}: {
+  approval: Approval;
+  requesterName: string | null;
+  onApprove: () => void;
+  onReject: () => void;
+  isPending: boolean;
+}) {
+  const { t } = useI18n();
+  const Icon = typeIcon[approval.type] ?? defaultTypeIcon;
+  const label = typeLabel[approval.type] ?? approval.type;
+  const showResolutionButtons =
+    approval.type !== "budget_override_required" &&
+    ACTIONABLE_APPROVAL_STATUSES.has(approval.status);
+
+  return (
+    <div className="border-b border-border px-2 py-2.5 last:border-b-0 sm:px-1 sm:pr-3 sm:py-2">
+      <div className="flex items-start gap-2 sm:items-center">
+        <Link
+          to={`/approvals/${approval.id}`}
+          className="flex min-w-0 flex-1 items-start gap-2 text-inherit no-underline transition-colors hover:bg-accent/50"
+        >
+          <span className="hidden h-2 w-2 shrink-0 sm:inline-flex" aria-hidden="true" />
+          <span className="hidden h-3.5 w-3.5 shrink-0 sm:inline-flex" aria-hidden="true" />
+          <span className="mt-0.5 shrink-0 rounded-md bg-muted p-1.5 sm:mt-0">
+            <Icon className="h-4 w-4 text-muted-foreground" />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="line-clamp-2 text-sm font-medium sm:truncate sm:line-clamp-none">
+              {t(label)}
+            </span>
+            <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+              <span>{getStatusLabel(approval.status)}</span>
+              {requesterName ? <span>{t("requested by {name}", { name: requesterName })}</span> : null}
+              <span>{t("updated {time}", { time: timeAgo(approval.updatedAt) })}</span>
+            </span>
+          </span>
+        </Link>
+        {showResolutionButtons ? (
+          <div className="hidden shrink-0 items-center gap-2 sm:flex">
+            <Button
+              size="sm"
+              className="h-8 bg-green-700 px-3 text-white hover:bg-green-600"
+              onClick={onApprove}
+              disabled={isPending}
+            >
+              {t("Approve")}
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              className="h-8 px-3"
+              onClick={onReject}
+              disabled={isPending}
+            >
+              {t("Reject")}
+            </Button>
+          </div>
+        ) : null}
+      </div>
+      {showResolutionButtons ? (
+        <div className="mt-3 flex gap-2 sm:hidden">
+          <Button
+            size="sm"
+            className="h-8 bg-green-700 px-3 text-white hover:bg-green-600"
+            onClick={onApprove}
+            disabled={isPending}
+          >
+            {t("Approve")}
+          </Button>
+          <Button
+            variant="destructive"
+            size="sm"
+            className="h-8 px-3"
+            onClick={onReject}
+            disabled={isPending}
+          >
+            {t("Reject")}
+          </Button>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function IssueInboxRow({
+  issue,
+  issueLinkState,
+  isUnread,
+  isFading,
+  onMarkRead,
+}: {
+  issue: Issue;
+  issueLinkState: unknown;
+  isUnread: boolean;
+  isFading: boolean;
+  onMarkRead: () => void;
+}) {
+  const { t } = useI18n();
+
+  return (
+    <Link
+      to={`/issues/${issue.identifier ?? issue.id}`}
+      state={issueLinkState}
+      className="flex min-w-0 cursor-pointer items-start gap-2 px-3 py-3 no-underline text-inherit transition-colors hover:bg-accent/50 sm:items-center sm:gap-3 sm:px-4"
+    >
+      <span className="shrink-0 sm:hidden">
+        <StatusIcon status={issue.status} />
+      </span>
+
+      <span className="flex min-w-0 flex-1 flex-col gap-1 sm:contents">
+        <span className="line-clamp-2 text-sm sm:order-2 sm:min-w-0 sm:flex-1 sm:line-clamp-none sm:truncate">
+          {issue.title}
+        </span>
+        <span className="flex items-center gap-2 sm:order-1 sm:shrink-0">
+          {isUnread || isFading ? (
+            <span
+              role="button"
+              tabIndex={0}
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                onMarkRead();
+              }}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  onMarkRead();
+                }
+              }}
+              className="hidden h-4 w-4 shrink-0 cursor-pointer items-center justify-center rounded-full transition-colors hover:bg-blue-500/20 sm:inline-flex"
+              aria-label={t("Mark as read")}
+            >
+              <span
+                className={`h-2 w-2 rounded-full bg-blue-600 transition-opacity duration-300 dark:bg-blue-400 ${isFading ? "opacity-0" : "opacity-100"}`}
+              />
+            </span>
+          ) : (
+            <span className="hidden h-4 w-4 shrink-0 sm:inline-flex" />
+          )}
+          <span className="hidden sm:inline-flex">
+            <PriorityIcon priority={issue.priority} />
+          </span>
+          <span className="hidden sm:inline-flex">
+            <StatusIcon status={issue.status} />
+          </span>
+          <span className="text-xs font-mono text-muted-foreground">
+            {issue.identifier ?? issue.id.slice(0, 8)}
+          </span>
+          <span className="text-xs text-muted-foreground sm:hidden">&middot;</span>
+          <span className="text-xs text-muted-foreground sm:order-last">
+            {issue.lastExternalCommentAt
+              ? t("commented {time}", { time: timeAgo(issue.lastExternalCommentAt) })
+              : t("updated {time}", { time: timeAgo(issue.updatedAt) })}
+          </span>
+        </span>
+      </span>
+
+      {(isUnread || isFading) && (
+        <span
+          role="button"
+          tabIndex={0}
+          onClick={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            onMarkRead();
+          }}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              event.stopPropagation();
+              onMarkRead();
+            }
+          }}
+          className="shrink-0 self-center cursor-pointer sm:hidden"
+          aria-label={t("Mark as read")}
+        >
+          <span
+            className={`block h-2 w-2 rounded-full bg-blue-600 transition-opacity duration-300 dark:bg-blue-400 ${isFading ? "opacity-0" : "opacity-100"}`}
+          />
+        </span>
+      )}
+    </Link>
+  );
+}
+
 export function Inbox() {
   const { t } = useI18n();
   const { selectedCompanyId } = useCompany();
@@ -352,6 +547,10 @@ export function Inbox() {
     () => touchedIssues.filter((issue) => issue.isUnreadForMe),
     [touchedIssues],
   );
+  const issuesToRender = useMemo(
+    () => (tab === "unread" ? unreadTouchedIssues : touchedIssues),
+    [tab, touchedIssues, unreadTouchedIssues],
+  );
   const staleIssues = useMemo(
     () => getStaleIssues(issues ?? []).filter((issue) => !dismissed.has(`stale:${issue.id}`)),
     [issues, dismissed],
@@ -374,27 +573,10 @@ export function Inbox() {
     [heartbeatRuns, dismissed],
   );
 
-  const allApprovals = useMemo(
-    () =>
-      [...(approvals ?? [])].sort(
-        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-      ),
-    [approvals],
+  const approvalsToRender = useMemo(
+    () => getApprovalsForTab(approvals ?? [], tab, allApprovalFilter),
+    [approvals, tab, allApprovalFilter],
   );
-
-  const actionableApprovals = useMemo(
-    () => allApprovals.filter((approval) => ACTIONABLE_APPROVAL_STATUSES.has(approval.status)),
-    [allApprovals],
-  );
-
-  const filteredAllApprovals = useMemo(() => {
-    if (allApprovalFilter === "all") return allApprovals;
-
-    return allApprovals.filter((approval) => {
-      const isActionable = ACTIONABLE_APPROVAL_STATUSES.has(approval.status);
-      return allApprovalFilter === "actionable" ? isActionable : !isActionable;
-    });
-  }, [allApprovals, allApprovalFilter]);
 
   const agentName = (id: string | null) => {
     if (!id) return null;
@@ -530,31 +712,39 @@ export function Inbox() {
     allCategoryFilter === "everything" || allCategoryFilter === "failed_runs";
   const showAlertsCategory = allCategoryFilter === "everything" || allCategoryFilter === "alerts";
   const showStaleCategory = allCategoryFilter === "everything" || allCategoryFilter === "stale_work";
-
-  const approvalsToRender = tab === "all" ? filteredAllApprovals : actionableApprovals;
-  const showTouchedSection =
-    tab === "all"
-      ? showTouchedCategory && hasTouchedIssues
-      : tab === "unread"
-        ? unreadTouchedIssues.length > 0
-        : hasTouchedIssues;
+  const workItemsToRender = useMemo(
+    () =>
+      getInboxWorkItems({
+        issues: tab === "all" && !showTouchedCategory ? [] : issuesToRender,
+        approvals: tab === "all" && !showApprovalsCategory ? [] : approvalsToRender,
+      }),
+    [approvalsToRender, issuesToRender, showApprovalsCategory, showTouchedCategory, tab],
+  );
+  const showWorkItemsSection = workItemsToRender.length > 0;
   const showJoinRequestsSection =
     tab === "all" ? showJoinRequestsCategory && hasJoinRequests : tab === "unread" && hasJoinRequests;
-  const showApprovalsSection = tab === "all"
-    ? showApprovalsCategory && filteredAllApprovals.length > 0
-    : actionableApprovals.length > 0;
-  const showFailedRunsSection =
-    tab === "all" ? showFailedRunsCategory && hasRunFailures : tab === "unread" && hasRunFailures;
-  const showAlertsSection = tab === "all" ? showAlertsCategory && hasAlerts : tab === "unread" && hasAlerts;
+  const showFailedRunsSection = shouldShowInboxSection({
+    tab,
+    hasItems: hasRunFailures,
+    showOnRecent: hasRunFailures,
+    showOnUnread: hasRunFailures,
+    showOnAll: showFailedRunsCategory && hasRunFailures,
+  });
+  const showAlertsSection = shouldShowInboxSection({
+    tab,
+    hasItems: hasAlerts,
+    showOnRecent: hasAlerts,
+    showOnUnread: hasAlerts,
+    showOnAll: showAlertsCategory && hasAlerts,
+  });
   const showStaleSection = tab === "all" && showStaleCategory && hasStaleIssues;
 
   const visibleSections = [
+    showWorkItemsSection ? "work_items" : null,
+    showJoinRequestsSection ? "join_requests" : null,
     showFailedRunsSection ? "failed_runs" : null,
     showAlertsSection ? "alerts" : null,
-    showApprovalsSection ? "approvals" : null,
-    showJoinRequestsSection ? "join_requests" : null,
     showStaleSection ? "stale_work" : null,
-    showTouchedSection ? "issues_i_touched" : null,
   ].filter((key): key is SectionKey => key !== null);
 
   const allLoaded =
@@ -661,29 +851,35 @@ export function Inbox() {
         />
       )}
 
-      {showApprovalsSection && (
+      {showWorkItemsSection && (
         <>
-          {showSeparatorBefore("approvals") && <Separator />}
+          {showSeparatorBefore("work_items") && <Separator />}
           <div>
             <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-              {tab === "unread" ? t("Approvals Needing Action") : t("Approvals")}
+              {t("Work Items")}
             </h3>
-            <div className="grid gap-3">
-              {approvalsToRender.map((approval) => (
-                <ApprovalCard
-                  key={approval.id}
-                  approval={approval}
-                  requesterAgent={
-                    approval.requestedByAgentId
-                      ? (agents ?? []).find((a) => a.id === approval.requestedByAgentId) ?? null
-                      : null
-                  }
-                  onApprove={() => approveMutation.mutate(approval.id)}
-                  onReject={() => rejectMutation.mutate(approval.id)}
-                  detailLink={`/approvals/${approval.id}`}
-                  isPending={approveMutation.isPending || rejectMutation.isPending}
-                />
-              ))}
+            <div className="divide-y divide-border border border-border">
+              {workItemsToRender.map((item) =>
+                item.kind === "approval" ? (
+                  <ApprovalInboxRow
+                    key={`approval:${item.approval.id}`}
+                    approval={item.approval}
+                    requesterName={agentName(item.approval.requestedByAgentId)}
+                    onApprove={() => approveMutation.mutate(item.approval.id)}
+                    onReject={() => rejectMutation.mutate(item.approval.id)}
+                    isPending={approveMutation.isPending || rejectMutation.isPending}
+                  />
+                ) : (
+                  <IssueInboxRow
+                    key={`issue:${item.issue.id}`}
+                    issue={item.issue}
+                    issueLinkState={issueLinkState}
+                    isUnread={!!item.issue.isUnreadForMe && !fadingOutIssues.has(item.issue.id)}
+                    isFading={fadingOutIssues.has(item.issue.id)}
+                    onMarkRead={() => markReadMutation.mutate(item.issue.id)}
+                  />
+                ),
+              )}
             </div>
           </div>
         </>
@@ -887,111 +1083,6 @@ export function Inbox() {
                   </button>
                 </div>
               ))}
-            </div>
-          </div>
-        </>
-      )}
-      {showTouchedSection && (
-        <>
-          {showSeparatorBefore("issues_i_touched") && <Separator />}
-          <div>
-            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-              {t("My Recent Issues")}
-            </h3>
-            <div className="divide-y divide-border border border-border">
-              {(tab === "unread" ? unreadTouchedIssues : touchedIssues).map((issue) => {
-                const isUnread = issue.isUnreadForMe && !fadingOutIssues.has(issue.id);
-                const isFading = fadingOutIssues.has(issue.id);
-                return (
-                  <Link
-                    key={issue.id}
-                    to={`/issues/${issue.identifier ?? issue.id}`}
-                    state={issueLinkState}
-                    className="flex min-w-0 cursor-pointer items-start gap-2 px-3 py-3 no-underline text-inherit transition-colors hover:bg-accent/50 sm:items-center sm:gap-3 sm:px-4"
-                  >
-                    {/* Status icon - left column on mobile, inline on desktop */}
-                    <span className="shrink-0 sm:hidden">
-                      <StatusIcon status={issue.status} />
-                    </span>
-
-                    {/* Right column on mobile: title + metadata stacked */}
-                    <span className="flex min-w-0 flex-1 flex-col gap-1 sm:contents">
-                      <span className="line-clamp-2 text-sm sm:order-2 sm:flex-1 sm:min-w-0 sm:line-clamp-none sm:truncate">
-                        {issue.title}
-                      </span>
-                      <span className="flex items-center gap-2 sm:order-1 sm:shrink-0">
-                        {(isUnread || isFading) ? (
-                          <span
-                            role="button"
-                            tabIndex={0}
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              markReadMutation.mutate(issue.id);
-                            }}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter" || e.key === " ") {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                markReadMutation.mutate(issue.id);
-                              }
-                            }}
-                            className="hidden sm:inline-flex h-4 w-4 shrink-0 cursor-pointer items-center justify-center rounded-full transition-colors hover:bg-blue-500/20"
-                            aria-label={t("Mark as read")}
-                          >
-                            <span
-                              className={`h-2 w-2 rounded-full bg-blue-600 dark:bg-blue-400 transition-opacity duration-300 ${isFading ? "opacity-0" : "opacity-100"
-                                }`}
-                            />
-                          </span>
-                        ) : (
-                          <span className="hidden sm:inline-flex h-4 w-4 shrink-0" />
-                        )}
-                        <span className="hidden sm:inline-flex"><PriorityIcon priority={issue.priority} /></span>
-                        <span className="hidden sm:inline-flex"><StatusIcon status={issue.status} /></span>
-                        <span className="text-xs font-mono text-muted-foreground">
-                          {issue.identifier ?? issue.id.slice(0, 8)}
-                        </span>
-                        <span className="text-xs text-muted-foreground sm:hidden">
-                          &middot;
-                        </span>
-                        <span className="text-xs text-muted-foreground sm:order-last">
-                          {issue.lastExternalCommentAt
-                            ? t("commented {time}", { time: timeAgo(issue.lastExternalCommentAt) })
-                            : t("updated {time}", { time: timeAgo(issue.updatedAt) })}
-                        </span>
-                      </span>
-                    </span>
-
-                    {/* Unread dot - right side, vertically centered (mobile only; desktop keeps inline) */}
-                    {(isUnread || isFading) && (
-                      <span
-                        role="button"
-                        tabIndex={0}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          markReadMutation.mutate(issue.id);
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" || e.key === " ") {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            markReadMutation.mutate(issue.id);
-                          }
-                        }}
-                        className="shrink-0 self-center cursor-pointer sm:hidden"
-                        aria-label={t("Mark as read")}
-                      >
-                        <span
-                          className={`block h-2 w-2 rounded-full bg-blue-600 dark:bg-blue-400 transition-opacity duration-300 ${isFading ? "opacity-0" : "opacity-100"
-                            }`}
-                        />
-                      </span>
-                    )}
-                  </Link>
-                );
-              })}
             </div>
           </div>
         </>
