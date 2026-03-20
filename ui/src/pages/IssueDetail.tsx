@@ -13,12 +13,14 @@ import { useToast } from "../context/ToastContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { useI18n } from "../context/I18nContext";
 import { getPriorityLabel, getStatusLabel, translateText } from "../lib/i18n";
+import { assigneeValueFromSelection, suggestedCommentAssigneeValue } from "../lib/assignees";
 import { queryKeys } from "../lib/queryKeys";
 import { readIssueDetailBreadcrumb } from "../lib/issueDetailBreadcrumb";
 import { useProjectOrder } from "../hooks/useProjectOrder";
 import { relativeTime, cn, formatTokens, visibleRunCostUsd } from "../lib/utils";
 import { InlineEditor } from "../components/InlineEditor";
 import { CommentThread } from "../components/CommentThread";
+import { approvalLabel } from "../components/ApprovalPayload";
 import { IssueDocumentsSection } from "../components/IssueDocumentsSection";
 import { IssueProperties } from "../components/IssueProperties";
 import { LiveRunWidget } from "../components/LiveRunWidget";
@@ -210,7 +212,6 @@ export function IssueDetail() {
   const [detailTab, setDetailTab] = useState("comments");
   const [secondaryOpen, setSecondaryOpen] = useState({
     approvals: false,
-    cost: false,
   });
   const [attachmentError, setAttachmentError] = useState<string | null>(null);
   const [attachmentDragActive, setAttachmentDragActive] = useState(false);
@@ -380,11 +381,15 @@ export function IssueDetail() {
     return options;
   }, [agents, currentUserId, t]);
 
-  const currentAssigneeValue = useMemo(() => {
-    if (issue?.assigneeAgentId) return `agent:${issue.assigneeAgentId}`;
-    if (issue?.assigneeUserId) return `user:${issue.assigneeUserId}`;
-    return "";
-  }, [issue?.assigneeAgentId, issue?.assigneeUserId]);
+  const actualAssigneeValue = useMemo(
+    () => assigneeValueFromSelection(issue ?? {}),
+    [issue],
+  );
+
+  const suggestedAssigneeValue = useMemo(
+    () => suggestedCommentAssigneeValue(issue ?? {}, comments, currentUserId),
+    [issue, comments, currentUserId],
+  );
 
   const commentsWithRunMeta = useMemo(() => {
     const runMetaByCommentId = new Map<string, { runId: string; runAgentId: string | null }>();
@@ -1007,7 +1012,8 @@ export function IssueDetail() {
             draftKey={`abacus:issue-comment-draft:${issue.id}`}
             enableReassign
             reassignOptions={commentReassignOptions}
-            currentAssigneeValue={currentAssigneeValue}
+            currentAssigneeValue={actualAssigneeValue}
+            suggestedAssigneeValue={suggestedAssigneeValue}
             mentions={mentionOptions}
             onAdd={async (body, reopen, reassignment) => {
               if (reassignment) {
@@ -1060,6 +1066,38 @@ export function IssueDetail() {
         </TabsContent>
 
         <TabsContent value="activity">
+          {linkedRuns && linkedRuns.length > 0 && (
+            <div className="mb-3 px-3 py-2 rounded-lg border border-border">
+              <div className="text-sm font-medium text-muted-foreground mb-1">{t("Cost Summary")}</div>
+              {!issueCostSummary.hasCost && !issueCostSummary.hasTokens ? (
+                <div className="text-xs text-muted-foreground">{t("No cost data yet.")}</div>
+              ) : (
+                <div className="flex flex-wrap gap-3 text-xs text-muted-foreground tabular-nums">
+                  {issueCostSummary.hasCost && (
+                    <span className="font-medium text-foreground">
+                      ${issueCostSummary.cost.toFixed(4)}
+                    </span>
+                  )}
+                  {issueCostSummary.hasTokens && (
+                    <span>
+                      {issueCostSummary.cached > 0
+                        ? t("Tokens {total} (in {input}, out {output}, cached {cached})", {
+                          total: formatTokens(issueCostSummary.totalTokens),
+                          input: formatTokens(issueCostSummary.input),
+                          output: formatTokens(issueCostSummary.output),
+                          cached: formatTokens(issueCostSummary.cached),
+                        })
+                        : t("Tokens {total} (in {input}, out {output})", {
+                          total: formatTokens(issueCostSummary.totalTokens),
+                          input: formatTokens(issueCostSummary.input),
+                          output: formatTokens(issueCostSummary.output),
+                        })}
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
           {!activity || activity.length === 0 ? (
             <p className="text-xs text-muted-foreground">{t("No activity yet.")}</p>
           ) : (
@@ -1116,51 +1154,13 @@ export function IssueDetail() {
                   <div className="flex items-center gap-2">
                     <StatusBadge status={approval.status} />
                     <span className="font-medium">
-                      {approval.type.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+                      {approvalLabel(approval.type, approval.payload as Record<string, unknown> | null, t)}
                     </span>
                     <span className="font-mono text-muted-foreground">{approval.id.slice(0, 8)}</span>
                   </div>
                   <span className="text-muted-foreground">{relativeTime(approval.createdAt)}</span>
                 </Link>
               ))}
-            </div>
-          </CollapsibleContent>
-        </Collapsible>
-      )}
-
-      {linkedRuns && linkedRuns.length > 0 && (
-        <Collapsible
-          open={secondaryOpen.cost}
-          onOpenChange={(open) => setSecondaryOpen((prev) => ({ ...prev, cost: open }))}
-          className="rounded-lg border border-border"
-        >
-          <CollapsibleTrigger className="flex w-full items-center justify-between px-3 py-2 text-left">
-            <span className="text-sm font-medium text-muted-foreground">{t("Cost Summary")}</span>
-            <ChevronDown
-              className={cn("h-4 w-4 text-muted-foreground transition-transform", secondaryOpen.cost && "rotate-180")}
-            />
-          </CollapsibleTrigger>
-          <CollapsibleContent>
-            <div className="border-t border-border px-3 py-2">
-              {!issueCostSummary.hasCost && !issueCostSummary.hasTokens ? (
-                <div className="text-xs text-muted-foreground">{t("No cost data yet.")}</div>
-              ) : (
-                <div className="flex flex-wrap gap-3 text-xs text-muted-foreground tabular-nums">
-                  {issueCostSummary.hasCost && (
-                    <span className="font-medium text-foreground">
-                      ${issueCostSummary.cost.toFixed(4)}
-                    </span>
-                  )}
-                  {issueCostSummary.hasTokens && (
-                    <span>
-                      Tokens {formatTokens(issueCostSummary.totalTokens)}
-                      {issueCostSummary.cached > 0
-                        ? ` (in ${formatTokens(issueCostSummary.input)}, out ${formatTokens(issueCostSummary.output)}, cached ${formatTokens(issueCostSummary.cached)})`
-                        : ` (in ${formatTokens(issueCostSummary.input)}, out ${formatTokens(issueCostSummary.output)})`}
-                    </span>
-                  )}
-                </div>
-              )}
             </div>
           </CollapsibleContent>
         </Collapsible>
