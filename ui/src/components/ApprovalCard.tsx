@@ -2,7 +2,7 @@ import { CheckCircle2, XCircle, Clock } from "lucide-react";
 import { Link } from "@/lib/router";
 import { Button } from "@/components/ui/button";
 import { Identity } from "./Identity";
-import { typeLabel, typeIcon, defaultTypeIcon, ApprovalPayloadRenderer } from "./ApprovalPayload";
+import { approvalLabel, typeIcon, defaultTypeIcon, ApprovalPayloadRenderer } from "./ApprovalPayload";
 import { timeAgo } from "../lib/timeAgo";
 import { useI18n } from "../context/I18nContext";
 import { getStatusLabel } from "../lib/i18n";
@@ -35,7 +35,7 @@ export function ApprovalCard({
 }) {
   const { t } = useI18n();
   const Icon = typeIcon[approval.type] ?? defaultTypeIcon;
-  const label = t(typeLabel[approval.type] ?? approval.type);
+  const label = approvalLabel(approval.type, approval.payload as Record<string, unknown> | null, t);
   const showResolutionButtons =
     approval.type !== "budget_override_required" &&
     (approval.status === "pending" || approval.status === "revision_requested");

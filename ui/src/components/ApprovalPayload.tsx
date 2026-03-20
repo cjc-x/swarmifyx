@@ -8,6 +8,21 @@ export const typeLabel: Record<string, string> = {
   budget_override_required: "Budget Override",
 };
 
+type TranslateFn = (text: string, values?: Record<string, string | number>) => string;
+
+/** Build a contextual label for an approval, e.g. "Hire Agent: Designer" */
+export function approvalLabel(
+  type: string,
+  payload?: Record<string, unknown> | null,
+  translate: TranslateFn = translateText,
+): string {
+  const base = translate(typeLabel[type] ?? type);
+  if (type === "hire_agent" && payload?.name) {
+    return translate("{label}: {name}", { label: base, name: String(payload.name) });
+  }
+  return base;
+}
+
 export const typeIcon: Record<string, typeof UserPlus> = {
   hire_agent: UserPlus,
   approve_ceo_strategy: Lightbulb,
