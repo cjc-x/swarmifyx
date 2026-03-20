@@ -7,6 +7,7 @@ import {
   readFileSync,
   realpathSync,
   readdirSync,
+  renameSync,
   rmSync,
   writeFileSync,
 } from "node:fs";
@@ -25,7 +26,16 @@ function readJson(filePath) {
 }
 
 function writeJson(filePath, value) {
-  writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`);
+  const nextContents = `${JSON.stringify(value, null, 2)}\n`;
+  const tempPath = `${filePath}.tmp`;
+
+  // `pnpm deploy` can hardlink workspace manifests into the staged app on
+  // Windows. Replace the staged file instead of editing it in place so we do
+  // not mutate the source workspace manifest through a shared inode.
+  rmSync(tempPath, { force: true });
+  writeFileSync(tempPath, nextContents);
+  rmSync(filePath, { force: true });
+  renameSync(tempPath, filePath);
 }
 
 function isInsideStage(targetPath) {
@@ -83,6 +93,11 @@ function collectScopedPackageJsons(rootDir, scopeName) {
 function patchPublishMetadata(packageJsonPath) {
   if (!existsSync(packageJsonPath)) return false;
   if (!isInsideStage(packageJsonPath)) return false;
+
+  const fileStat = lstatSync(packageJsonPath);
+  if (fileStat.isSymbolicLink()) {
+    return false;
+  }
 
   const stat = lstatSync(path.dirname(packageJsonPath));
   if (stat.isSymbolicLink()) {
