@@ -736,7 +736,7 @@ packages:
   7zip-bin@5.2.0:
     resolution: {integrity: sha512-ukTPVhqG4jNzMro2qA9HSCSSVJN3aN7tlb+hfqYCt3ER0yWroeA2VR38MNrOHLQ/cVj+DaIMad0kFCtWWowh/A==}
 
-  '@abacus-lab/adapter-utils@0.3.1':
+  '@paperclipai/adapter-utils@0.3.1':
     resolution: {integrity: sha512-W66k+hJkQE8ma0asM/Sd90AC8HHy/BLG/sd0aOC+rDWw+gOasQyUkTnDoPv1zhQuTyKEEvLFV6ByOOKqEiAz/A==}
 
   '@acemir/cssom@0.9.31':
@@ -6801,7 +6801,7 @@ snapshots:
 
   7zip-bin@5.2.0: {}
 
-  '@abacus-lab/adapter-utils@0.3.1': {}
+  '@paperclipai/adapter-utils@0.3.1': {}
 
   '@acemir/cssom@0.9.31': {}
 
@@ -11759,7 +11759,7 @@ snapshots:
 
   hermes-paperclip-adapter@0.1.1:
     dependencies:
-      '@abacus-lab/adapter-utils': 0.3.1
+      '@paperclipai/adapter-utils': 0.3.1
       picocolors: 1.1.1
 
   hosted-git-info@4.1.0:

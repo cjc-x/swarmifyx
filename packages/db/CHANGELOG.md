@@ -6,7 +6,7 @@
 
 - Stable release preparation for 0.3.1
 - Updated dependencies
-  - @abacus-lab/shared@0.3.1
+  - @abacus/shared@0.3.1
 
 ## 0.3.0
 

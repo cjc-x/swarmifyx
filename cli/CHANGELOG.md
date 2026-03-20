@@ -6,17 +6,17 @@
 
 - Stable release preparation for 0.3.1
 - Updated dependencies
-  - @abacus-lab/adapter-utils@0.3.1
-  - @abacus-lab/adapter-claude-local@0.3.1
-  - @abacus-lab/adapter-codex-local@0.3.1
-  - @abacus-lab/adapter-cursor-local@0.3.1
-  - @abacus-lab/adapter-gemini-local@0.3.1
-  - @abacus-lab/adapter-openclaw-gateway@0.3.1
-  - @abacus-lab/adapter-opencode-local@0.3.1
-  - @abacus-lab/adapter-pi-local@0.3.1
-  - @abacus-lab/db@0.3.1
-  - @abacus-lab/shared@0.3.1
-  - @abacus-lab/server@0.3.1
+  - @abacus/adapter-utils@0.3.1
+  - @abacus/adapter-claude-local@0.3.1
+  - @abacus/adapter-codex-local@0.3.1
+  - @abacus/adapter-cursor-local@0.3.1
+  - @abacus/adapter-gemini-local@0.3.1
+  - @abacus/adapter-openclaw-gateway@0.3.1
+  - @abacus/adapter-opencode-local@0.3.1
+  - @abacus/adapter-pi-local@0.3.1
+  - @abacus/db@0.3.1
+  - @abacus/shared@0.3.1
+  - @abacus/server@0.3.1
 
 ## 0.3.0
 
