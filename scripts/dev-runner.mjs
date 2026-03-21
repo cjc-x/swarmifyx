@@ -133,14 +133,14 @@ async function maybePreflightMigrations() {
   if (process.env.ABACUS_MIGRATION_PROMPT === "never") return;
 
   const status = await runPnpm(
-    ["--filter", "@abacus/db", "exec", "tsx", "src/migration-status.ts", "--json"],
+    ["--filter", "@abacus-lab/db", "exec", "tsx", "src/migration-status.ts", "--json"],
     { env },
   );
   if (status.code !== 0) {
     process.stderr.write(
       status.stderr ||
         status.stdout ||
-        `[abacus] Command failed with code ${status.code}: pnpm --filter @abacus/db exec tsx src/migration-status.ts --json\n`,
+        `[abacus] Command failed with code ${status.code}: pnpm --filter @abacus-lab/db exec tsx src/migration-status.ts --json\n`,
     );
     process.exit(status.code);
   }
@@ -213,7 +213,7 @@ await maybePreflightMigrations();
 async function buildPluginSdk() {
   console.log("[abacus] building plugin sdk...");
   const result = await runPnpm(
-    ["--filter", "@abacus/plugin-sdk", "build"],
+    ["--filter", "@abacus-lab/plugin-sdk", "build"],
     { stdio: "inherit" },
   );
   if (result.signal) {
@@ -232,7 +232,7 @@ if (mode === "watch") {
   env.ABACUS_MIGRATION_PROMPT = "never";
 }
 const serverScript = mode === "watch" ? "dev:watch" : "dev";
-const child = spawnPnpm(["--filter", "@abacus/server", serverScript, ...forwardedArgs], {
+const child = spawnPnpm(["--filter", "@abacus-lab/server", serverScript, ...forwardedArgs], {
   stdio: "inherit",
   env,
 });

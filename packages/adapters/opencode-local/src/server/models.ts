@@ -1,11 +1,11 @@
 import { createHash } from "node:crypto";
 import os from "node:os";
-import type { AdapterModel } from "@abacus/adapter-utils";
+import type { AdapterModel } from "@abacus-lab/adapter-utils";
 import {
   asString,
   ensurePathInEnv,
   runChildProcess,
-} from "@abacus/adapter-utils/server-utils";
+} from "@abacus-lab/adapter-utils/server-utils";
 
 const MODELS_CACHE_TTL_MS = 60_000;
 const MODELS_DISCOVERY_TIMEOUT_MS = 20_000;

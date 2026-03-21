@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolveAbacusConfigPath, resolveAbacusEnvPath } from "./paths.js";
-import type { DeploymentExposure, DeploymentMode } from "@abacus/shared";
+import type { DeploymentExposure, DeploymentMode } from "@abacus-lab/shared";
 
 import { parse as parseEnvFileContents } from "dotenv";
 

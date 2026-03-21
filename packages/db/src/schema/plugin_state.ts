@@ -7,7 +7,7 @@ import {
   index,
   unique,
 } from "drizzle-orm/pg-core";
-import type { PluginStateScopeKind } from "@abacus/shared";
+import type { PluginStateScopeKind } from "@abacus-lab/shared";
 import { plugins } from "./plugins.js";
 
 /**

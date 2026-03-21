@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button";
 import { HelpCircle, ChevronDown, ChevronRight } from "lucide-react";
 import { cn } from "../lib/utils";
 import { useI18n } from "../context/I18nContext";
-import { AGENT_ROLE_LABELS } from "@abacus/shared";
+import { AGENT_ROLE_LABELS } from "@abacus-lab/shared";
 
 /* ---- Help text for (?) tooltips ---- */
 export const help: Record<string, string> = {

@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import type { Agent } from "@abacus/shared";
+import type { Agent } from "@abacus-lab/shared";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";

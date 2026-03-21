@@ -1,12 +1,12 @@
 import { Router } from "express";
-import type { Db } from "@abacus/db";
+import type { Db } from "@abacus-lab/db";
 import {
   createCostEventSchema,
   createFinanceEventSchema,
   resolveBudgetIncidentSchema,
   updateBudgetSchema,
   upsertBudgetPolicySchema,
-} from "@abacus/shared";
+} from "@abacus-lab/shared";
 import { validate } from "../middleware/validate.js";
 import {
   budgetService,

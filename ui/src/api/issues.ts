@@ -8,7 +8,7 @@ import type {
   IssueLabel,
   IssueWorkProduct,
   UpsertIssueDocument,
-} from "@abacus/shared";
+} from "@abacus-lab/shared";
 import { api } from "./client";
 
 export const issuesApi = {

@@ -35,7 +35,7 @@ Important constraints:
 Every stable release has four separate surfaces:
 
 1. **Verification** - the exact git SHA passes typecheck, tests, and build
-2. **npm** - `abacus` and public workspace packages are published
+2. **npm** - `@abacus-lab/abacus` and public workspace packages are published
 3. **GitHub** - the stable release gets a git tag and GitHub Release
 4. **Website / announcements** - the stable changelog is published externally and announced
 
@@ -68,9 +68,9 @@ It:
 Users install canaries with:
 
 ```bash
-npx abacus@canary onboard
+npx @abacus-lab/abacus@canary onboard
 # or
-npx abacus@canary onboard --data-dir "$(mktemp -d /tmp/abacus-canary.XXXXXX)"
+npx @abacus-lab/abacus@canary onboard --data-dir "$(mktemp -d /tmp/abacus-canary.XXXXXX)"
 ```
 
 ### Stable
@@ -185,7 +185,7 @@ gh workflow run release-smoke.yml -f abacus_version=latest
 
 Minimum checks:
 
-- `npx abacus@canary onboard` installs
+- `npx @abacus-lab/abacus@canary onboard` installs
 - onboarding completes without crashes
 - authenticated login works with the smoke credentials
 - the browser lands in onboarding on a fresh instance

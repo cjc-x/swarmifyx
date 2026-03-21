@@ -8,7 +8,7 @@ Get Abacus running locally in under 5 minutes.
 ## Quick Start (Recommended)
 
 ```sh
-npx abacus onboard --yes
+npx @abacus-lab/abacus onboard --yes
 ```
 
 This walks you through setup, configures your environment, and gets Abacus running.

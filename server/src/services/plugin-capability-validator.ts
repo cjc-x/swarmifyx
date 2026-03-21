@@ -24,7 +24,7 @@ import type {
   AbacusPluginManifestV1,
   PluginUiSlotType,
   PluginLauncherPlacementZone,
-} from "@abacus/shared";
+} from "@abacus-lab/shared";
 import { forbidden } from "../errors.js";
 import { logger } from "../middleware/logger.js";
 

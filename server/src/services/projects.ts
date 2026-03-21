@@ -1,6 +1,6 @@
 import { and, asc, desc, eq, inArray } from "drizzle-orm";
-import type { Db } from "@abacus/db";
-import { projects, projectGoals, goals, projectWorkspaces, workspaceRuntimeServices } from "@abacus/db";
+import type { Db } from "@abacus-lab/db";
+import { projects, projectGoals, goals, projectWorkspaces, workspaceRuntimeServices } from "@abacus-lab/db";
 import {
   PROJECT_COLORS,
   deriveProjectUrlKey,
@@ -11,7 +11,7 @@ import {
   type ProjectGoalRef,
   type ProjectWorkspace,
   type WorkspaceRuntimeService,
-} from "@abacus/shared";
+} from "@abacus-lab/shared";
 import { listWorkspaceRuntimeServicesForProjectWorkspaces } from "./workspace-runtime.js";
 import { parseProjectExecutionWorkspacePolicy } from "./execution-workspace-policy.js";
 import { resolveManagedProjectWorkspaceDir } from "../home-paths.js";

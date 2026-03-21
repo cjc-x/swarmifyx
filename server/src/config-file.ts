@@ -1,5 +1,5 @@
 import fs from "node:fs";
-import { abacusConfigSchema, type AbacusConfig } from "@abacus/shared";
+import { abacusConfigSchema, type AbacusConfig } from "@abacus-lab/shared";
 import { resolveAbacusConfigPath } from "./paths.js";
 
 export function readConfigFile(): AbacusConfig | null {

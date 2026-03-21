@@ -1,5 +1,5 @@
 import * as p from "@clack/prompts";
-import type { SecretProvider } from "@abacus/shared";
+import type { SecretProvider } from "@abacus-lab/shared";
 import type { SecretsConfig } from "../config/schema.js";
 import { resolveDefaultSecretsKeyFilePath, resolveAbacusInstanceId } from "../config/home.js";
 

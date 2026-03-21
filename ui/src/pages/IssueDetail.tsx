@@ -54,8 +54,8 @@ import {
   SlidersHorizontal,
   Trash2,
 } from "lucide-react";
-import type { ActivityEvent } from "@abacus/shared";
-import type { Agent, IssueAttachment } from "@abacus/shared";
+import type { ActivityEvent } from "@abacus-lab/shared";
+import type { Agent, IssueAttachment } from "@abacus-lab/shared";
 
 type CommentReassignment = {
   assigneeAgentId: string | null;

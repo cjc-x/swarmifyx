@@ -1,11 +1,11 @@
-import type { Db } from "@abacus/db";
-import { companies, instanceSettings } from "@abacus/db";
+import type { Db } from "@abacus-lab/db";
+import { companies, instanceSettings } from "@abacus-lab/db";
 import {
   instanceExperimentalSettingsSchema,
   type InstanceExperimentalSettings,
   type InstanceSettings,
   type PatchInstanceExperimentalSettings,
-} from "@abacus/shared";
+} from "@abacus-lab/shared";
 import { eq } from "drizzle-orm";
 
 const DEFAULT_SINGLETON_KEY = "default";

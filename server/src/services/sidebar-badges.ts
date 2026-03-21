@@ -1,7 +1,7 @@
 import { and, desc, eq, inArray, not, sql } from "drizzle-orm";
-import type { Db } from "@abacus/db";
-import { agents, approvals, heartbeatRuns } from "@abacus/db";
-import type { SidebarBadges } from "@abacus/shared";
+import type { Db } from "@abacus-lab/db";
+import { agents, approvals, heartbeatRuns } from "@abacus-lab/db";
+import type { SidebarBadges } from "@abacus-lab/shared";
 
 const ACTIONABLE_APPROVAL_STATUSES = ["pending", "revision_requested"];
 const FAILED_HEARTBEAT_STATUSES = ["failed", "timed_out"];

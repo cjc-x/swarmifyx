@@ -13,7 +13,7 @@ import {
   type PluginSettingsPageProps,
   type PluginSidebarProps,
   type PluginWidgetProps,
-} from "@abacus/plugin-sdk/ui";
+} from "@abacus-lab/plugin-sdk/ui";
 import {
   DEFAULT_CONFIG,
   JOB_KEYS,

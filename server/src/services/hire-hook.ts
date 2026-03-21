@@ -1,7 +1,7 @@
 import { and, eq } from "drizzle-orm";
-import type { Db } from "@abacus/db";
-import { agents } from "@abacus/db";
-import type { HireApprovedPayload } from "@abacus/adapter-utils";
+import type { Db } from "@abacus-lab/db";
+import { agents } from "@abacus-lab/db";
+import type { HireApprovedPayload } from "@abacus-lab/adapter-utils";
 import { findServerAdapter } from "../adapters/registry.js";
 import { logger } from "../middleware/logger.js";
 import { logActivity } from "./activity-log.js";

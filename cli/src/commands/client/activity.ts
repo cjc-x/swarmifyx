@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import type { ActivityEvent } from "@abacus/shared";
+import type { ActivityEvent } from "@abacus-lab/shared";
 import {
   addCommonClientOptions,
   formatInlineRecord,

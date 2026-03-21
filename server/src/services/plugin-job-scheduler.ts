@@ -35,8 +35,8 @@
  */
 
 import { and, eq, lte, or } from "drizzle-orm";
-import type { Db } from "@abacus/db";
-import { pluginJobs, pluginJobRuns } from "@abacus/db";
+import type { Db } from "@abacus-lab/db";
+import { pluginJobs, pluginJobRuns } from "@abacus-lab/db";
 import type { PluginJobStore } from "./plugin-job-store.js";
 import type { PluginWorkerManager } from "./plugin-worker-manager.js";
 import { parseCron, nextCronTick, validateCron } from "./cron.js";

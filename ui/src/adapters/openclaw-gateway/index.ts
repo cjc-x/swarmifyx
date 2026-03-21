@@ -1,6 +1,6 @@
 import type { UIAdapterModule } from "../types";
-import { parseOpenClawGatewayStdoutLine } from "@abacus/adapter-openclaw-gateway/ui";
-import { buildOpenClawGatewayConfig } from "@abacus/adapter-openclaw-gateway/ui";
+import { parseOpenClawGatewayStdoutLine } from "@abacus-lab/adapter-openclaw-gateway/ui";
+import { buildOpenClawGatewayConfig } from "@abacus-lab/adapter-openclaw-gateway/ui";
 import { OpenClawGatewayConfigFields } from "./config-fields";
 
 export const openClawGatewayUIAdapter: UIAdapterModule = {

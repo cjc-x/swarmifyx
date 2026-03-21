@@ -1,6 +1,6 @@
 import { Router, type Request } from "express";
-import type { Db } from "@abacus/db";
-import { AGENT_ICON_NAMES } from "@abacus/shared";
+import type { Db } from "@abacus-lab/db";
+import { AGENT_ICON_NAMES } from "@abacus-lab/shared";
 import { forbidden } from "../errors.js";
 import { listServerAdapters } from "../adapters/index.js";
 import { agentService } from "../services/agents.js";

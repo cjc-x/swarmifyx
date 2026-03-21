@@ -4,7 +4,7 @@ import type {
   HeartbeatRun,
   Issue,
   JoinRequest,
-} from "@abacus/shared";
+} from "@abacus-lab/shared";
 
 export const RECENT_ISSUES_LIMIT = 100;
 export const FAILED_RUN_STATUSES = new Set(["failed", "timed_out"]);

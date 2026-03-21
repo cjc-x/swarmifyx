@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { Issue } from "@abacus/shared";
+import type { Issue } from "@abacus-lab/shared";
 import { Link } from "@/lib/router";
 import { useI18n } from "../context/I18nContext";
 import { cn } from "../lib/utils";

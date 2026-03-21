@@ -6,7 +6,7 @@ export {
   isClaudeMaxTurnsResult,
   isClaudeUnknownSessionError,
 } from "./parse.js";
-import type { AdapterSessionCodec } from "@abacus/adapter-utils";
+import type { AdapterSessionCodec } from "@abacus-lab/adapter-utils";
 export {
   getQuotaWindows,
   readClaudeAuthStatus,

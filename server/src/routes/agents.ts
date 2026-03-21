@@ -1,8 +1,8 @@
 import { Router, type Request } from "express";
 import { generateKeyPairSync, randomUUID } from "node:crypto";
 import path from "node:path";
-import type { Db } from "@abacus/db";
-import { agents as agentsTable, companies, heartbeatRuns } from "@abacus/db";
+import type { Db } from "@abacus-lab/db";
+import { agents as agentsTable, companies, heartbeatRuns } from "@abacus-lab/db";
 import { and, desc, eq, inArray, not, sql } from "drizzle-orm";
 import {
   createAgentKeySchema,
@@ -17,7 +17,7 @@ import {
   updateAgentInstructionsPathSchema,
   wakeAgentSchema,
   updateAgentSchema,
-} from "@abacus/shared";
+} from "@abacus-lab/shared";
 import { validate } from "../middleware/validate.js";
 import {
   agentService,
@@ -36,15 +36,15 @@ import { assertBoard, assertCompanyAccess, getActorInfo } from "./authz.js";
 import { findServerAdapter, listAdapterModels } from "../adapters/index.js";
 import { redactEventPayload } from "../redaction.js";
 import { redactCurrentUserValue } from "../log-redaction.js";
-import { runClaudeLogin } from "@abacus/adapter-claude-local/server";
+import { runClaudeLogin } from "@abacus-lab/adapter-claude-local/server";
 import {
   DEFAULT_CODEX_LOCAL_BYPASS_APPROVALS_AND_SANDBOX,
   DEFAULT_CODEX_LOCAL_MODEL,
-} from "@abacus/adapter-codex-local";
-import { DEFAULT_CODEBUDDY_LOCAL_MODEL } from "@abacus/adapter-codebuddy-local";
-import { DEFAULT_CURSOR_LOCAL_MODEL } from "@abacus/adapter-cursor-local";
-import { DEFAULT_GEMINI_LOCAL_MODEL } from "@abacus/adapter-gemini-local";
-import { ensureOpenCodeModelConfiguredAndAvailable } from "@abacus/adapter-opencode-local/server";
+} from "@abacus-lab/adapter-codex-local";
+import { DEFAULT_CODEBUDDY_LOCAL_MODEL } from "@abacus-lab/adapter-codebuddy-local";
+import { DEFAULT_CURSOR_LOCAL_MODEL } from "@abacus-lab/adapter-cursor-local";
+import { DEFAULT_GEMINI_LOCAL_MODEL } from "@abacus-lab/adapter-gemini-local";
+import { ensureOpenCodeModelConfiguredAndAvailable } from "@abacus-lab/adapter-opencode-local/server";
 
 export function agentRoutes(db: Db) {
   const DEFAULT_INSTRUCTIONS_PATH_KEYS: Record<string, string> = {

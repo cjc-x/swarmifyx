@@ -9,9 +9,9 @@
  * @see PLUGIN_SPEC.md §10 — Plugin Manifest
  * @see packages/shared/src/validators/plugin.ts — Zod schema definition
  */
-import { pluginManifestV1Schema } from "@abacus/shared";
-import type { AbacusPluginManifestV1 } from "@abacus/shared";
-import { PLUGIN_API_VERSION } from "@abacus/shared";
+import { pluginManifestV1Schema } from "@abacus-lab/shared";
+import type { AbacusPluginManifestV1 } from "@abacus-lab/shared";
+import { PLUGIN_API_VERSION } from "@abacus-lab/shared";
 import { badRequest } from "../errors.js";
 
 // ---------------------------------------------------------------------------

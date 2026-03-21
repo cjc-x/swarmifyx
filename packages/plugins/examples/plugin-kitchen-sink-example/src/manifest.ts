@@ -1,4 +1,4 @@
-import type { AbacusPluginManifestV1 } from "@abacus/plugin-sdk";
+import type { AbacusPluginManifestV1 } from "@abacus-lab/plugin-sdk";
 import {
   DEFAULT_CONFIG,
   EXPORT_NAMES,

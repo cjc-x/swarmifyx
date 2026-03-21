@@ -1,4 +1,4 @@
-import type { FinanceEvent } from "@abacus/shared";
+import type { FinanceEvent } from "@abacus-lab/shared";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {

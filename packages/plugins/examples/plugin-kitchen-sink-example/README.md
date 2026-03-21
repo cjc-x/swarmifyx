@@ -1,4 +1,4 @@
-# @abacus/plugin-kitchen-sink-example
+# @abacus-lab/plugin-kitchen-sink-example
 
 Kitchen Sink is the first-party reference plugin that demonstrates nearly the full currently implemented Abacus plugin surface in one package.
 
@@ -20,7 +20,7 @@ This plugin is for local development, contributor onboarding, and runtime regres
 ## Install
 
 ```sh
-pnpm --filter @abacus/plugin-kitchen-sink-example build
+pnpm --filter @abacus-lab/plugin-kitchen-sink-example build
 pnpm abacus plugin install ./packages/plugins/examples/plugin-kitchen-sink-example
 ```
 

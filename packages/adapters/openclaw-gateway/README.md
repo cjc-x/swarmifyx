@@ -1,6 +1,6 @@
 # OpenClaw Gateway Adapter
 
-This document describes how `@abacus/adapter-openclaw-gateway` invokes OpenClaw over the Gateway protocol.
+This document describes how `@abacus-lab/adapter-openclaw-gateway` invokes OpenClaw over the Gateway protocol.
 
 ## Transport
 

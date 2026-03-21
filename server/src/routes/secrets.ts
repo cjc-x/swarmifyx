@@ -1,12 +1,12 @@
 import { Router } from "express";
-import type { Db } from "@abacus/db";
+import type { Db } from "@abacus-lab/db";
 import {
   SECRET_PROVIDERS,
   type SecretProvider,
   createSecretSchema,
   rotateSecretSchema,
   updateSecretSchema,
-} from "@abacus/shared";
+} from "@abacus-lab/shared";
 import { validate } from "../middleware/validate.js";
 import { assertBoard, assertCompanyAccess } from "./authz.js";
 import { logActivity, secretService } from "../services/index.js";

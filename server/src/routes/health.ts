@@ -1,8 +1,8 @@
 import { Router } from "express";
-import type { Db } from "@abacus/db";
+import type { Db } from "@abacus-lab/db";
 import { and, count, eq, gt, isNull, sql } from "drizzle-orm";
-import { instanceUserRoles, invites } from "@abacus/db";
-import type { DeploymentExposure, DeploymentMode } from "@abacus/shared";
+import { instanceUserRoles, invites } from "@abacus-lab/db";
+import type { DeploymentExposure, DeploymentMode } from "@abacus-lab/shared";
 import { serverVersion } from "../version.js";
 
 export function healthRoutes(

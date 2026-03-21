@@ -144,7 +144,7 @@ function getMissingModuleSpecifier(err: unknown): string | null {
 function maybeEnableUiDevMiddleware(entrypoint: string): void {
   if (process.env.ABACUS_UI_DEV_MIDDLEWARE !== undefined) return;
   const normalized = entrypoint.replaceAll("\\", "/");
-  if (normalized.endsWith("/server/src/index.ts") || normalized.endsWith("@abacus/server/src/index.ts")) {
+  if (normalized.endsWith("/server/src/index.ts") || normalized.endsWith("@abacus-lab/server/src/index.ts")) {
     process.env.ABACUS_UI_DEV_MIDDLEWARE = "true";
   }
 }
@@ -159,17 +159,17 @@ async function importServerEntry(): Promise<StartedServer> {
     return await startServerFromModule(mod, devEntry);
   }
 
-  // Production mode: import the published @abacus/server package
+  // Production mode: import the published @abacus-lab/server package
   try {
-    const mod = await import("@abacus/server");
-    return await startServerFromModule(mod, "@abacus/server");
+    const mod = await import("@abacus-lab/server");
+    return await startServerFromModule(mod, "@abacus-lab/server");
   } catch (err) {
     const missingSpecifier = getMissingModuleSpecifier(err);
-    const missingServerEntrypoint = !missingSpecifier || missingSpecifier === "@abacus/server";
+    const missingServerEntrypoint = !missingSpecifier || missingSpecifier === "@abacus-lab/server";
     if (isModuleNotFoundError(err) && missingServerEntrypoint) {
       throw new Error(
         `Could not locate a Abacus server entrypoint.\n` +
-        `Tried: ${devEntry}, @abacus/server\n` +
+        `Tried: ${devEntry}, @abacus-lab/server\n` +
         `${formatError(err)}`,
       );
     }

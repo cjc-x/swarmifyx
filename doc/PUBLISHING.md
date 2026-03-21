@@ -17,11 +17,11 @@ Abacus no longer uses release branches or Changesets for publishing.
 
 ## Why the CLI needs special packaging
 
-The CLI package, `abacus`, imports code from workspace packages such as:
+The CLI package, `@abacus-lab/abacus`, imports code from workspace packages such as:
 
-- `@abacus/server`
-- `@abacus/db`
-- `@abacus/shared`
+- `@abacus-lab/server`
+- `@abacus-lab/db`
+- `@abacus-lab/shared`
 - adapter packages under `packages/adapters/`
 
 Those workspace references are valid in development but not in a publishable npm package. The release flow rewrites versions temporarily, then builds a publishable CLI bundle.
@@ -85,12 +85,12 @@ Canaries publish under the npm dist-tag `canary`.
 
 Example:
 
-- `abacus@2026.318.1-canary.2`
+- `@abacus-lab/abacus@2026.318.1-canary.2`
 
 This keeps the default install path unchanged while allowing explicit installs with:
 
 ```bash
-npx abacus@canary onboard
+npx @abacus-lab/abacus@canary onboard
 ```
 
 ### Stable
@@ -99,7 +99,7 @@ Stable publishes use the npm dist-tag `latest`.
 
 Example:
 
-- `abacus@2026.318.0`
+- `@abacus-lab/abacus@2026.318.0`
 
 Stable publishes do not create a release commit. Instead:
 

@@ -6,7 +6,7 @@
  */
 import { useEffect, useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { PluginRecord } from "@abacus/shared";
+import type { PluginRecord } from "@abacus-lab/shared";
 import { Link } from "@/lib/router";
 import { AlertTriangle, FlaskConical, Plus, Power, Puzzle, Settings, Trash } from "lucide-react";
 import { useCompany } from "@/context/CompanyContext";
@@ -188,7 +188,7 @@ export function PluginManager() {
                 <Label htmlFor="packageName">{t("npm Package Name")}</Label>
                 <Input
                   id="packageName"
-                  placeholder="@abacus/plugin-example"
+                  placeholder="@abacus-lab/plugin-example"
                   value={installPackage}
                   onChange={(e) => setInstallPackage(e.target.value)}
                 />

@@ -79,8 +79,8 @@ import {
   type AgentRuntimeState,
   type LiveEvent,
   type WorkspaceOperation,
-} from "@abacus/shared";
-import { redactHomePathUserSegments, redactHomePathUserSegmentsInValue } from "@abacus/adapter-utils";
+} from "@abacus-lab/shared";
+import { redactHomePathUserSegments, redactHomePathUserSegmentsInValue } from "@abacus-lab/adapter-utils";
 import { agentRouteRef } from "../lib/utils";
 
 const runStatusIcons: Record<string, { icon: typeof CheckCircle2; color: string }> = {

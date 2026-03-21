@@ -1,4 +1,4 @@
-import type { FinanceByKind } from "@abacus/shared";
+import type { FinanceByKind } from "@abacus-lab/shared";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { financeEventKindDisplayName, formatCents } from "@/lib/utils";
 import { useI18n } from "../context/I18nContext";

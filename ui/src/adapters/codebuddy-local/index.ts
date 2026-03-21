@@ -1,5 +1,5 @@
 import type { UIAdapterModule } from "../types";
-import { parseCodeBuddyStdoutLine, buildCodeBuddyLocalConfig } from "@abacus/adapter-codebuddy-local/ui";
+import { parseCodeBuddyStdoutLine, buildCodeBuddyLocalConfig } from "@abacus-lab/adapter-codebuddy-local/ui";
 import { CodeBuddyLocalConfigFields } from "./config-fields";
 
 export const codeBuddyLocalUIAdapter: UIAdapterModule = {

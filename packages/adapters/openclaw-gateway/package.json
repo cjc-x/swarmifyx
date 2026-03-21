@@ -1,5 +1,5 @@
 {
-  "name": "@abacus/adapter-openclaw-gateway",
+  "name": "@abacus-lab/adapter-openclaw-gateway",
   "version": "0.3.1",
   "license": "MIT",
   "homepage": "https://github.com/abacus-lab/abacus",
@@ -50,7 +50,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@abacus/adapter-utils": "workspace:*",
+    "@abacus-lab/adapter-utils": "workspace:*",
     "picocolors": "^1.1.1",
     "ws": "^8.19.0"
   },

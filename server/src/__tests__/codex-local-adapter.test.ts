@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
-import { isCodexUnknownSessionError, parseCodexJsonl } from "@abacus/adapter-codex-local/server";
-import { parseCodexStdoutLine } from "@abacus/adapter-codex-local/ui";
-import { printCodexStreamEvent } from "@abacus/adapter-codex-local/cli";
+import { isCodexUnknownSessionError, parseCodexJsonl } from "@abacus-lab/adapter-codex-local/server";
+import { parseCodexStdoutLine } from "@abacus-lab/adapter-codex-local/ui";
+import { printCodexStreamEvent } from "@abacus-lab/adapter-codex-local/cli";
 
 describe("codex_local parser", () => {
   it("extracts session, summary, usage, and terminal error message", () => {

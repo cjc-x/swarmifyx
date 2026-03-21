@@ -1,6 +1,6 @@
 import { useEffect, useRef, type ReactNode } from "react";
 import { useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
-import type { Agent, Issue, LiveEvent } from "@abacus/shared";
+import type { Agent, Issue, LiveEvent } from "@abacus-lab/shared";
 import { authApi } from "../api/auth";
 import { useCompany } from "./CompanyContext";
 import { useI18n } from "./I18nContext";

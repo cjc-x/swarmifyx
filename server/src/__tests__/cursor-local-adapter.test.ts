@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
-import { isCursorUnknownSessionError, parseCursorJsonl } from "@abacus/adapter-cursor-local/server";
-import { parseCursorStdoutLine } from "@abacus/adapter-cursor-local/ui";
-import { printCursorStreamEvent } from "@abacus/adapter-cursor-local/cli";
+import { isCursorUnknownSessionError, parseCursorJsonl } from "@abacus-lab/adapter-cursor-local/server";
+import { parseCursorStdoutLine } from "@abacus-lab/adapter-cursor-local/ui";
+import { printCursorStreamEvent } from "@abacus-lab/adapter-cursor-local/cli";
 
 describe("cursor parser", () => {
   it("extracts session, summary, usage, cost, and terminal error message", () => {

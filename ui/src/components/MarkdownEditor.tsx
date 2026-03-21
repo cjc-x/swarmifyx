@@ -27,7 +27,7 @@ import {
   thematicBreakPlugin,
   type RealmPlugin,
 } from "@mdxeditor/editor";
-import { buildProjectMentionHref, parseProjectMentionHref } from "@abacus/shared";
+import { buildProjectMentionHref, parseProjectMentionHref } from "@abacus-lab/shared";
 import { cn } from "../lib/utils";
 import { useI18n } from "../context/I18nContext";
 

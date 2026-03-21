@@ -22,8 +22,8 @@
 import type {
   AbacusPluginManifestV1,
   PluginToolDeclaration,
-} from "@abacus/shared";
-import type { ToolRunContext, ToolResult, ExecuteToolParams } from "@abacus/plugin-sdk";
+} from "@abacus-lab/shared";
+import type { ToolRunContext, ToolResult, ExecuteToolParams } from "@abacus-lab/plugin-sdk";
 import type { PluginWorkerManager } from "./plugin-worker-manager.js";
 import { logger } from "../middleware/logger.js";
 

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { execute } from "@abacus/adapter-gemini-local/server";
+import { execute } from "@abacus-lab/adapter-gemini-local/server";
 
 async function writeFakeGeminiCommand(basePath: string): Promise<string> {
   const script = `

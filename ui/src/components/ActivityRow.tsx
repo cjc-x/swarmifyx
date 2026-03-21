@@ -4,7 +4,7 @@ import { timeAgo } from "../lib/timeAgo";
 import { cn } from "../lib/utils";
 import { useI18n } from "../context/I18nContext";
 import { getPriorityLabel, getStatusLabel } from "../lib/i18n";
-import { deriveProjectUrlKey, type ActivityEvent, type Agent } from "@abacus/shared";
+import { deriveProjectUrlKey, type ActivityEvent, type Agent } from "@abacus-lab/shared";
 
 const ACTION_VERBS: Record<string, string> = {
   "agent_api_key.claimed": "claimed API key",

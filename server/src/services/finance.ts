@@ -1,6 +1,6 @@
 import { and, desc, eq, gte, lte, sql } from "drizzle-orm";
-import type { Db } from "@abacus/db";
-import { agents, costEvents, financeEvents, goals, heartbeatRuns, issues, projects } from "@abacus/db";
+import type { Db } from "@abacus-lab/db";
+import { agents, costEvents, financeEvents, goals, heartbeatRuns, issues, projects } from "@abacus-lab/db";
 import { notFound, unprocessable } from "../errors.js";
 
 export interface FinanceDateRange {

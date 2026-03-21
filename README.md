@@ -177,7 +177,7 @@ Abacus handles the hard orchestration details correctly.
 Open source. Self-hosted. No Abacus account required.
 
 ```bash
-npx abacus onboard --yes
+npx @abacus-lab/abacus onboard --yes
 ```
 
 Or manually:

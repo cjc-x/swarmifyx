@@ -11,7 +11,7 @@
  * @example
  * ```ts
  * // dist/worker.ts
- * import { definePlugin } from "@abacus/plugin-sdk";
+ * import { definePlugin } from "@abacus-lab/plugin-sdk";
  *
  * export default definePlugin({
  *   async setup(ctx) {
@@ -232,7 +232,7 @@ export interface AbacusPlugin {
  *
  * @example
  * ```ts
- * import { definePlugin } from "@abacus/plugin-sdk";
+ * import { definePlugin } from "@abacus-lab/plugin-sdk";
  *
  * export default definePlugin({
  *   async setup(ctx) {

@@ -1,5 +1,5 @@
 import { and, count, eq, gte, inArray, lt, sql } from "drizzle-orm";
-import type { Db } from "@abacus/db";
+import type { Db } from "@abacus-lab/db";
 import {
   companies,
   companyLogos,
@@ -25,7 +25,7 @@ import {
   invites,
   principalPermissionGrants,
   companyMemberships,
-} from "@abacus/db";
+} from "@abacus-lab/db";
 import { notFound, unprocessable } from "../errors.js";
 
 export function companyService(db: Db) {

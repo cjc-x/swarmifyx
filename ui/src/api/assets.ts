@@ -1,4 +1,4 @@
-import type { AssetImage } from "@abacus/shared";
+import type { AssetImage } from "@abacus-lab/shared";
 import { api } from "./client";
 
 export const assetsApi = {

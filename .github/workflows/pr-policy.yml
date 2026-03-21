@@ -36,32 +36,8 @@ jobs:
         run: |
           changed="$(git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}")"
           if printf '%s\n' "$changed" | grep -qx 'pnpm-lock.yaml'; then
-            lock_lines="$(git diff --unified=0 "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" -- pnpm-lock.yaml | grep -E '^[+-]' | grep -vE '^(---|\\+\\+\\+)')"
-            allow_approved_fix=true
-            while IFS= read -r line; do
-              case "$line" in
-                "") ;;
-                "-  '@abacus-lab/adapter-utils@0.3.1':" | \
-                "+  '@paperclipai/adapter-utils@0.3.1':" | \
-                "-  '@abacus-lab/adapter-utils@0.3.1': {}" | \
-                "+  '@paperclipai/adapter-utils@0.3.1': {}" | \
-                "-      '@abacus-lab/adapter-utils': 0.3.1" | \
-                "+      '@paperclipai/adapter-utils': 0.3.1") ;;
-                *)
-                  allow_approved_fix=false
-                  echo "Unexpected pnpm-lock.yaml change: $line"
-                  ;;
-              esac
-            done <<EOF
-$lock_lines
-EOF
-
-            if [ "$allow_approved_fix" = true ]; then
-              echo "Allowing approved hermes-paperclip-adapter lockfile namespace correction."
-            else
-              echo "Do not commit pnpm-lock.yaml in pull requests. CI owns lockfile updates."
-              exit 1
-            fi
+            echo "Do not commit pnpm-lock.yaml in pull requests. CI owns lockfile updates."
+            exit 1
           fi
 
       - name: Validate dependency resolution when manifests change

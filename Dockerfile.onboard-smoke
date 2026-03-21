@@ -37,4 +37,4 @@ WORKDIR /home/abacus/workspace
 EXPOSE 3100
 USER abacus
 
-CMD ["bash", "-lc", "set -euo pipefail; mkdir -p \"$ABACUS_HOME\"; npx --yes \"abacus@${ABACUS_VERSION}\" onboard --yes --data-dir \"$ABACUS_HOME\""]
+CMD ["bash", "-lc", "set -euo pipefail; mkdir -p \"$ABACUS_HOME\"; npx --yes \"@abacus-lab/abacus@${ABACUS_VERSION}\" onboard --yes --data-dir \"$ABACUS_HOME\""]

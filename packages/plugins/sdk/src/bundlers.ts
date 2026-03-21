@@ -60,8 +60,8 @@ export interface PluginBundlerPresets {
  */
 export function createPluginBundlerPresets(input: PluginBundlerPresetInput = {}): PluginBundlerPresets {
   const uiExternal = [
-    "@abacus/plugin-sdk/ui",
-    "@abacus/plugin-sdk/ui/hooks",
+    "@abacus-lab/plugin-sdk/ui",
+    "@abacus-lab/plugin-sdk/ui/hooks",
     "react",
     "react-dom",
     "react/jsx-runtime",
@@ -129,7 +129,7 @@ export function createPluginBundlerPresets(input: PluginBundlerPresetInput = {})
       sourcemap,
       entryFileNames: "manifest.js",
     },
-    external: ["@abacus/plugin-sdk"],
+    external: ["@abacus-lab/plugin-sdk"],
   };
 
   const rollupUi = uiEntry

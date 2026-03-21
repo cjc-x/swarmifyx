@@ -2,8 +2,8 @@ import type {
   AdapterEnvironmentCheck,
   AdapterEnvironmentTestContext,
   AdapterEnvironmentTestResult,
-} from "@abacus/adapter-utils";
-import { asString, parseObject } from "@abacus/adapter-utils/server-utils";
+} from "@abacus-lab/adapter-utils";
+import { asString, parseObject } from "@abacus-lab/adapter-utils/server-utils";
 import { randomUUID } from "node:crypto";
 import { WebSocket } from "ws";
 

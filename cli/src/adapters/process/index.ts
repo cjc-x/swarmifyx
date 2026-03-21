@@ -1,4 +1,4 @@
-import type { CLIAdapterModule } from "@abacus/adapter-utils";
+import type { CLIAdapterModule } from "@abacus-lab/adapter-utils";
 import { printProcessStdoutEvent } from "./format-event.js";
 
 export const processCLIAdapter: CLIAdapterModule = {

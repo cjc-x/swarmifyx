@@ -1,5 +1,5 @@
 {
-  "name": "@abacus/adapter-pi-local",
+  "name": "@abacus-lab/adapter-pi-local",
   "version": "0.3.1",
   "license": "MIT",
   "homepage": "https://github.com/abacus-lab/abacus",
@@ -50,7 +50,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@abacus/adapter-utils": "workspace:*",
+    "@abacus-lab/adapter-utils": "workspace:*",
     "picocolors": "^1.1.1"
   },
   "devDependencies": {

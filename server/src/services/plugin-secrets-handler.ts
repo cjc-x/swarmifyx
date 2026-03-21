@@ -34,9 +34,9 @@
  */
 
 import { eq, and, desc } from "drizzle-orm";
-import type { Db } from "@abacus/db";
-import { companySecrets, companySecretVersions, pluginConfig } from "@abacus/db";
-import type { SecretProvider } from "@abacus/shared";
+import type { Db } from "@abacus-lab/db";
+import { companySecrets, companySecretVersions, pluginConfig } from "@abacus-lab/db";
+import type { SecretProvider } from "@abacus-lab/shared";
 import { getSecretProvider } from "../secrets/provider-registry.js";
 import { pluginRegistryService } from "./plugin-registry.js";
 

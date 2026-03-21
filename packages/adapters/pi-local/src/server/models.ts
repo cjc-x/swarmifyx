@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
-import type { AdapterModel } from "@abacus/adapter-utils";
-import { asString, runChildProcess } from "@abacus/adapter-utils/server-utils";
+import type { AdapterModel } from "@abacus-lab/adapter-utils";
+import { asString, runChildProcess } from "@abacus-lab/adapter-utils/server-utils";
 
 const MODELS_CACHE_TTL_MS = 60_000;
 

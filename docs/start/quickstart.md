@@ -8,7 +8,7 @@ summary: 在几分钟内启动 Abacus
 ## 快速启动（推荐）
 
 ```sh
-npx abacus onboard --yes
+npx @abacus-lab/abacus onboard --yes
 ```
 
 这个命令会引导你完成初始化、配置环境，并启动 Abacus。

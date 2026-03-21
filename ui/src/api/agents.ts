@@ -8,8 +8,8 @@ import type {
   HeartbeatRun,
   Approval,
   AgentConfigRevision,
-} from "@abacus/shared";
-import { isUuidLike, normalizeAgentUrlKey } from "@abacus/shared";
+} from "@abacus-lab/shared";
+import { isUuidLike, normalizeAgentUrlKey } from "@abacus-lab/shared";
 import { ApiError, api } from "./client";
 
 export interface AgentKey {

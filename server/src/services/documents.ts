@@ -1,7 +1,7 @@
 import { and, asc, desc, eq } from "drizzle-orm";
-import type { Db } from "@abacus/db";
-import { documentRevisions, documents, issueDocuments, issues } from "@abacus/db";
-import { issueDocumentKeySchema } from "@abacus/shared";
+import type { Db } from "@abacus-lab/db";
+import { documentRevisions, documents, issueDocuments, issues } from "@abacus-lab/db";
+import { issueDocumentKeySchema } from "@abacus-lab/shared";
 import { conflict, notFound, unprocessable } from "../errors.js";
 
 function normalizeDocumentKey(key: string) {

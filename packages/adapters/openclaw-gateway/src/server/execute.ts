@@ -2,8 +2,8 @@ import type {
   AdapterExecutionContext,
   AdapterExecutionResult,
   AdapterRuntimeServiceReport,
-} from "@abacus/adapter-utils";
-import { asNumber, asString, buildAbacusEnv, parseObject } from "@abacus/adapter-utils/server-utils";
+} from "@abacus-lab/adapter-utils";
+import { asNumber, asString, buildAbacusEnv, parseObject } from "@abacus-lab/adapter-utils/server-utils";
 import crypto, { randomUUID } from "node:crypto";
 import { WebSocket } from "ws";
 

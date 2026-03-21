@@ -1,4 +1,4 @@
-# @abacus/adapter-pi-local
+# @abacus-lab/adapter-pi-local
 
 ## 0.3.1
 
@@ -6,7 +6,7 @@
 
 - Stable release preparation for 0.3.1
 - Updated dependencies
-  - @abacus/adapter-utils@0.3.1
+  - @abacus-lab/adapter-utils@0.3.1
 
 ## 0.3.0
 
@@ -17,4 +17,4 @@
 ### Patch Changes
 
 - Updated dependencies
-  - @abacus/adapter-utils@0.3.0
+  - @abacus-lab/adapter-utils@0.3.0

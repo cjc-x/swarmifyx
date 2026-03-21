@@ -17,7 +17,7 @@ export async function databaseCheck(config: AbacusConfig, configPath?: string): 
     }
 
     try {
-      const { createDb } = await import("@abacus/db");
+      const { createDb } = await import("@abacus-lab/db");
       const db = createDb(config.database.connectionString);
       await db.execute("SELECT 1");
       return {

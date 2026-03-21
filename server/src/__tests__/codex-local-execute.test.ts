@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { execute } from "@abacus/adapter-codex-local/server";
+import { execute } from "@abacus-lab/adapter-codex-local/server";
 
 async function writeFakeCodexCommand(root: string, baseName: string): Promise<string> {
   const scriptPath = path.join(root, `${baseName}.cjs`);
