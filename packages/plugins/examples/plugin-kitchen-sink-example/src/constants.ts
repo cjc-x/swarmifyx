@@ -1,4 +1,4 @@
-import type { PluginLauncherRegistration } from "@abacus/plugin-sdk";
+import type { PluginLauncherRegistration } from "@abacus-lab/plugin-sdk";
 
 export const PLUGIN_ID = "abacus-kitchen-sink-example";
 export const PLUGIN_VERSION = "0.1.0";

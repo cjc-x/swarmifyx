@@ -18,14 +18,14 @@ It is intentionally narrower than [PLUGIN_SPEC.md](./PLUGIN_SPEC.md). The spec i
 Use the scaffold package:
 
 ```bash
-pnpm --filter @abacus/create-abacus-plugin build
+pnpm --filter @abacus-lab/create-abacus-plugin build
 node packages/plugins/create-abacus-plugin/dist/index.js @yourscope/plugin-name --output ./packages/plugins/examples
 ```
 
 For a plugin that lives outside the Abacus repo:
 
 ```bash
-pnpm --filter @abacus/create-abacus-plugin build
+pnpm --filter @abacus-lab/create-abacus-plugin build
 node packages/plugins/create-abacus-plugin/dist/index.js @yourscope/plugin-name \
   --output /absolute/path/to/plugin-repos \
   --sdk-path /absolute/path/to/abacus/packages/plugins/sdk
@@ -40,9 +40,9 @@ That creates a package with:
 - `esbuild.config.mjs`
 - `rollup.config.mjs`
 
-Inside this monorepo, the scaffold uses `workspace:*` for `@abacus/plugin-sdk`.
+Inside this monorepo, the scaffold uses `workspace:*` for `@abacus-lab/plugin-sdk`.
 
-Outside this monorepo, the scaffold snapshots `@abacus/plugin-sdk` from the local Abacus checkout into a `.abacus-sdk/` tarball so you can build and test a plugin without publishing anything to npm first.
+Outside this monorepo, the scaffold snapshots `@abacus-lab/plugin-sdk` from the local Abacus checkout into a `.abacus-sdk/` tarball so you can build and test a plugin without publishing anything to npm first.
 
 ## Recommended local workflow
 
@@ -96,7 +96,7 @@ UI:
 - `usePluginStream`
 - `usePluginToast`
 - `useHostContext`
-- typed slot props from `@abacus/plugin-sdk/ui`
+- typed slot props from `@abacus-lab/plugin-sdk/ui`
 
 Mount surfaces currently wired in the host include:
 

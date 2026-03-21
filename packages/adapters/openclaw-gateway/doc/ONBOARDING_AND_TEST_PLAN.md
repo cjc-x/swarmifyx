@@ -102,8 +102,8 @@ pnpm build
 
 If full suite is too heavy locally, run at least:
 ```bash
-pnpm --filter @abacus/server test:run -- openclaw-gateway
-pnpm --filter @abacus/server typecheck
-pnpm --filter @abacus/ui typecheck
+pnpm --filter @abacus-lab/server test:run -- openclaw-gateway
+pnpm --filter @abacus-lab/server typecheck
+pnpm --filter @abacus-lab/ui typecheck
 pnpm --filter abacus typecheck
 ```

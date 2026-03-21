@@ -1,7 +1,7 @@
 import type { UIAdapterModule } from "../types";
-import { parseGeminiStdoutLine } from "@abacus/adapter-gemini-local/ui";
+import { parseGeminiStdoutLine } from "@abacus-lab/adapter-gemini-local/ui";
 import { GeminiLocalConfigFields } from "./config-fields";
-import { buildGeminiLocalConfig } from "@abacus/adapter-gemini-local/ui";
+import { buildGeminiLocalConfig } from "@abacus-lab/adapter-gemini-local/ui";
 
 export const geminiLocalUIAdapter: UIAdapterModule = {
   type: "gemini_local",

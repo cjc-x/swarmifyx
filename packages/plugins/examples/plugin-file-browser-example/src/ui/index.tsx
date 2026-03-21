@@ -3,8 +3,8 @@ import type {
   PluginDetailTabProps,
   PluginCommentAnnotationProps,
   PluginCommentContextMenuItemProps,
-} from "@abacus/plugin-sdk/ui";
-import { usePluginAction, usePluginData } from "@abacus/plugin-sdk/ui";
+} from "@abacus-lab/plugin-sdk/ui";
+import { usePluginAction, usePluginData } from "@abacus-lab/plugin-sdk/ui";
 import { useMemo, useState, useEffect, useRef, type MouseEvent, type RefObject } from "react";
 import { EditorView } from "@codemirror/view";
 import { basicSetup } from "codemirror";

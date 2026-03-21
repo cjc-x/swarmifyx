@@ -370,7 +370,7 @@ try {
 
   if (mode === "dev") {
     console.log("[desktop-smoke] Building desktop shell...");
-    runPnpm(["--dir", repoRoot, "--filter", "@abacus/desktop-electron", "build"], {
+    runPnpm(["--dir", repoRoot, "--filter", "@abacus-lab/desktop-electron", "build"], {
       cwd: repoRoot,
     });
 

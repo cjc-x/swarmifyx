@@ -1,4 +1,4 @@
-import type { SidebarBadges } from "@abacus/shared";
+import type { SidebarBadges } from "@abacus-lab/shared";
 import { api } from "./client";
 
 export const sidebarBadgesApi = {

@@ -1,4 +1,4 @@
-import type { Goal } from "@abacus/shared";
+import type { Goal } from "@abacus-lab/shared";
 import { api } from "./client";
 
 export const goalsApi = {

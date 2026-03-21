@@ -19,5 +19,5 @@ pnpm abacus plugin install ./
 
 ## Build Options
 
-- `pnpm build` uses esbuild presets from `@abacus/plugin-sdk/bundlers`.
+- `pnpm build` uses esbuild presets from `@abacus-lab/plugin-sdk/bundlers`.
 - `pnpm build:rollup` uses rollup presets from the same SDK.

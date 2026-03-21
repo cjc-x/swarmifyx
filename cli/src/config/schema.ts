@@ -25,4 +25,4 @@ export {
   type SecretsConfig,
   type SecretsLocalEncryptedConfig,
   type ConfigMeta,
-} from "@abacus/shared";
+} from "@abacus-lab/shared";

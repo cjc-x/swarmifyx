@@ -1,4 +1,4 @@
-import type { ActivityEvent } from "@abacus/shared";
+import type { ActivityEvent } from "@abacus-lab/shared";
 import { api } from "./client";
 
 export interface RunForIssue {

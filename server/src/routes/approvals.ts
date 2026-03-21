@@ -1,12 +1,12 @@
 import { Router } from "express";
-import type { Db } from "@abacus/db";
+import type { Db } from "@abacus-lab/db";
 import {
   addApprovalCommentSchema,
   createApprovalSchema,
   requestApprovalRevisionSchema,
   resolveApprovalSchema,
   resubmitApprovalSchema,
-} from "@abacus/shared";
+} from "@abacus-lab/shared";
 import { validate } from "../middleware/validate.js";
 import { logger } from "../middleware/logger.js";
 import {

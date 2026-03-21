@@ -3,7 +3,7 @@ import type { Dirent } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { inferOpenAiCompatibleBiller, type AdapterExecutionContext, type AdapterExecutionResult } from "@abacus/adapter-utils";
+import { inferOpenAiCompatibleBiller, type AdapterExecutionContext, type AdapterExecutionResult } from "@abacus-lab/adapter-utils";
 import {
   asString,
   asNumber,
@@ -16,7 +16,7 @@ import {
   ensurePathInEnv,
   renderTemplate,
   runChildProcess,
-} from "@abacus/adapter-utils/server-utils";
+} from "@abacus-lab/adapter-utils/server-utils";
 import { DEFAULT_CURSOR_LOCAL_MODEL } from "../index.js";
 import { parseCursorJsonl, isCursorUnknownSessionError } from "./parse.js";
 import { normalizeCursorStreamLine } from "../shared/stream.js";

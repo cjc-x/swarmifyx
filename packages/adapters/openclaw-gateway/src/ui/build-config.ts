@@ -1,4 +1,4 @@
-import type { CreateConfigValues } from "@abacus/adapter-utils";
+import type { CreateConfigValues } from "@abacus-lab/adapter-utils";
 
 function parseJsonObject(text: string): Record<string, unknown> | null {
   const trimmed = text.trim();

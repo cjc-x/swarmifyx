@@ -1,4 +1,4 @@
-import type { ExecutionWorkspace } from "@abacus/shared";
+import type { ExecutionWorkspace } from "@abacus-lab/shared";
 import { api } from "./client";
 
 export const executionWorkspacesApi = {

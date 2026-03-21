@@ -1,4 +1,4 @@
-import type { Project } from "@abacus/shared";
+import type { Project } from "@abacus-lab/shared";
 
 export const PROJECT_ORDER_UPDATED_EVENT = "abacus:project-order-updated";
 const PROJECT_ORDER_STORAGE_PREFIX = "abacus.projectOrder";

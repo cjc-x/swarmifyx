@@ -1,8 +1,8 @@
 import { randomUUID } from "node:crypto";
-import type { Db } from "@abacus/db";
-import { activityLog } from "@abacus/db";
-import { PLUGIN_EVENT_TYPES, type PluginEventType } from "@abacus/shared";
-import type { PluginEvent } from "@abacus/plugin-sdk";
+import type { Db } from "@abacus-lab/db";
+import { activityLog } from "@abacus-lab/db";
+import { PLUGIN_EVENT_TYPES, type PluginEventType } from "@abacus-lab/shared";
+import type { PluginEvent } from "@abacus-lab/plugin-sdk";
 import { publishLiveEvent } from "./live-events.js";
 import { redactCurrentUserValue } from "../log-redaction.js";
 import { sanitizeRecord } from "../redaction.js";

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "@/lib/router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { Project } from "@abacus/shared";
+import type { Project } from "@abacus-lab/shared";
 import { StatusBadge } from "./StatusBadge";
 import { cn, formatDate } from "../lib/utils";
 import { getStatusLabel, translateText } from "../lib/i18n";

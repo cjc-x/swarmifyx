@@ -1,4 +1,4 @@
-# @abacus/shared
+# @abacus-lab/shared
 
 ## 0.3.1
 

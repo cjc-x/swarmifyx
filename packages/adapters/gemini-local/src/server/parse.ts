@@ -1,4 +1,4 @@
-import { asNumber, asString, parseJson, parseObject } from "@abacus/adapter-utils/server-utils";
+import { asNumber, asString, parseJson, parseObject } from "@abacus-lab/adapter-utils/server-utils";
 
 function collectMessageText(message: unknown): string[] {
   if (typeof message === "string") {

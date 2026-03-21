@@ -1,4 +1,4 @@
-import type { SecretProvider, SecretProviderDescriptor } from "@abacus/shared";
+import type { SecretProvider, SecretProviderDescriptor } from "@abacus-lab/shared";
 
 export interface StoredSecretVersionMaterial {
   [key: string]: unknown;

@@ -3,7 +3,7 @@ import type { Dirent } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import type { AdapterExecutionContext, AdapterExecutionResult } from "@abacus/adapter-utils";
+import type { AdapterExecutionContext, AdapterExecutionResult } from "@abacus-lab/adapter-utils";
 import {
   asBoolean,
   asNumber,
@@ -17,7 +17,7 @@ import {
   redactEnvForLogs,
   renderTemplate,
   runChildProcess,
-} from "@abacus/adapter-utils/server-utils";
+} from "@abacus-lab/adapter-utils/server-utils";
 import {
   DEFAULT_CODEBUDDY_LOCAL_MODEL,
   DEFAULT_CODEBUDDY_LOCAL_SKIP_PERMISSIONS,

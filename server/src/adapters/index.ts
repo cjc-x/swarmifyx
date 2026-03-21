@@ -13,5 +13,5 @@ export type {
   UsageSummary,
   AdapterAgent,
   AdapterRuntime,
-} from "@abacus/adapter-utils";
+} from "@abacus-lab/adapter-utils";
 export { runningProcesses } from "./utils.js";

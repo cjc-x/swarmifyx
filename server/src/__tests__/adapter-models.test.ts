@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { models as codeBuddyFallbackModels } from "@abacus/adapter-codebuddy-local";
-import { models as codexFallbackModels } from "@abacus/adapter-codex-local";
-import { models as cursorFallbackModels } from "@abacus/adapter-cursor-local";
-import { resetOpenCodeModelsCacheForTests } from "@abacus/adapter-opencode-local/server";
+import { models as codeBuddyFallbackModels } from "@abacus-lab/adapter-codebuddy-local";
+import { models as codexFallbackModels } from "@abacus-lab/adapter-codex-local";
+import { models as cursorFallbackModels } from "@abacus-lab/adapter-cursor-local";
+import { resetOpenCodeModelsCacheForTests } from "@abacus-lab/adapter-opencode-local/server";
 import { listAdapterModels } from "../adapters/index.js";
 import { resetCodexModelsCacheForTests } from "../adapters/codex-models.js";
 import { resetCursorModelsCacheForTests, setCursorModelsRunnerForTests } from "../adapters/cursor-models.js";

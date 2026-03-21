@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { useLocation, useNavigate, useParams } from "@/lib/router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import type { AdapterEnvironmentTestResult } from "@abacus/shared";
+import type { AdapterEnvironmentTestResult } from "@abacus-lab/shared";
 import { useDialog } from "../context/DialogContext";
 import { useCompany } from "../context/CompanyContext";
 import { useI18n } from "../context/I18nContext";
@@ -25,13 +25,13 @@ import { defaultCreateValues } from "./agent-config-defaults";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { parseOnboardingGoalInput } from "../lib/onboarding-goal";
 import { resolveRouteOnboardingOptions } from "../lib/onboarding-route";
-import { DEFAULT_CODEBUDDY_LOCAL_MODEL } from "@abacus/adapter-codebuddy-local";
+import { DEFAULT_CODEBUDDY_LOCAL_MODEL } from "@abacus-lab/adapter-codebuddy-local";
 import {
   DEFAULT_CODEX_LOCAL_BYPASS_APPROVALS_AND_SANDBOX,
   DEFAULT_CODEX_LOCAL_MODEL
-} from "@abacus/adapter-codex-local";
-import { DEFAULT_CURSOR_LOCAL_MODEL } from "@abacus/adapter-cursor-local";
-import { DEFAULT_GEMINI_LOCAL_MODEL } from "@abacus/adapter-gemini-local";
+} from "@abacus-lab/adapter-codex-local";
+import { DEFAULT_CURSOR_LOCAL_MODEL } from "@abacus-lab/adapter-cursor-local";
+import { DEFAULT_GEMINI_LOCAL_MODEL } from "@abacus-lab/adapter-gemini-local";
 import { AsciiArtAnimation } from "./AsciiArtAnimation";
 import { CodeBuddyLogoIcon } from "./CodeBuddyLogoIcon";
 import { GeminiLogoIcon } from "./GeminiLogoIcon";

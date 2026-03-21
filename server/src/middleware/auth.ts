@@ -1,10 +1,10 @@
 import { createHash } from "node:crypto";
 import type { Request, RequestHandler } from "express";
 import { and, eq, isNull } from "drizzle-orm";
-import type { Db } from "@abacus/db";
-import { agentApiKeys, agents, companyMemberships, instanceUserRoles } from "@abacus/db";
+import type { Db } from "@abacus-lab/db";
+import { agentApiKeys, agents, companyMemberships, instanceUserRoles } from "@abacus-lab/db";
 import { verifyLocalAgentJwt } from "../agent-auth-jwt.js";
-import type { DeploymentMode } from "@abacus/shared";
+import type { DeploymentMode } from "@abacus-lab/shared";
 import type { BetterAuthSessionResult } from "../auth/better-auth.js";
 import { logger } from "./logger.js";
 

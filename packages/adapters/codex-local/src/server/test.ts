@@ -2,7 +2,7 @@ import type {
   AdapterEnvironmentCheck,
   AdapterEnvironmentTestContext,
   AdapterEnvironmentTestResult,
-} from "@abacus/adapter-utils";
+} from "@abacus-lab/adapter-utils";
 import {
   asString,
   asBoolean,
@@ -12,7 +12,7 @@ import {
   ensureCommandResolvable,
   ensurePathInEnv,
   runChildProcess,
-} from "@abacus/adapter-utils/server-utils";
+} from "@abacus-lab/adapter-utils/server-utils";
 import path from "node:path";
 import { parseCodexJsonl } from "./parse.js";
 

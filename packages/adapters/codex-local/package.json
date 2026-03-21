@@ -1,5 +1,5 @@
 {
-  "name": "@abacus/adapter-codex-local",
+  "name": "@abacus-lab/adapter-codex-local",
   "version": "0.3.1",
   "license": "MIT",
   "homepage": "https://github.com/abacus-lab/abacus",
@@ -52,7 +52,7 @@
     "probe:quota": "pnpm exec tsx src/cli/quota-probe.ts --json"
   },
   "dependencies": {
-    "@abacus/adapter-utils": "workspace:*",
+    "@abacus-lab/adapter-utils": "workspace:*",
     "picocolors": "^1.1.1"
   },
   "devDependencies": {

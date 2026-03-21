@@ -1,4 +1,4 @@
-import type { CreateConfigValues } from "@abacus/adapter-utils";
+import type { CreateConfigValues } from "@abacus-lab/adapter-utils";
 
 export const defaultCreateValues: CreateConfigValues = {
   adapterType: "claude_local",

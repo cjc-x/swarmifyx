@@ -177,7 +177,7 @@ Abacus 把那些棘手的编排细节处理对了。
 开源，自托管，不需要注册 Abacus 账号。
 
 ```bash
-npx abacus onboard --yes
+npx @abacus-lab/abacus onboard --yes
 ```
 
 或手动从源码启动：

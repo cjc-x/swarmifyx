@@ -1,12 +1,12 @@
-import type { CLIAdapterModule } from "@abacus/adapter-utils";
-import { printClaudeStreamEvent } from "@abacus/adapter-claude-local/cli";
-import { printCodeBuddyStreamEvent } from "@abacus/adapter-codebuddy-local/cli";
-import { printCodexStreamEvent } from "@abacus/adapter-codex-local/cli";
-import { printCursorStreamEvent } from "@abacus/adapter-cursor-local/cli";
-import { printGeminiStreamEvent } from "@abacus/adapter-gemini-local/cli";
-import { printOpenCodeStreamEvent } from "@abacus/adapter-opencode-local/cli";
-import { printPiStreamEvent } from "@abacus/adapter-pi-local/cli";
-import { printOpenClawGatewayStreamEvent } from "@abacus/adapter-openclaw-gateway/cli";
+import type { CLIAdapterModule } from "@abacus-lab/adapter-utils";
+import { printClaudeStreamEvent } from "@abacus-lab/adapter-claude-local/cli";
+import { printCodeBuddyStreamEvent } from "@abacus-lab/adapter-codebuddy-local/cli";
+import { printCodexStreamEvent } from "@abacus-lab/adapter-codex-local/cli";
+import { printCursorStreamEvent } from "@abacus-lab/adapter-cursor-local/cli";
+import { printGeminiStreamEvent } from "@abacus-lab/adapter-gemini-local/cli";
+import { printOpenCodeStreamEvent } from "@abacus-lab/adapter-opencode-local/cli";
+import { printPiStreamEvent } from "@abacus-lab/adapter-pi-local/cli";
+import { printOpenClawGatewayStreamEvent } from "@abacus-lab/adapter-openclaw-gateway/cli";
 import { processCLIAdapter } from "./process/index.js";
 import { httpCLIAdapter } from "./http/index.js";
 

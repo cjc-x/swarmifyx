@@ -1,4 +1,4 @@
-# @abacus/adapter-utils
+# @abacus-lab/adapter-utils
 
 ## 0.3.1
 

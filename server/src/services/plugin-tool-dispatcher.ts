@@ -22,12 +22,12 @@
  * @see PLUGIN_SPEC.md §13.10 — `executeTool`
  */
 
-import type { Db } from "@abacus/db";
+import type { Db } from "@abacus-lab/db";
 import type {
   AbacusPluginManifestV1,
   PluginRecord,
-} from "@abacus/shared";
-import type { ToolRunContext, ToolResult } from "@abacus/plugin-sdk";
+} from "@abacus-lab/shared";
+import type { ToolRunContext, ToolResult } from "@abacus-lab/plugin-sdk";
 import type { PluginWorkerManager } from "./plugin-worker-manager.js";
 import type { PluginLifecycleManager } from "./plugin-lifecycle.js";
 import {

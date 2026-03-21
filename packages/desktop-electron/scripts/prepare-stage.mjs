@@ -105,7 +105,7 @@ function patchPublishMetadata(packageJsonPath) {
   }
 
   const pkg = readJson(packageJsonPath);
-  if (!pkg.name?.startsWith("@abacus/")) return false;
+  if (!pkg.name?.startsWith("@abacus-lab/")) return false;
 
   let changed = false;
   if (pkg.publishConfig?.exports) {
@@ -127,7 +127,7 @@ function patchPublishMetadata(packageJsonPath) {
 }
 
 console.log("[desktop-stage] Building server workspace and dependencies...");
-runPnpm(["--dir", repoRoot, "--filter", "@abacus/server...", "build"], {
+runPnpm(["--dir", repoRoot, "--filter", "@abacus-lab/server...", "build"], {
   cwd: repoRoot,
 });
 
@@ -137,7 +137,7 @@ runNodeScript(path.resolve(repoRoot, "scripts", "prepare-server-ui-dist.mjs"), [
 });
 
 console.log("[desktop-stage] Building Electron shell...");
-runPnpm(["--dir", repoRoot, "--filter", "@abacus/desktop-electron", "build:release"], {
+runPnpm(["--dir", repoRoot, "--filter", "@abacus-lab/desktop-electron", "build:release"], {
   cwd: repoRoot,
 });
 
@@ -151,7 +151,7 @@ runPnpm(
     "--dir",
     repoRoot,
     "--filter",
-    "@abacus/desktop-electron",
+    "@abacus-lab/desktop-electron",
     "deploy",
     "--legacy",
     "--prod",

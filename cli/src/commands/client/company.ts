@@ -8,7 +8,7 @@ import type {
   CompanyPortabilityManifest,
   CompanyPortabilityPreviewResult,
   CompanyPortabilityImportResult,
-} from "@abacus/shared";
+} from "@abacus-lab/shared";
 import { ApiRequestError } from "../../client/http.js";
 import {
   addCommonClientOptions,

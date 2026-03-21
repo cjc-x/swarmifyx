@@ -1,5 +1,5 @@
 {
-  "name": "@abacus/create-abacus-plugin",
+  "name": "@abacus-lab/create-abacus-plugin",
   "version": "0.1.0",
   "license": "MIT",
   "homepage": "https://github.com/abacus-lab/abacus",
@@ -41,7 +41,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@abacus/plugin-sdk": "workspace:*"
+    "@abacus-lab/plugin-sdk": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^24.6.0",

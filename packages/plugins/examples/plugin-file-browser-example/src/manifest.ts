@@ -1,4 +1,4 @@
-import type { AbacusPluginManifestV1 } from "@abacus/plugin-sdk";
+import type { AbacusPluginManifestV1 } from "@abacus-lab/plugin-sdk";
 
 const PLUGIN_ID = "abacus-file-browser-example";
 const FILES_SIDEBAR_SLOT_ID = "files-link";

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { agents } from "@abacus/db";
+import type { agents } from "@abacus-lab/db";
 import { resolveDefaultAgentWorkspaceDir } from "../home-paths.js";
 import {
   formatRuntimeWorkspaceWarningLog,

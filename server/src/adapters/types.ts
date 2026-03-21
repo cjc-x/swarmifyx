@@ -20,4 +20,4 @@ export type {
   ResolvedSessionCompactionPolicy,
   SessionCompactionPolicy,
   ServerAdapterModule,
-} from "@abacus/adapter-utils";
+} from "@abacus-lab/adapter-utils";

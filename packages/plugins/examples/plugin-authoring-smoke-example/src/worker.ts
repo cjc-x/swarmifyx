@@ -1,4 +1,4 @@
-import { definePlugin, runWorker } from "@abacus/plugin-sdk";
+import { definePlugin, runWorker } from "@abacus-lab/plugin-sdk";
 
 const plugin = definePlugin({
   async setup(ctx) {

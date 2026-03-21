@@ -29,8 +29,8 @@ import type {
   IssueDocumentSummary,
   Agent,
   Goal,
-} from "@abacus/shared";
-export type { PluginLauncherRenderContextSnapshot } from "@abacus/shared";
+} from "@abacus-lab/shared";
+export type { PluginLauncherRenderContextSnapshot } from "@abacus-lab/shared";
 
 import type {
   PluginEvent,

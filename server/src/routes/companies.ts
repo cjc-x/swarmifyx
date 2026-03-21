@@ -1,5 +1,5 @@
 import { Router } from "express";
-import type { Db } from "@abacus/db";
+import type { Db } from "@abacus-lab/db";
 import {
   companyPortabilityExportSchema,
   companyPortabilityImportSchema,
@@ -7,7 +7,7 @@ import {
   createCompanySchema,
   updateCompanySchema,
   updateCompanyBrandingSchema,
-} from "@abacus/shared";
+} from "@abacus-lab/shared";
 import { forbidden } from "../errors.js";
 import { validate } from "../middleware/validate.js";
 import {

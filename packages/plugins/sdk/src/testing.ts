@@ -9,7 +9,7 @@ import type {
   IssueComment,
   Agent,
   Goal,
-} from "@abacus/shared";
+} from "@abacus-lab/shared";
 import type {
   EventFilter,
   PluginContext,

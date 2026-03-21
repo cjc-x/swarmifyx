@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import os from "node:os";
 import path from "node:path";
-import type { QuotaWindow } from "@abacus/adapter-utils";
+import type { QuotaWindow } from "@abacus-lab/adapter-utils";
 
 // Pure utility functions — import directly from adapter source
 import {
@@ -11,7 +11,7 @@ import {
   parseClaudeCliUsageText,
   readClaudeToken,
   claudeConfigDir,
-} from "@abacus/adapter-claude-local/server";
+} from "@abacus-lab/adapter-claude-local/server";
 
 import {
   secondsToWindowLabel,
@@ -20,7 +20,7 @@ import {
   fetchCodexQuota,
   mapCodexRpcQuota,
   codexHomeDir,
-} from "@abacus/adapter-codex-local/server";
+} from "@abacus-lab/adapter-codex-local/server";
 
 // ---------------------------------------------------------------------------
 // toPercent

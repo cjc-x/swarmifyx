@@ -1,5 +1,5 @@
-import type { UsageSummary } from "@abacus/adapter-utils";
-import { asString, asNumber, parseObject, parseJson } from "@abacus/adapter-utils/server-utils";
+import type { UsageSummary } from "@abacus-lab/adapter-utils";
+import { asString, asNumber, parseObject, parseJson } from "@abacus-lab/adapter-utils/server-utils";
 
 const CLAUDE_AUTH_REQUIRED_RE = /(?:not\s+logged\s+in|please\s+log\s+in|please\s+run\s+`?claude\s+login`?|login\s+required|requires\s+login|unauthorized|authentication\s+required)/i;
 const URL_RE = /(https?:\/\/[^\s'"`<>()[\]{};,!?]+[^\s'"`<>()[\]{};,!.?:]+)/gi;

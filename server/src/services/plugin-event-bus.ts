@@ -20,8 +20,8 @@
  * @see PLUGIN_SPEC.md §16.2 — Plugin-to-Plugin Events
  */
 
-import type { PluginEventType } from "@abacus/shared";
-import type { PluginEvent, EventFilter } from "@abacus/plugin-sdk";
+import type { PluginEventType } from "@abacus-lab/shared";
+import type { PluginEvent, EventFilter } from "@abacus-lab/plugin-sdk";
 
 // ---------------------------------------------------------------------------
 // Internal types

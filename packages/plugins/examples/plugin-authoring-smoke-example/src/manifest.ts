@@ -1,4 +1,4 @@
-import type { AbacusPluginManifestV1 } from "@abacus/plugin-sdk";
+import type { AbacusPluginManifestV1 } from "@abacus-lab/plugin-sdk";
 
 const manifest: AbacusPluginManifestV1 = {
   id: "abacus.plugin-authoring-smoke-example",

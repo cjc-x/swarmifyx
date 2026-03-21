@@ -1,23 +1,23 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { AGENT_ADAPTER_TYPES } from "@abacus/shared";
+import { AGENT_ADAPTER_TYPES } from "@abacus-lab/shared";
 import type {
   Agent,
   AdapterEnvironmentTestResult,
   CompanySecret,
   EnvBinding,
-} from "@abacus/shared";
+} from "@abacus-lab/shared";
 import type { AdapterModel } from "../api/agents";
 import { agentsApi } from "../api/agents";
 import { secretsApi } from "../api/secrets";
 import { assetsApi } from "../api/assets";
-import { DEFAULT_CODEBUDDY_LOCAL_MODEL } from "@abacus/adapter-codebuddy-local";
+import { DEFAULT_CODEBUDDY_LOCAL_MODEL } from "@abacus-lab/adapter-codebuddy-local";
 import {
   DEFAULT_CODEX_LOCAL_BYPASS_APPROVALS_AND_SANDBOX,
   DEFAULT_CODEX_LOCAL_MODEL,
-} from "@abacus/adapter-codex-local";
-import { DEFAULT_CURSOR_LOCAL_MODEL } from "@abacus/adapter-cursor-local";
-import { DEFAULT_GEMINI_LOCAL_MODEL } from "@abacus/adapter-gemini-local";
+} from "@abacus-lab/adapter-codex-local";
+import { DEFAULT_CURSOR_LOCAL_MODEL } from "@abacus-lab/adapter-cursor-local";
+import { DEFAULT_GEMINI_LOCAL_MODEL } from "@abacus-lab/adapter-gemini-local";
 import {
   Popover,
   PopoverContent,
@@ -52,10 +52,10 @@ import { OpenCodeLogoIcon } from "./OpenCodeLogoIcon";
 
 /* ---- Create mode values ---- */
 
-// Canonical type lives in @abacus/adapter-utils; re-exported here
+// Canonical type lives in @abacus-lab/adapter-utils; re-exported here
 // so existing imports from this file keep working.
-export type { CreateConfigValues } from "@abacus/adapter-utils";
-import type { CreateConfigValues } from "@abacus/adapter-utils";
+export type { CreateConfigValues } from "@abacus-lab/adapter-utils";
+import type { CreateConfigValues } from "@abacus-lab/adapter-utils";
 
 /* ---- Props ---- */
 

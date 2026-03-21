@@ -1,4 +1,4 @@
-# @abacus/server
+# @abacus-lab/server
 
 ## 0.3.1
 
@@ -27,15 +27,15 @@
 
 - Updated dependencies [6077ae6]
 - Updated dependencies
-  - @abacus/shared@0.3.0
-  - @abacus/adapter-utils@0.3.0
-  - @abacus/adapter-claude-local@0.3.0
-  - @abacus/adapter-codex-local@0.3.0
-  - @abacus/adapter-cursor-local@0.3.0
-  - @abacus/adapter-openclaw-gateway@0.3.0
-  - @abacus/adapter-opencode-local@0.3.0
-  - @abacus/adapter-pi-local@0.3.0
-  - @abacus/db@0.3.0
+  - @abacus-lab/shared@0.3.0
+  - @abacus-lab/adapter-utils@0.3.0
+  - @abacus-lab/adapter-claude-local@0.3.0
+  - @abacus-lab/adapter-codex-local@0.3.0
+  - @abacus-lab/adapter-cursor-local@0.3.0
+  - @abacus-lab/adapter-openclaw-gateway@0.3.0
+  - @abacus-lab/adapter-opencode-local@0.3.0
+  - @abacus-lab/adapter-pi-local@0.3.0
+  - @abacus-lab/db@0.3.0
 
 ## 0.2.7
 
@@ -43,12 +43,12 @@
 
 - Version bump (patch)
 - Updated dependencies
-  - @abacus/shared@0.2.7
-  - @abacus/adapter-utils@0.2.7
-  - @abacus/db@0.2.7
-  - @abacus/adapter-claude-local@0.2.7
-  - @abacus/adapter-codex-local@0.2.7
-  - @abacus/adapter-openclaw@0.2.7
+  - @abacus-lab/shared@0.2.7
+  - @abacus-lab/adapter-utils@0.2.7
+  - @abacus-lab/db@0.2.7
+  - @abacus-lab/adapter-claude-local@0.2.7
+  - @abacus-lab/adapter-codex-local@0.2.7
+  - @abacus-lab/adapter-openclaw@0.2.7
 
 ## 0.2.6
 
@@ -56,12 +56,12 @@
 
 - Version bump (patch)
 - Updated dependencies
-  - @abacus/shared@0.2.6
-  - @abacus/adapter-utils@0.2.6
-  - @abacus/db@0.2.6
-  - @abacus/adapter-claude-local@0.2.6
-  - @abacus/adapter-codex-local@0.2.6
-  - @abacus/adapter-openclaw@0.2.6
+  - @abacus-lab/shared@0.2.6
+  - @abacus-lab/adapter-utils@0.2.6
+  - @abacus-lab/db@0.2.6
+  - @abacus-lab/adapter-claude-local@0.2.6
+  - @abacus-lab/adapter-codex-local@0.2.6
+  - @abacus-lab/adapter-openclaw@0.2.6
 
 ## 0.2.5
 
@@ -69,12 +69,12 @@
 
 - Version bump (patch)
 - Updated dependencies
-  - @abacus/shared@0.2.5
-  - @abacus/adapter-utils@0.2.5
-  - @abacus/db@0.2.5
-  - @abacus/adapter-claude-local@0.2.5
-  - @abacus/adapter-codex-local@0.2.5
-  - @abacus/adapter-openclaw@0.2.5
+  - @abacus-lab/shared@0.2.5
+  - @abacus-lab/adapter-utils@0.2.5
+  - @abacus-lab/db@0.2.5
+  - @abacus-lab/adapter-claude-local@0.2.5
+  - @abacus-lab/adapter-codex-local@0.2.5
+  - @abacus-lab/adapter-openclaw@0.2.5
 
 ## 0.2.4
 
@@ -82,12 +82,12 @@
 
 - Version bump (patch)
 - Updated dependencies
-  - @abacus/shared@0.2.4
-  - @abacus/adapter-utils@0.2.4
-  - @abacus/db@0.2.4
-  - @abacus/adapter-claude-local@0.2.4
-  - @abacus/adapter-codex-local@0.2.4
-  - @abacus/adapter-openclaw@0.2.4
+  - @abacus-lab/shared@0.2.4
+  - @abacus-lab/adapter-utils@0.2.4
+  - @abacus-lab/db@0.2.4
+  - @abacus-lab/adapter-claude-local@0.2.4
+  - @abacus-lab/adapter-codex-local@0.2.4
+  - @abacus-lab/adapter-openclaw@0.2.4
 
 ## 0.2.3
 
@@ -95,12 +95,12 @@
 
 - Version bump (patch)
 - Updated dependencies
-  - @abacus/shared@0.2.3
-  - @abacus/adapter-utils@0.2.3
-  - @abacus/db@0.2.3
-  - @abacus/adapter-claude-local@0.2.3
-  - @abacus/adapter-codex-local@0.2.3
-  - @abacus/adapter-openclaw@0.2.3
+  - @abacus-lab/shared@0.2.3
+  - @abacus-lab/adapter-utils@0.2.3
+  - @abacus-lab/db@0.2.3
+  - @abacus-lab/adapter-claude-local@0.2.3
+  - @abacus-lab/adapter-codex-local@0.2.3
+  - @abacus-lab/adapter-openclaw@0.2.3
 
 ## 0.2.2
 
@@ -108,12 +108,12 @@
 
 - Version bump (patch)
 - Updated dependencies
-  - @abacus/shared@0.2.2
-  - @abacus/adapter-utils@0.2.2
-  - @abacus/db@0.2.2
-  - @abacus/adapter-claude-local@0.2.2
-  - @abacus/adapter-codex-local@0.2.2
-  - @abacus/adapter-openclaw@0.2.2
+  - @abacus-lab/shared@0.2.2
+  - @abacus-lab/adapter-utils@0.2.2
+  - @abacus-lab/db@0.2.2
+  - @abacus-lab/adapter-claude-local@0.2.2
+  - @abacus-lab/adapter-codex-local@0.2.2
+  - @abacus-lab/adapter-openclaw@0.2.2
 
 ## 0.2.1
 
@@ -121,9 +121,9 @@
 
 - Version bump (patch)
 - Updated dependencies
-  - @abacus/shared@0.2.1
-  - @abacus/adapter-utils@0.2.1
-  - @abacus/db@0.2.1
-  - @abacus/adapter-claude-local@0.2.1
-  - @abacus/adapter-codex-local@0.2.1
-  - @abacus/adapter-openclaw@0.2.1
+  - @abacus-lab/shared@0.2.1
+  - @abacus-lab/adapter-utils@0.2.1
+  - @abacus-lab/db@0.2.1
+  - @abacus-lab/adapter-claude-local@0.2.1
+  - @abacus-lab/adapter-codex-local@0.2.1
+  - @abacus-lab/adapter-openclaw@0.2.1

@@ -93,7 +93,7 @@ generate_bootstrap_invite_url() {
       -e ABACUS_PUBLIC_URL="$ABACUS_PUBLIC_URL" \
       -e ABACUS_HOME="/abacus" \
       "$CONTAINER_NAME" bash -lc \
-      'timeout 20s npx --yes "abacus@${ABACUS_VERSION}" auth bootstrap-ceo --data-dir "$ABACUS_HOME" --base-url "$ABACUS_PUBLIC_URL"' \
+      'timeout 20s npx --yes "@abacus-lab/abacus@${ABACUS_VERSION}" auth bootstrap-ceo --data-dir "$ABACUS_HOME" --base-url "$ABACUS_PUBLIC_URL"' \
       2>&1
   )"; then
     bootstrap_status=0

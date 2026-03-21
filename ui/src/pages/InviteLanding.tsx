@@ -7,8 +7,8 @@ import { healthApi } from "../api/health";
 import { useI18n } from "../context/I18nContext";
 import { queryKeys } from "../lib/queryKeys";
 import { Button } from "@/components/ui/button";
-import { AGENT_ADAPTER_TYPES } from "@abacus/shared";
-import type { AgentAdapterType, JoinRequest } from "@abacus/shared";
+import { AGENT_ADAPTER_TYPES } from "@abacus-lab/shared";
+import type { AgentAdapterType, JoinRequest } from "@abacus-lab/shared";
 import { formatDateTime } from "../lib/utils";
 
 type JoinType = "human" | "agent";

@@ -1,5 +1,5 @@
 {
-  "name": "@abacus/adapter-claude-local",
+  "name": "@abacus-lab/adapter-claude-local",
   "version": "0.3.1",
   "license": "MIT",
   "homepage": "https://github.com/abacus-lab/abacus",
@@ -53,7 +53,7 @@
     "probe:quota:raw": "pnpm exec tsx src/cli/quota-probe.ts --json --raw-cli"
   },
   "dependencies": {
-    "@abacus/adapter-utils": "workspace:*",
+    "@abacus-lab/adapter-utils": "workspace:*",
     "picocolors": "^1.1.1"
   },
   "devDependencies": {

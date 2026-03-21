@@ -8,7 +8,7 @@ import {
   index,
   uniqueIndex,
 } from "drizzle-orm/pg-core";
-import type { PluginCategory, PluginStatus, AbacusPluginManifestV1 } from "@abacus/shared";
+import type { PluginCategory, PluginStatus, AbacusPluginManifestV1 } from "@abacus-lab/shared";
 
 /**
  * `plugins` table — stores one row per installed plugin.

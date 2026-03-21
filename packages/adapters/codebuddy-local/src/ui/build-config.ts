@@ -1,4 +1,4 @@
-import type { CreateConfigValues } from "@abacus/adapter-utils";
+import type { CreateConfigValues } from "@abacus-lab/adapter-utils";
 import {
   DEFAULT_CODEBUDDY_LOCAL_MODEL,
   DEFAULT_CODEBUDDY_LOCAL_SKIP_PERMISSIONS,

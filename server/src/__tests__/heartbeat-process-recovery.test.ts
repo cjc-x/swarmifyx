@@ -16,7 +16,7 @@ import {
   heartbeatRunEvents,
   heartbeatRuns,
   issues,
-} from "@abacus/db";
+} from "@abacus-lab/db";
 import { runningProcesses } from "../adapters/index.ts";
 import { heartbeatService } from "../services/heartbeat.ts";
 

@@ -1,5 +1,5 @@
 {
-  "name": "@abacus/desktop-electron",
+  "name": "@abacus-lab/desktop-electron",
   "version": "0.0.1",
   "private": true,
   "description": "Windows-first Electron wrapper for the Abacus control plane",
@@ -21,7 +21,7 @@
     "dist:win": "node scripts/prepare-stage.mjs && electron-builder --config electron-builder.yml --win"
   },
   "dependencies": {
-    "@abacus/server": "workspace:*"
+    "@abacus-lab/server": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^24.6.0",

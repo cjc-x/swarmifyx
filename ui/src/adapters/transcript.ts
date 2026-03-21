@@ -1,4 +1,4 @@
-import { redactHomePathUserSegments, redactTranscriptEntryPaths } from "@abacus/adapter-utils";
+import { redactHomePathUserSegments, redactTranscriptEntryPaths } from "@abacus-lab/adapter-utils";
 import type { TranscriptEntry, StdoutLineParser } from "./types";
 
 export type RunLogChunk = { ts: string; stream: "stdout" | "stderr" | "system"; chunk: string };

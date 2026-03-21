@@ -1,5 +1,5 @@
 import type { AdapterModel } from "./types.js";
-import { models as codexFallbackModels } from "@abacus/adapter-codex-local";
+import { models as codexFallbackModels } from "@abacus-lab/adapter-codex-local";
 import { readConfigFile } from "../config-file.js";
 
 const OPENAI_MODELS_ENDPOINT = "https://api.openai.com/v1/models";

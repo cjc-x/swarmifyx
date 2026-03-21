@@ -1,4 +1,4 @@
-import type { StorageProvider as StorageProviderId } from "@abacus/shared";
+import type { StorageProvider as StorageProviderId } from "@abacus-lab/shared";
 import type { Readable } from "node:stream";
 
 export interface PutObjectInput {

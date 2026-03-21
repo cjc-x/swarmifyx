@@ -3,7 +3,7 @@ import {
   isCodeBuddyUnknownSessionError,
   parseCodeBuddyJsonl,
   sessionCodec as codeBuddySessionCodec,
-} from "@abacus/adapter-codebuddy-local/server";
+} from "@abacus-lab/adapter-codebuddy-local/server";
 
 describe("codebuddy adapter", () => {
   it("parses successful stream-json output", () => {

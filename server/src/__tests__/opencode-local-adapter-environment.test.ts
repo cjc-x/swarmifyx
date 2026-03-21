@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { testEnvironment } from "@abacus/adapter-opencode-local/server";
+import { testEnvironment } from "@abacus-lab/adapter-opencode-local/server";
 
 async function writeFakeOpencodeCommand(basePath: string): Promise<string> {
   const script = `

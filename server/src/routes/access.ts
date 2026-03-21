@@ -10,13 +10,13 @@ import { fileURLToPath } from "node:url";
 import { Router } from "express";
 import type { Request } from "express";
 import { and, eq, isNull, desc } from "drizzle-orm";
-import type { Db } from "@abacus/db";
+import type { Db } from "@abacus-lab/db";
 import {
   agentApiKeys,
   authUsers,
   invites,
   joinRequests
-} from "@abacus/db";
+} from "@abacus-lab/db";
 import {
   acceptInviteSchema,
   claimJoinRequestApiKeySchema,
@@ -26,8 +26,8 @@ import {
   updateMemberPermissionsSchema,
   updateUserCompanyAccessSchema,
   PERMISSION_KEYS
-} from "@abacus/shared";
-import type { DeploymentExposure, DeploymentMode } from "@abacus/shared";
+} from "@abacus-lab/shared";
+import type { DeploymentExposure, DeploymentMode } from "@abacus-lab/shared";
 import {
   forbidden,
   conflict,

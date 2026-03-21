@@ -22,11 +22,11 @@ export {
   ensurePathInEnv,
   ensureAbsoluteDirectory,
   ensureCommandResolvable,
-} from "@abacus/adapter-utils/server-utils";
+} from "@abacus-lab/adapter-utils/server-utils";
 
 // Re-export runChildProcess with the server's pino logger wired in.
-import { runChildProcess as _runChildProcess } from "@abacus/adapter-utils/server-utils";
-import type { RunProcessResult } from "@abacus/adapter-utils/server-utils";
+import { runChildProcess as _runChildProcess } from "@abacus-lab/adapter-utils/server-utils";
+import type { RunProcessResult } from "@abacus-lab/adapter-utils/server-utils";
 
 export async function runChildProcess(
   runId: string,

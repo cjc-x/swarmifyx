@@ -1,4 +1,4 @@
-import type { SecretProvider, SecretProviderDescriptor } from "@abacus/shared";
+import type { SecretProvider, SecretProviderDescriptor } from "@abacus-lab/shared";
 import { localEncryptedProvider } from "./local-encrypted-provider.js";
 import {
   awsSecretsManagerProvider,

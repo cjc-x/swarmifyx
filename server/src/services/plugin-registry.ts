@@ -1,5 +1,5 @@
 import { asc, eq, ne, sql, and } from "drizzle-orm";
-import type { Db } from "@abacus/db";
+import type { Db } from "@abacus-lab/db";
 import {
   plugins,
   pluginConfig,
@@ -7,7 +7,7 @@ import {
   pluginJobs,
   pluginJobRuns,
   pluginWebhookDeliveries,
-} from "@abacus/db";
+} from "@abacus-lab/db";
 import type {
   AbacusPluginManifestV1,
   PluginStatus,
@@ -24,7 +24,7 @@ import type {
   PluginJobRunStatus,
   PluginJobRunTrigger,
   PluginWebhookDeliveryStatus,
-} from "@abacus/shared";
+} from "@abacus-lab/shared";
 import { conflict, notFound } from "../errors.js";
 
 // ---------------------------------------------------------------------------

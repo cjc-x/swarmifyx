@@ -2,7 +2,7 @@
  * Core types for the Abacus plugin worker-side SDK.
  *
  * These types define the stable public API surface that plugin workers import
- * from `@abacus/plugin-sdk`.  The host provides a concrete implementation
+ * from `@abacus-lab/plugin-sdk`.  The host provides a concrete implementation
  * of `PluginContext` to the plugin at initialisation time.
  *
  * @see PLUGIN_SPEC.md §14 — SDK Surface
@@ -23,10 +23,10 @@ import type {
   IssueDocumentSummary,
   Agent,
   Goal,
-} from "@abacus/shared";
+} from "@abacus-lab/shared";
 
 // ---------------------------------------------------------------------------
-// Re-exports from @abacus/shared (plugin authors import from one place)
+// Re-exports from @abacus-lab/shared (plugin authors import from one place)
 // ---------------------------------------------------------------------------
 
 export type {
@@ -67,7 +67,7 @@ export type {
   IssueDocumentSummary,
   Agent,
   Goal,
-} from "@abacus/shared";
+} from "@abacus-lab/shared";
 
 // ---------------------------------------------------------------------------
 // Scope key — identifies where plugin state is stored
@@ -1039,7 +1039,7 @@ export interface PluginGoalsClient {
  * ctx.streams.close("chat");
  * ```
  *
- * @see usePluginStream in `@abacus/plugin-sdk/ui`
+ * @see usePluginStream in `@abacus-lab/plugin-sdk/ui`
  */
 export interface PluginStreamsClient {
   /**
@@ -1076,7 +1076,7 @@ export interface PluginStreamsClient {
  *
  * @example
  * ```ts
- * import { definePlugin } from "@abacus/plugin-sdk";
+ * import { definePlugin } from "@abacus-lab/plugin-sdk";
  *
  * export default definePlugin({
  *   async setup(ctx) {

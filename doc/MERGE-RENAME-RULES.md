@@ -91,11 +91,15 @@ Apply the following replacements when upstream code introduces legacy names:
 
 ### `package.json`
 
-- Keep `"name"` aligned to `abacus` or `@abacus/*`.
+- Keep `"name"` aligned to `@abacus-lab/abacus` for the published CLI package
+  and `@abacus-lab/*` for scoped workspace packages. The private repo root
+  manifest may remain `abacus`.
 - Keep `"repository"` aligned to
   `https://github.com/abacus-lab/abacus`.
-- Replace dependency scopes from `@paperclipai/*` to `@abacus/*` for packages
+- Replace dependency scopes from `@paperclipai/*` to `@abacus-lab/*` for packages
   owned by this fork.
+- Keep the installed CLI command name as `abacus` even though the npm package is
+  `@abacus-lab/abacus`.
 - When versions conflict, prefer the newer upstream version unless the private
   fork has an explicit release constraint.
 

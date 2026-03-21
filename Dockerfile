@@ -27,8 +27,8 @@ FROM base AS build
 WORKDIR /app
 COPY --from=deps /app /app
 COPY . .
-RUN pnpm --filter @abacus/ui build
-RUN pnpm --filter @abacus/server build
+RUN pnpm --filter @abacus-lab/ui build
+RUN pnpm --filter @abacus-lab/server build
 RUN test -f server/dist/index.js || (echo "ERROR: server build output missing" && exit 1)
 
 FROM base AS production

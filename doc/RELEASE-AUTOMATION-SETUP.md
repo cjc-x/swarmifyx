@@ -33,8 +33,8 @@ Do this for every public package that Abacus publishes.
 
 At minimum that includes:
 
-- `abacus`
-- `@abacus/server`
+- `@abacus-lab/abacus`
+- `@abacus-lab/server`
 - public packages under `packages/`
 
 ### 2.1. In npm, open each package settings page
@@ -210,7 +210,7 @@ After setup:
 Install-path check:
 
 ```bash
-npx abacus@canary onboard
+npx @abacus-lab/abacus@canary onboard
 ```
 
 ## 12. Verify the Stable Workflow

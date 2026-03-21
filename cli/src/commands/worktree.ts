@@ -26,7 +26,7 @@ import {
   projectWorkspaces,
   runDatabaseBackup,
   runDatabaseRestore,
-} from "@abacus/db";
+} from "@abacus-lab/db";
 import type { Command } from "commander";
 import { ensureAgentJwtSecret, loadAbacusEnvFile, mergeAbacusEnvEntries, readAbacusEnvEntries, resolveAbacusEnvFile } from "../config/env.js";
 import { publicCliCommand } from "../config/branding.js";

@@ -20,8 +20,8 @@ import {
   type ScopeKey,
   type ToolResult,
   type ToolRunContext,
-} from "@abacus/plugin-sdk";
-import type { Goal, Issue } from "@abacus/shared";
+} from "@abacus-lab/plugin-sdk";
+import type { Goal, Issue } from "@abacus-lab/shared";
 import {
   DEFAULT_CONFIG,
   JOB_KEYS,
