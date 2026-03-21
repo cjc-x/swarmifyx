@@ -26,40 +26,40 @@ importers:
 
   cli:
     dependencies:
-      '@abacus/adapter-claude-local':
+      '@abacus-lab/adapter-claude-local':
         specifier: workspace:*
         version: link:../packages/adapters/claude-local
-      '@abacus/adapter-codebuddy-local':
+      '@abacus-lab/adapter-codebuddy-local':
         specifier: workspace:*
         version: link:../packages/adapters/codebuddy-local
-      '@abacus/adapter-codex-local':
+      '@abacus-lab/adapter-codex-local':
         specifier: workspace:*
         version: link:../packages/adapters/codex-local
-      '@abacus/adapter-cursor-local':
+      '@abacus-lab/adapter-cursor-local':
         specifier: workspace:*
         version: link:../packages/adapters/cursor-local
-      '@abacus/adapter-gemini-local':
+      '@abacus-lab/adapter-gemini-local':
         specifier: workspace:*
         version: link:../packages/adapters/gemini-local
-      '@abacus/adapter-openclaw-gateway':
+      '@abacus-lab/adapter-openclaw-gateway':
         specifier: workspace:*
         version: link:../packages/adapters/openclaw-gateway
-      '@abacus/adapter-opencode-local':
+      '@abacus-lab/adapter-opencode-local':
         specifier: workspace:*
         version: link:../packages/adapters/opencode-local
-      '@abacus/adapter-pi-local':
+      '@abacus-lab/adapter-pi-local':
         specifier: workspace:*
         version: link:../packages/adapters/pi-local
-      '@abacus/adapter-utils':
+      '@abacus-lab/adapter-utils':
         specifier: workspace:*
         version: link:../packages/adapter-utils
-      '@abacus/db':
+      '@abacus-lab/db':
         specifier: workspace:*
         version: link:../packages/db
-      '@abacus/server':
+      '@abacus-lab/server':
         specifier: workspace:*
         version: link:../server
-      '@abacus/shared':
+      '@abacus-lab/shared':
         specifier: workspace:*
         version: link:../packages/shared
       '@clack/prompts':
@@ -102,7 +102,7 @@ importers:
 
   packages/adapters/claude-local:
     dependencies:
-      '@abacus/adapter-utils':
+      '@abacus-lab/adapter-utils':
         specifier: workspace:*
         version: link:../../adapter-utils
       picocolors:
@@ -118,7 +118,7 @@ importers:
 
   packages/adapters/codebuddy-local:
     dependencies:
-      '@abacus/adapter-utils':
+      '@abacus-lab/adapter-utils':
         specifier: workspace:*
         version: link:../../adapter-utils
       picocolors:
@@ -134,7 +134,7 @@ importers:
 
   packages/adapters/codex-local:
     dependencies:
-      '@abacus/adapter-utils':
+      '@abacus-lab/adapter-utils':
         specifier: workspace:*
         version: link:../../adapter-utils
       picocolors:
@@ -150,7 +150,7 @@ importers:
 
   packages/adapters/cursor-local:
     dependencies:
-      '@abacus/adapter-utils':
+      '@abacus-lab/adapter-utils':
         specifier: workspace:*
         version: link:../../adapter-utils
       picocolors:
@@ -166,7 +166,7 @@ importers:
 
   packages/adapters/gemini-local:
     dependencies:
-      '@abacus/adapter-utils':
+      '@abacus-lab/adapter-utils':
         specifier: workspace:*
         version: link:../../adapter-utils
       picocolors:
@@ -182,7 +182,7 @@ importers:
 
   packages/adapters/openclaw-gateway:
     dependencies:
-      '@abacus/adapter-utils':
+      '@abacus-lab/adapter-utils':
         specifier: workspace:*
         version: link:../../adapter-utils
       picocolors:
@@ -204,7 +204,7 @@ importers:
 
   packages/adapters/opencode-local:
     dependencies:
-      '@abacus/adapter-utils':
+      '@abacus-lab/adapter-utils':
         specifier: workspace:*
         version: link:../../adapter-utils
       picocolors:
@@ -220,7 +220,7 @@ importers:
 
   packages/adapters/pi-local:
     dependencies:
-      '@abacus/adapter-utils':
+      '@abacus-lab/adapter-utils':
         specifier: workspace:*
         version: link:../../adapter-utils
       picocolors:
@@ -236,7 +236,7 @@ importers:
 
   packages/db:
     dependencies:
-      '@abacus/shared':
+      '@abacus-lab/shared':
         specifier: workspace:*
         version: link:../shared
       drizzle-orm:
@@ -267,7 +267,7 @@ importers:
 
   packages/desktop-electron:
     dependencies:
-      '@abacus/server':
+      '@abacus-lab/server':
         specifier: workspace:*
         version: link:../../server
     devDependencies:
@@ -295,7 +295,7 @@ importers:
 
   packages/plugins/create-abacus-plugin:
     dependencies:
-      '@abacus/plugin-sdk':
+      '@abacus-lab/plugin-sdk':
         specifier: workspace:*
         version: link:../sdk
     devDependencies:
@@ -308,7 +308,7 @@ importers:
 
   packages/plugins/examples/plugin-authoring-smoke-example:
     dependencies:
-      '@abacus/plugin-sdk':
+      '@abacus-lab/plugin-sdk':
         specifier: workspace:*
         version: link:../../sdk
       react:
@@ -345,7 +345,7 @@ importers:
 
   packages/plugins/examples/plugin-file-browser-example:
     dependencies:
-      '@abacus/plugin-sdk':
+      '@abacus-lab/plugin-sdk':
         specifier: workspace:*
         version: link:../../sdk
       '@codemirror/lang-javascript':
@@ -391,7 +391,7 @@ importers:
 
   packages/plugins/examples/plugin-hello-world-example:
     dependencies:
-      '@abacus/plugin-sdk':
+      '@abacus-lab/plugin-sdk':
         specifier: workspace:*
         version: link:../../sdk
     devDependencies:
@@ -416,10 +416,10 @@ importers:
 
   packages/plugins/examples/plugin-kitchen-sink-example:
     dependencies:
-      '@abacus/plugin-sdk':
+      '@abacus-lab/plugin-sdk':
         specifier: workspace:*
         version: link:../../sdk
-      '@abacus/shared':
+      '@abacus-lab/shared':
         specifier: workspace:*
         version: link:../../../shared
     devDependencies:
@@ -447,7 +447,7 @@ importers:
 
   packages/plugins/sdk:
     dependencies:
-      '@abacus/shared':
+      '@abacus-lab/shared':
         specifier: workspace:*
         version: link:../../shared
       react:
@@ -479,40 +479,40 @@ importers:
 
   server:
     dependencies:
-      '@abacus/adapter-claude-local':
+      '@abacus-lab/adapter-claude-local':
         specifier: workspace:*
         version: link:../packages/adapters/claude-local
-      '@abacus/adapter-codebuddy-local':
+      '@abacus-lab/adapter-codebuddy-local':
         specifier: workspace:*
         version: link:../packages/adapters/codebuddy-local
-      '@abacus/adapter-codex-local':
+      '@abacus-lab/adapter-codex-local':
         specifier: workspace:*
         version: link:../packages/adapters/codex-local
-      '@abacus/adapter-cursor-local':
+      '@abacus-lab/adapter-cursor-local':
         specifier: workspace:*
         version: link:../packages/adapters/cursor-local
-      '@abacus/adapter-gemini-local':
+      '@abacus-lab/adapter-gemini-local':
         specifier: workspace:*
         version: link:../packages/adapters/gemini-local
-      '@abacus/adapter-openclaw-gateway':
+      '@abacus-lab/adapter-openclaw-gateway':
         specifier: workspace:*
         version: link:../packages/adapters/openclaw-gateway
-      '@abacus/adapter-opencode-local':
+      '@abacus-lab/adapter-opencode-local':
         specifier: workspace:*
         version: link:../packages/adapters/opencode-local
-      '@abacus/adapter-pi-local':
+      '@abacus-lab/adapter-pi-local':
         specifier: workspace:*
         version: link:../packages/adapters/pi-local
-      '@abacus/adapter-utils':
+      '@abacus-lab/adapter-utils':
         specifier: workspace:*
         version: link:../packages/adapter-utils
-      '@abacus/db':
+      '@abacus-lab/db':
         specifier: workspace:*
         version: link:../packages/db
-      '@abacus/plugin-sdk':
+      '@abacus-lab/plugin-sdk':
         specifier: workspace:*
         version: link:../packages/plugins/sdk
-      '@abacus/shared':
+      '@abacus-lab/shared':
         specifier: workspace:*
         version: link:../packages/shared
       '@aws-sdk/client-s3':
@@ -618,34 +618,34 @@ importers:
 
   ui:
     dependencies:
-      '@abacus/adapter-claude-local':
+      '@abacus-lab/adapter-claude-local':
         specifier: workspace:*
         version: link:../packages/adapters/claude-local
-      '@abacus/adapter-codebuddy-local':
+      '@abacus-lab/adapter-codebuddy-local':
         specifier: workspace:*
         version: link:../packages/adapters/codebuddy-local
-      '@abacus/adapter-codex-local':
+      '@abacus-lab/adapter-codex-local':
         specifier: workspace:*
         version: link:../packages/adapters/codex-local
-      '@abacus/adapter-cursor-local':
+      '@abacus-lab/adapter-cursor-local':
         specifier: workspace:*
         version: link:../packages/adapters/cursor-local
-      '@abacus/adapter-gemini-local':
+      '@abacus-lab/adapter-gemini-local':
         specifier: workspace:*
         version: link:../packages/adapters/gemini-local
-      '@abacus/adapter-openclaw-gateway':
+      '@abacus-lab/adapter-openclaw-gateway':
         specifier: workspace:*
         version: link:../packages/adapters/openclaw-gateway
-      '@abacus/adapter-opencode-local':
+      '@abacus-lab/adapter-opencode-local':
         specifier: workspace:*
         version: link:../packages/adapters/opencode-local
-      '@abacus/adapter-pi-local':
+      '@abacus-lab/adapter-pi-local':
         specifier: workspace:*
         version: link:../packages/adapters/pi-local
-      '@abacus/adapter-utils':
+      '@abacus-lab/adapter-utils':
         specifier: workspace:*
         version: link:../packages/adapter-utils
-      '@abacus/shared':
+      '@abacus-lab/shared':
         specifier: workspace:*
         version: link:../packages/shared
       '@dnd-kit/core':
