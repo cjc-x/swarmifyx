@@ -75,6 +75,8 @@ const ACTION_VERBS: Record<string, string> = {
   "hire_hook.failed": "hire hook failed for",
   "hire_hook.succeeded": "hire hook succeeded for",
   "company.created": "created company",
+  "company.skills_imported": "imported company skills",
+  "company.skills_scanned": "scanned project skills",
   "company.imported": "imported",
   "company.updated": "updated company",
   "company.archived": "archived",

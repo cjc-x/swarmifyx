@@ -4,8 +4,8 @@ import os from "node:os";
 import path from "node:path";
 import { execute } from "@abacus-lab/adapter-gemini-local/server";
 
-async function writeFakeGeminiCommand(basePath: string): Promise<string> {
-  const script = `
+async function writeFakeGeminiCommand(commandPath: string): Promise<void> {
+  const script = `#!/usr/bin/env node
 const fs = require("node:fs");
 
 const capturePath = process.env.ABACUS_TEST_CAPTURE_PATH;
@@ -35,21 +35,8 @@ console.log(JSON.stringify({
   result: "ok",
 }));
 `;
-  if (process.platform === "win32") {
-    const scriptPath = `${basePath}.js`;
-    const commandPath = `${basePath}.cmd`;
-    await fs.writeFile(scriptPath, script, "utf8");
-    await fs.writeFile(
-      commandPath,
-      `@echo off\r\n"${process.execPath}" "${scriptPath}" %*\r\n`,
-      "utf8",
-    );
-    return commandPath;
-  }
-
-  await fs.writeFile(basePath, `#!/usr/bin/env node\n${script}`, "utf8");
-  await fs.chmod(basePath, 0o755);
-  return basePath;
+  await fs.writeFile(commandPath, script, "utf8");
+  await fs.chmod(commandPath, 0o755);
 }
 
 type CapturePayload = {
@@ -58,12 +45,13 @@ type CapturePayload = {
 };
 
 describe("gemini execute", () => {
-  it("passes prompt as final argument and injects abacus env vars", async () => {
+  it("passes prompt via --prompt and injects abacus env vars", async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), "abacus-gemini-execute-"));
     const workspace = path.join(root, "workspace");
-    const commandPath = await writeFakeGeminiCommand(path.join(root, "gemini"));
+    const commandPath = path.join(root, "gemini");
     const capturePath = path.join(root, "capture.json");
     await fs.mkdir(workspace, { recursive: true });
+    await writeFakeGeminiCommand(commandPath);
 
     const previousHome = process.env.HOME;
     process.env.HOME = root;
@@ -96,7 +84,7 @@ describe("gemini execute", () => {
         },
         context: {},
         authToken: "run-jwt-token",
-        onLog: async () => { },
+        onLog: async () => {},
         onMeta: async (meta) => {
           invocationPrompt = meta.prompt ?? "";
         },
@@ -108,15 +96,13 @@ describe("gemini execute", () => {
       const capture = JSON.parse(await fs.readFile(capturePath, "utf8")) as CapturePayload;
       expect(capture.argv).toContain("--output-format");
       expect(capture.argv).toContain("stream-json");
+      expect(capture.argv).toContain("--prompt");
       expect(capture.argv).toContain("--approval-mode");
       expect(capture.argv).toContain("yolo");
-      if (process.platform === "win32") {
-        expect(invocationPrompt).toContain("Follow the abacus heartbeat.");
-        expect(invocationPrompt).toContain("Abacus runtime note:");
-      } else {
-        expect(capture.argv.at(-1)).toContain("Follow the abacus heartbeat.");
-        expect(capture.argv.at(-1)).toContain("Abacus runtime note:");
-      }
+      const promptFlagIndex = capture.argv.indexOf("--prompt");
+      const promptArg = promptFlagIndex >= 0 ? capture.argv[promptFlagIndex + 1] : "";
+      expect(promptArg).toContain("Follow the abacus heartbeat.");
+      expect(promptArg).toContain("Abacus runtime note:");
       expect(capture.abacusEnvKeys).toEqual(
         expect.arrayContaining([
           "ABACUS_AGENT_ID",
@@ -144,9 +130,10 @@ describe("gemini execute", () => {
   it("always passes --approval-mode yolo", async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), "abacus-gemini-yolo-"));
     const workspace = path.join(root, "workspace");
-    const commandPath = await writeFakeGeminiCommand(path.join(root, "gemini"));
+    const commandPath = path.join(root, "gemini");
     const capturePath = path.join(root, "capture.json");
     await fs.mkdir(workspace, { recursive: true });
+    await writeFakeGeminiCommand(commandPath);
 
     const previousHome = process.env.HOME;
     process.env.HOME = root;
@@ -163,7 +150,7 @@ describe("gemini execute", () => {
         },
         context: {},
         authToken: "t",
-        onLog: async () => { },
+        onLog: async () => {},
       });
 
       const capture = JSON.parse(await fs.readFile(capturePath, "utf8")) as CapturePayload;

@@ -1,16 +1,15 @@
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { Company } from "@abacus-lab/shared";
 import { useCompany } from "../context/CompanyContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
+import { useToast } from "../context/ToastContext";
 import { useI18n } from "../context/I18nContext";
 import { companiesApi } from "../api/companies";
 import { accessApi } from "../api/access";
 import { assetsApi } from "../api/assets";
 import { queryKeys } from "../lib/queryKeys";
-import { useNavigate } from "@/lib/router";
 import { Button } from "@/components/ui/button";
-import { Settings, Check } from "lucide-react";
+import { Settings, Check, Download, Upload } from "lucide-react";
 import { CompanyPatternIcon } from "../components/CompanyPatternIcon";
 import {
   Field,
@@ -26,20 +25,23 @@ type AgentSnippetInput = {
 
 export function CompanySettings() {
   const {
+    companies,
     selectedCompany,
-    selectedCompanyId
+    selectedCompanyId,
+    setSelectedCompanyId
   } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
+  const { pushToast } = useToast();
   const { t } = useI18n();
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
-
   // General settings local state
   const [companyName, setCompanyName] = useState("");
   const [description, setDescription] = useState("");
   const [brandColor, setBrandColor] = useState("");
   const [logoUrl, setLogoUrl] = useState("");
   const [logoUploadError, setLogoUploadError] = useState<string | null>(null);
+  const [selectedLogoFileName, setSelectedLogoFileName] = useState("");
+  const logoInputRef = useRef<HTMLInputElement>(null);
 
   // Sync local state from selected company
   useEffect(() => {
@@ -48,6 +50,7 @@ export function CompanySettings() {
     setDescription(selectedCompany.description ?? "");
     setBrandColor(selectedCompany.brandColor ?? "");
     setLogoUrl(selectedCompany.logoUrl ?? "");
+    setSelectedLogoFileName("");
   }, [selectedCompany]);
 
   const [inviteError, setInviteError] = useState<string | null>(null);
@@ -100,7 +103,7 @@ export function CompanySettings() {
       let snippet: string;
       try {
         const manifest = await accessApi.getInviteOnboarding(invite.token);
-        snippet = buildAgentSnippet({
+        snippet = buildAgentSnippet(t, {
           onboardingTextUrl: absoluteUrl,
           connectionCandidates:
             manifest.onboarding.connectivity?.connectionCandidates ?? null,
@@ -109,7 +112,7 @@ export function CompanySettings() {
             null
         });
       } catch {
-        snippet = buildAgentSnippet({
+        snippet = buildAgentSnippet(t, {
           onboardingTextUrl: absoluteUrl,
           connectionCandidates: null,
           testResolutionUrl: null
@@ -163,11 +166,13 @@ export function CompanySettings() {
     const file = event.target.files?.[0] ?? null;
     event.currentTarget.value = "";
     if (!file) return;
+    setSelectedLogoFileName(file.name);
     setLogoUploadError(null);
     logoUploadMutation.mutate(file);
   }
 
   function handleClearLogo() {
+    setSelectedLogoFileName("");
     clearLogoMutation.mutate();
   }
 
@@ -179,16 +184,17 @@ export function CompanySettings() {
   }, [selectedCompanyId]);
 
   const archiveMutation = useMutation({
-    mutationFn: async ({ companyId }: { companyId: string }) => {
-      const archivedCompany = await companiesApi.archive(companyId);
-      return { archivedCompany };
-    },
-    onSuccess: async ({ archivedCompany }) => {
-      queryClient.setQueryData<Company[]>(queryKeys.companies.all, (existing) =>
-        existing?.map((company) =>
-          company.id === archivedCompany.id ? archivedCompany : company
-        ) ?? existing
-      );
+    mutationFn: ({
+      companyId,
+      nextCompanyId
+    }: {
+      companyId: string;
+      nextCompanyId: string | null;
+    }) => companiesApi.archive(companyId).then(() => ({ nextCompanyId })),
+    onSuccess: async ({ nextCompanyId }) => {
+      if (nextCompanyId) {
+        setSelectedCompanyId(nextCompanyId);
+      }
       await queryClient.invalidateQueries({
         queryKey: queryKeys.companies.all
       });
@@ -234,7 +240,10 @@ export function CompanySettings() {
           {t("General")}
         </div>
         <div className="space-y-3 rounded-md border border-border px-4 py-4">
-          <Field label={t("Company name")} hint={t("The display name for your company.")}>
+          <Field
+            label={t("Company name")}
+            hint={t("The display name for your company.")}
+          >
             <input
               className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
               type="text"
@@ -279,14 +288,32 @@ export function CompanySettings() {
               >
                 <div className="space-y-2">
                   <input
+                    ref={logoInputRef}
                     type="file"
                     accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml"
                     onChange={handleLogoFileChange}
-                    className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none file:mr-4 file:rounded-md file:border-0 file:bg-muted file:px-2.5 file:py-1 file:text-xs"
+                    hidden
+                    aria-hidden="true"
+                    tabIndex={-1}
                   />
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => logoInputRef.current?.click()}
+                      disabled={logoUploadMutation.isPending}
+                    >
+                      {t("Choose logo image")}
+                    </Button>
+                    <span className="min-w-0 truncate text-xs text-muted-foreground">
+                      {selectedLogoFileName || t("No file selected")}
+                    </span>
+                  </div>
                   {logoUrl && (
                     <div className="flex items-center gap-2">
                       <Button
+                        type="button"
                         size="sm"
                         variant="outline"
                         onClick={handleClearLogo}
@@ -297,10 +324,10 @@ export function CompanySettings() {
                     </div>
                   )}
                   {(logoUploadMutation.isError || logoUploadError) && (
-                    <span className="text-xs text-destructive">
-                      {logoUploadError ??
-                        (logoUploadMutation.error instanceof Error
-                          ? logoUploadMutation.error.message
+                      <span className="text-xs text-destructive">
+                        {logoUploadError ??
+                          (logoUploadMutation.error instanceof Error
+                            ? logoUploadMutation.error.message
                           : t("Logo upload failed"))}
                     </span>
                   )}
@@ -370,8 +397,8 @@ export function CompanySettings() {
           {generalMutation.isError && (
             <span className="text-xs text-destructive">
               {generalMutation.error instanceof Error
-                ? generalMutation.error.message
-                : t("Failed to save")}
+                  ? generalMutation.error.message
+                  : t("Failed to save")}
             </span>
           )}
         </div>
@@ -402,7 +429,9 @@ export function CompanySettings() {
             <span className="text-xs text-muted-foreground">
               {t("Generate an OpenClaw agent invite snippet.")}
             </span>
-            <HintIcon text={t("Creates a short-lived OpenClaw agent invite and renders a copy-ready prompt.")} />
+            <HintIcon
+              text={t("Creates a short-lived OpenClaw agent invite and renders a copy-ready prompt.")}
+            />
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <Button
@@ -453,14 +482,41 @@ export function CompanySettings() {
                       } catch {
                         /* clipboard may not be available */
                       }
-                    }}
-                  >
-                    {snippetCopied ? t("Copied snippet") : t("Copy snippet")}
-                  </Button>
-                </div>
+                  }}
+                >
+                  {snippetCopied ? t("Copied snippet") : t("Copy snippet")}
+                </Button>
               </div>
             </div>
+            </div>
           )}
+        </div>
+      </div>
+
+      {/* Import / Export */}
+      <div className="space-y-4">
+        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+          {t("Company Packages")}
+        </div>
+        <div className="rounded-md border border-border px-4 py-4">
+          <p className="text-sm text-muted-foreground">
+            {t("Import and export have moved to dedicated pages accessible from the")}{" "}
+            <a href="/org" className="underline hover:text-foreground">{t("Org Chart")}</a>{t(" header.")}
+          </p>
+          <div className="mt-3 flex items-center gap-2">
+            <Button size="sm" variant="outline" asChild>
+              <a href="/company/export">
+                <Download className="mr-1.5 h-3.5 w-3.5" />
+                {t("Export")}
+              </a>
+            </Button>
+            <Button size="sm" variant="outline" asChild>
+              <a href="/company/import">
+                <Upload className="mr-1.5 h-3.5 w-3.5" />
+                {t("Import")}
+              </a>
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -484,28 +540,34 @@ export function CompanySettings() {
               onClick={() => {
                 if (!selectedCompanyId) return;
                 const confirmed = window.confirm(
-                  t('Archive company "{name}"? It will be hidden from the sidebar.', { name: selectedCompany.name })
+                  t("Archive company \"{name}\"? It will be hidden from the sidebar.", {
+                    name: selectedCompany.name,
+                  })
                 );
                 if (!confirmed) return;
-                // Leave company-scoped settings route before archiving to avoid
-                // company-prefix sync redirecting into another company's settings.
-                navigate("/", { replace: true });
+                const nextCompanyId =
+                  companies.find(
+                    (company) =>
+                      company.id !== selectedCompanyId &&
+                      company.status !== "archived"
+                  )?.id ?? null;
                 archiveMutation.mutate({
-                  companyId: selectedCompanyId
+                  companyId: selectedCompanyId,
+                  nextCompanyId
                 });
               }}
             >
               {archiveMutation.isPending
                 ? t("Archiving...")
                 : selectedCompany.status === "archived"
-                  ? t("Already archived")
-                  : t("Archive company")}
+                ? t("Already archived")
+                : t("Archive company")}
             </Button>
             {archiveMutation.isError && (
               <span className="text-xs text-destructive">
                 {archiveMutation.error instanceof Error
                   ? archiveMutation.error.message
-                  : t("Failed to archive")}
+                  : t("Failed to archive company")}
               </span>
             )}
           </div>
@@ -515,63 +577,66 @@ export function CompanySettings() {
   );
 }
 
-function buildAgentSnippet(input: AgentSnippetInput) {
+function buildAgentSnippet(
+  t: (key: string, vars?: Record<string, string | number>) => string,
+  input: AgentSnippetInput,
+) {
   const candidateUrls = buildCandidateOnboardingUrls(input);
   const resolutionTestUrl = buildResolutionTestUrl(input);
 
   const candidateList =
     candidateUrls.length > 0
       ? candidateUrls.map((u) => `- ${u}`).join("\n")
-      : "- (No candidate URLs available yet.)";
+      : `- ${t("No candidate URLs available yet.")}`;
 
   const connectivityBlock =
     candidateUrls.length === 0
-      ? `No candidate URLs are available. Ask your user to configure a reachable hostname in Abacus, then retry.
-Suggested steps:
-- choose a hostname that resolves to the Abacus host from your runtime
-- run: pnpm abacus allowed-hostname <host>
-- restart Abacus
-- verify with: curl -fsS http://<host>:3100/api/health
-- regenerate this invite snippet`
-      : `If none are reachable, ask your user to add a reachable hostname in Abacus, restart, and retry.
-Suggested command:
-- pnpm abacus allowed-hostname <host>
-Then verify with: curl -fsS <base-url>/api/health`;
+      ? `${t("No candidate URLs are available. Ask your user to configure a reachable hostname in Abacus, then retry.")}
+${t("Suggested steps:")}
+- ${t("choose a hostname that resolves to the Abacus host from your runtime")}
+- ${t("run: pnpm abacus-lab allowed-hostname <host>")}
+- ${t("restart Abacus")}
+- ${t("verify with: curl -fsS http://<host>:3100/api/health")}
+- ${t("regenerate this invite snippet")}`
+      : `${t("If none are reachable, ask your user to add a reachable hostname in Abacus, restart, and retry.")}
+${t("Suggested command:")}
+- ${t("pnpm abacus-lab allowed-hostname <host>")}
+${t("Then verify with: curl -fsS <base-url>/api/health")}`;
 
   const resolutionLine = resolutionTestUrl
     ? `\nYou MUST test Abacus-to-gateway reachability, call: ${resolutionTestUrl}?url=<urlencoded-gateway-url> (using the hostname that worked above). Do not assume your 172.x is necessarily reachable from Abacus. Test it. `
     : "";
 
-  return `You're invited to join a Abacus organization.
+  return `${t("You're invited to join an Abacus organization.")}
 
-The URLs you should try are:
+${t("The URLs you should try are:")}
 ${candidateList}
 
-Connectivity guidance:
-If you are running on a different machine than Abacus, Abacus must be reachable at one of the hostnames used above.
-Verify the hostname works from your runtime with: GET <base-url>/api/health
+${t("Connectivity guidance:")}
+${t("If you are running on a different machine than Abacus, Abacus must be reachable at one of the hostnames used above.")}
+${t("Verify the hostname works from your runtime with: GET <base-url>/api/health")}
 
 ${connectivityBlock}
 
-For your "agentName", just use your own agent name (OpenClaw or whatever your name is) and send it directly.
-You also need to send a gateway URL that Abacus can access. Check your config and include that URL.${resolutionLine}
+${t("For your \"agentName\", just use your own agent name (OpenClaw or whatever your name is) and send it directly.")}
+${t("You also need to send a gateway URL that Abacus can access. Check your config and include that URL.")}${resolutionLine}
 
 ---
 
-This onboarding flow is for OpenClaw Gateway.
-When you submit the join request, use:
+${t("This onboarding flow is for OpenClaw Gateway.")}
+${t("When you submit the join request, use:")}
 - \`adapterType: "openclaw_gateway"\`
 - \`agentDefaultsPayload.url\` as your \`ws://\` or \`wss://\` gateway URL
 - \`agentDefaultsPayload.headers["x-openclaw-token"]\` with your gateway token
 - (legacy accepted) \`agentDefaultsPayload.headers["x-openclaw-auth"]\`
-- Keep device auth enabled (recommended). If \`devicePrivateKeyPem\` is omitted, Abacus will generate and persist one during join so pairing approvals remain stable.
-- Only use \`disableDeviceAuth=true\` for special environments where pairing cannot be completed.
+${t("Keep device auth enabled (recommended). If `devicePrivateKeyPem` is omitted, Abacus will generate and persist one during join so pairing approvals remain stable.")}
+${t("Only use `disableDeviceAuth=true` for special environments where pairing cannot be completed.")}
 
-Do NOT use \`/v1/responses\` or \`/hooks/*\` in this join flow.
+${t("Do NOT use `/v1/responses` or `/hooks/*` in this join flow.")}
 
-Before you do anything, please respond to your user that you understand the instructions and you're going to work on them. Then do the step above in another session called "abacus-onboarding" and then tell your user when you're done. Update your user in intermediate steps along the way so they know what's going on.
+${t("Before you do anything, please respond to your user that you understand the instructions and you're going to work on them. Then do the step above in another session called \"abacus-onboarding\" and then tell your user when you're done. Update your user in intermediate steps along the way so they know what's going on.")}
 
-Then after you've connected to Abacus (exchanged keys etc.) you MUST review and follow the onboarding instructions in onboarding.txt they give you.
+${t("Then after you've connected to Abacus (exchanged keys etc.) you MUST review and follow the onboarding instructions in onboarding.txt they give you.")}
 
 `;
 }

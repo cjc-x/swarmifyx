@@ -15,7 +15,8 @@ import {
   ensureCommandResolvable,
   ensureAbacusSkillSymlink,
   ensurePathInEnv,
-  listAbacusSkillEntries,
+  readAbacusRuntimeSkillEntries,
+  resolveAbacusDesiredSkillNames,
   removeMaintainerOnlySkillSymlinks,
   renderTemplate,
   runChildProcess,
@@ -24,6 +25,7 @@ import { isPiUnknownSessionError, parsePiJsonl } from "./parse.js";
 import { ensurePiModelConfiguredAndAvailable } from "./models.js";
 
 const __moduleDir = path.dirname(fileURLToPath(import.meta.url));
+
 const ABACUS_SESSIONS_DIR = path.join(os.homedir(), ".pi", "abacuss");
 const PI_AGENT_SKILLS_DIR = path.join(os.homedir(), ".pi", "agent", "skills");
 
@@ -50,18 +52,18 @@ function parseModelId(model: string | null): string | null {
   return trimmed.slice(trimmed.indexOf("/") + 1).trim() || null;
 }
 
-function resolvePiBiller(env: Record<string, string>, provider: string | null): string {
-  return inferOpenAiCompatibleBiller(env, null) ?? provider ?? "unknown";
-}
-
-async function ensurePiSkillsInjected(onLog: AdapterExecutionContext["onLog"]) {
-  const skillsEntries = await listAbacusSkillEntries(__moduleDir);
+async function ensurePiSkillsInjected(
+  onLog: AdapterExecutionContext["onLog"],
+  skillsEntries: Array<{ key: string; runtimeName: string; source: string }>,
+  desiredSkillNames?: string[],
+) {
+  const desiredSet = new Set(desiredSkillNames ?? skillsEntries.map((entry) => entry.key));
+  const selectedEntries = skillsEntries.filter((entry) => desiredSet.has(entry.key));
+  if (selectedEntries.length === 0) return;
   await fs.mkdir(PI_AGENT_SKILLS_DIR, { recursive: true });
-  if (skillsEntries.length === 0) return;
-
   const removedSkills = await removeMaintainerOnlySkillSymlinks(
     PI_AGENT_SKILLS_DIR,
-    skillsEntries.map((entry) => entry.name),
+    selectedEntries.map((entry) => entry.runtimeName),
   );
   for (const skillName of removedSkills) {
     await onLog(
@@ -70,23 +72,27 @@ async function ensurePiSkillsInjected(onLog: AdapterExecutionContext["onLog"]) {
     );
   }
 
-  for (const entry of skillsEntries) {
-    const target = path.join(PI_AGENT_SKILLS_DIR, entry.name);
+  for (const entry of selectedEntries) {
+    const target = path.join(PI_AGENT_SKILLS_DIR, entry.runtimeName);
 
     try {
       const result = await ensureAbacusSkillSymlink(entry.source, target);
       if (result === "skipped") continue;
       await onLog(
         "stderr",
-        `[abacus] ${result === "repaired" ? "Repaired" : "Injected"} Pi skill "${entry.name}" into ${PI_AGENT_SKILLS_DIR}\n`,
+        `[abacus] ${result === "repaired" ? "Repaired" : "Injected"} Pi skill "${entry.runtimeName}" into ${PI_AGENT_SKILLS_DIR}\n`,
       );
     } catch (err) {
       await onLog(
         "stderr",
-        `[abacus] Failed to inject Pi skill "${entry.name}" into ${PI_AGENT_SKILLS_DIR}: ${err instanceof Error ? err.message : String(err)}\n`,
+        `[abacus] Failed to inject Pi skill "${entry.runtimeName}" into ${PI_AGENT_SKILLS_DIR}: ${err instanceof Error ? err.message : String(err)}\n`,
       );
     }
   }
+}
+
+function resolvePiBiller(env: Record<string, string>, provider: string | null): string {
+  return inferOpenAiCompatibleBiller(env, null) ?? provider ?? "unknown";
 }
 
 async function ensureSessionsDir(): Promise<string> {
@@ -123,8 +129,8 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   const agentHome = asString(workspaceContext.agentHome, "");
   const workspaceHints = Array.isArray(context.abacusWorkspaces)
     ? context.abacusWorkspaces.filter(
-      (value): value is Record<string, unknown> => typeof value === "object" && value !== null,
-    )
+        (value): value is Record<string, unknown> => typeof value === "object" && value !== null,
+      )
     : [];
   const configuredCwd = asString(config.cwd, "");
   const useConfiguredInsteadOfAgentHome = workspaceSource === "agent_home" && configuredCwd.length > 0;
@@ -136,7 +142,9 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   await ensureSessionsDir();
 
   // Inject skills
-  await ensurePiSkillsInjected(onLog);
+  const piSkillEntries = await readAbacusRuntimeSkillEntries(config, __moduleDir);
+  const desiredPiSkillNames = resolveAbacusDesiredSkillNames(config, piSkillEntries);
+  await ensurePiSkillsInjected(onLog, piSkillEntries, desiredPiSkillNames);
 
   // Build environment
   const envConfig = parseObject(config.env);
@@ -168,6 +176,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   const linkedIssueIds = Array.isArray(context.issueIds)
     ? context.issueIds.filter((value): value is string => typeof value === "string" && value.trim().length > 0)
     : [];
+
   if (wakeTaskId) env.ABACUS_TASK_ID = wakeTaskId;
   if (wakeReason) env.ABACUS_WAKE_REASON = wakeReason;
   if (wakeCommentId) env.ABACUS_WAKE_COMMENT_ID = wakeCommentId;
@@ -275,16 +284,6 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     systemPromptExtension = promptTemplate;
   }
 
-  const renderedSystemPromptExtension = renderTemplate(systemPromptExtension, {
-    agentId: agent.id,
-    companyId: agent.companyId,
-    runId,
-    company: { id: agent.companyId },
-    agent,
-    run: { id: runId, source: "on_demand" },
-    context,
-  });
-
   const bootstrapPromptTemplate = asString(config.bootstrapPromptTemplate, "");
   const templateData = {
     agentId: agent.id,
@@ -295,6 +294,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     run: { id: runId, source: "on_demand" },
     context,
   };
+  const renderedSystemPromptExtension = renderTemplate(systemPromptExtension, templateData);
   const renderedHeartbeatPrompt = renderTemplate(promptTemplate, templateData);
   const renderedBootstrapPrompt =
     !canResumeSession && bootstrapPromptTemplate.trim().length > 0
@@ -343,7 +343,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     args.push("--tools", "read,bash,edit,write,grep,find,ls");
     args.push("--session", sessionFile);
 
-    // Add Abacus skills directory so Pi can load the managed skills.
+    // Add Abacus skills directory so Pi can load the abacus skill
     args.push("--skill", PI_AGENT_SKILLS_DIR);
 
     if (extraArgs.length > 0) args.push(...extraArgs);

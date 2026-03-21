@@ -13,9 +13,19 @@ npx @abacus-lab/abacus onboard --yes
 
 这个命令会引导你完成初始化、配置环境，并启动 Abacus。
 
+如果之后想再次启动 Abacus，可以运行：
+
+```sh
+npx @abacus-lab/abacus run
+```
+
+> 如果你是通过 `npx` 完成初始化，后续也建议继续使用 `npx @abacus-lab/abacus` 运行命令。`pnpm abacus` 只适用于已经克隆了 Abacus 仓库的本地开发环境。
+
 ## 本地开发
 
-前置条件：Node.js 20+ 和 pnpm 9+。
+适用于正在开发 Abacus 本身的贡献者。前置条件：Node.js 20+ 和 pnpm 9+。
+
+克隆仓库后运行：
 
 ```sh
 pnpm install

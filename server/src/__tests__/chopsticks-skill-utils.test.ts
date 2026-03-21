@@ -30,7 +30,8 @@ describe("abacus skill utils", () => {
 
     const entries = await listAbacusSkillEntries(moduleDir);
 
-    expect(entries.map((entry) => entry.name)).toEqual(["abacus"]);
+    expect(entries.map((entry) => entry.key)).toEqual(["abacus-lab/abacus/abacus"]);
+    expect(entries.map((entry) => entry.runtimeName)).toEqual(["abacus"]);
     expect(entries[0]?.source).toBe(path.join(root, "skills", "abacus"));
   });
 

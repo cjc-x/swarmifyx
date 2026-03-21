@@ -163,6 +163,19 @@ pnpm -r typecheck
 Add `pnpm test:run` when the touched area includes package resolution,
 plugin loading, or embedded runtime dependencies.
 
+Environment preference and guardrails:
+
+- On Windows, prefer Docker for clean Linux verification.
+- Do not use WSL for routine upstream-merge verification in this repo unless
+  the user explicitly asks for it. In recent merge work, WSL-based validation
+  was high-friction and could perturb local package-manager state while also
+  leaving WSL background processes behind.
+- Before starting Docker validation, confirm the Docker daemon is reachable so
+  the verification plan does not stall on an unavailable engine.
+- If any temporary local recovery step requires `pnpm install` without a frozen
+  lockfile, treat that as a workspace repair step only. Restore
+  `pnpm-lock.yaml` to the branch/base version before concluding the merge.
+
 ### 10. CI Triage Tips
 
 If local quality gates pass but GitHub CI fails, first suspect clean-checkout

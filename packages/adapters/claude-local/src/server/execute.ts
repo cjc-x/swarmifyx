@@ -12,6 +12,8 @@ import {
   parseObject,
   parseJson,
   buildAbacusEnv,
+  readAbacusRuntimeSkillEntries,
+  joinPromptSections,
   redactEnvForLogs,
   ensureAbsoluteDirectory,
   ensureCommandResolvable,
@@ -26,40 +28,32 @@ import {
   isClaudeMaxTurnsResult,
   isClaudeUnknownSessionError,
 } from "./parse.js";
+import { resolveClaudeDesiredSkillNames } from "./skills.js";
 
 const __moduleDir = path.dirname(fileURLToPath(import.meta.url));
-const ABACUS_SKILLS_CANDIDATES = [
-  path.resolve(__moduleDir, "../../skills"),         // published: <pkg>/dist/server/ -> <pkg>/skills/
-  path.resolve(__moduleDir, "../../../../../skills"), // dev: src/server/ -> repo root/skills/
-];
-
-async function resolveAbacusSkillsDir(): Promise<string | null> {
-  for (const candidate of ABACUS_SKILLS_CANDIDATES) {
-    const isDir = await fs.stat(candidate).then((s) => s.isDirectory()).catch(() => false);
-    if (isDir) return candidate;
-  }
-  return null;
-}
 
 /**
  * Create a tmpdir with `.claude/skills/` containing symlinks to skills from
  * the repo's `skills/` directory, so `--add-dir` makes Claude Code discover
  * them as proper registered skills.
  */
-async function buildSkillsDir(): Promise<string> {
+async function buildSkillsDir(config: Record<string, unknown>): Promise<string> {
   const tmp = await fs.mkdtemp(path.join(os.tmpdir(), "abacus-skills-"));
   const target = path.join(tmp, ".claude", "skills");
   await fs.mkdir(target, { recursive: true });
-  const skillsDir = await resolveAbacusSkillsDir();
-  if (!skillsDir) return tmp;
-  const entries = await fs.readdir(skillsDir, { withFileTypes: true });
-  for (const entry of entries) {
-    if (entry.isDirectory()) {
-      await fs.symlink(
-        path.join(skillsDir, entry.name),
-        path.join(target, entry.name),
-      );
-    }
+  const availableEntries = await readAbacusRuntimeSkillEntries(config, __moduleDir);
+  const desiredNames = new Set(
+    resolveClaudeDesiredSkillNames(
+      config,
+      availableEntries,
+    ),
+  );
+  for (const entry of availableEntries) {
+    if (!desiredNames.has(entry.key)) continue;
+    await fs.symlink(
+      entry.source,
+      path.join(target, entry.runtimeName),
+    );
   }
   return tmp;
 }
@@ -124,18 +118,18 @@ async function buildClaudeRuntimeConfig(input: ClaudeExecutionInput): Promise<Cl
   const agentHome = asString(workspaceContext.agentHome, "") || null;
   const workspaceHints = Array.isArray(context.abacusWorkspaces)
     ? context.abacusWorkspaces.filter(
-      (value): value is Record<string, unknown> => typeof value === "object" && value !== null,
-    )
+        (value): value is Record<string, unknown> => typeof value === "object" && value !== null,
+      )
     : [];
   const runtimeServiceIntents = Array.isArray(context.abacusRuntimeServiceIntents)
     ? context.abacusRuntimeServiceIntents.filter(
-      (value): value is Record<string, unknown> => typeof value === "object" && value !== null,
-    )
+        (value): value is Record<string, unknown> => typeof value === "object" && value !== null,
+      )
     : [];
   const runtimeServices = Array.isArray(context.abacusRuntimeServices)
     ? context.abacusRuntimeServices.filter(
-      (value): value is Record<string, unknown> => typeof value === "object" && value !== null,
-    )
+        (value): value is Record<string, unknown> => typeof value === "object" && value !== null,
+      )
     : [];
   const runtimePrimaryUrl = asString(context.abacusRuntimePrimaryUrl, "");
   const configuredCwd = asString(config.cwd, "");
@@ -272,7 +266,7 @@ export async function runClaudeLogin(input: {
   authToken?: string;
   onLog?: (stream: "stdout" | "stderr", chunk: string) => Promise<void>;
 }) {
-  const onLog = input.onLog ?? (async () => { });
+  const onLog = input.onLog ?? (async () => {});
   const runtime = await buildClaudeRuntimeConfig({
     runId: input.runId,
     agent: input.agent,
@@ -317,8 +311,8 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   const instructionsFileDir = instructionsFilePath ? `${path.dirname(instructionsFilePath)}/` : "";
   const commandNotes = instructionsFilePath
     ? [
-      `Injected agent instructions via --append-system-prompt-file ${instructionsFilePath} (with path directive appended)`,
-    ]
+        `Injected agent instructions via --append-system-prompt-file ${instructionsFilePath} (with path directive appended)`,
+      ]
     : [];
 
   const runtimeConfig = await buildClaudeRuntimeConfig({
@@ -345,7 +339,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     ),
   );
   const billingType = resolveClaudeBillingType(effectiveEnv);
-  const skillsDir = await buildSkillsDir();
+  const skillsDir = await buildSkillsDir(config);
 
   // When instructionsFilePath is configured, create a combined temp file that
   // includes both the file content and the path directive, so we only need
@@ -372,7 +366,8 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       `[abacus] Claude session "${runtimeSessionId}" was saved for cwd "${runtimeSessionCwd}" and will not be resumed in "${cwd}".\n`,
     );
   }
-  const prompt = renderTemplate(promptTemplate, {
+  const bootstrapPromptTemplate = asString(config.bootstrapPromptTemplate, "");
+  const templateData = {
     agentId: agent.id,
     companyId: agent.companyId,
     runId,
@@ -380,7 +375,24 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     agent,
     run: { id: runId, source: "on_demand" },
     context,
-  });
+  };
+  const renderedPrompt = renderTemplate(promptTemplate, templateData);
+  const renderedBootstrapPrompt =
+    !sessionId && bootstrapPromptTemplate.trim().length > 0
+      ? renderTemplate(bootstrapPromptTemplate, templateData).trim()
+      : "";
+  const sessionHandoffNote = asString(context.abacusSessionHandoffMarkdown, "").trim();
+  const prompt = joinPromptSections([
+    renderedBootstrapPrompt,
+    sessionHandoffNote,
+    renderedPrompt,
+  ]);
+  const promptMetrics = {
+    promptChars: prompt.length,
+    bootstrapPromptChars: renderedBootstrapPrompt.length,
+    sessionHandoffChars: sessionHandoffNote.length,
+    heartbeatPromptChars: renderedPrompt.length,
+  };
 
   const buildClaudeArgs = (resumeSessionId: string | null) => {
     const args = ["--print", "-", "--output-format", "stream-json", "--verbose"];
@@ -425,6 +437,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
         commandNotes,
         env: redactEnvForLogs(env),
         prompt,
+        promptMetrics,
         context,
       });
     }
@@ -461,8 +474,8 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     const errorMeta =
       loginMeta.loginUrl != null
         ? {
-          loginUrl: loginMeta.loginUrl,
-        }
+            loginUrl: loginMeta.loginUrl,
+          }
         : undefined;
 
     if (proc.timedOut) {
@@ -562,6 +575,6 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
 
     return toAdapterResult(initial, { fallbackSessionId: runtimeSessionId || runtime.sessionId });
   } finally {
-    fs.rm(skillsDir, { recursive: true, force: true }).catch(() => { });
+    fs.rm(skillsDir, { recursive: true, force: true }).catch(() => {});
   }
 }

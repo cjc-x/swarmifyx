@@ -9,21 +9,22 @@ import {
   asStringArray,
   parseObject,
   buildAbacusEnv,
+  joinPromptSections,
   redactEnvForLogs,
   ensureAbsoluteDirectory,
   ensureCommandResolvable,
+  ensureAbacusSkillSymlink,
   ensurePathInEnv,
   renderTemplate,
   runChildProcess,
+  readAbacusRuntimeSkillEntries,
+  resolveAbacusDesiredSkillNames,
 } from "@abacus-lab/adapter-utils/server-utils";
 import { isOpenCodeUnknownSessionError, parseOpenCodeJsonl } from "./parse.js";
 import { ensureOpenCodeModelConfiguredAndAvailable } from "./models.js";
+import { removeMaintainerOnlySkillSymlinks } from "@abacus-lab/adapter-utils/server-utils";
 
 const __moduleDir = path.dirname(fileURLToPath(import.meta.url));
-const ABACUS_SKILLS_CANDIDATES = [
-  path.resolve(__moduleDir, "../../skills"),
-  path.resolve(__moduleDir, "../../../../../skills"),
-];
 
 function firstNonEmptyLine(text: string): string {
   return (
@@ -49,38 +50,39 @@ function claudeSkillsHome(): string {
   return path.join(os.homedir(), ".claude", "skills");
 }
 
-async function resolveAbacusSkillsDir(): Promise<string | null> {
-  for (const candidate of ABACUS_SKILLS_CANDIDATES) {
-    const isDir = await fs.stat(candidate).then((s) => s.isDirectory()).catch(() => false);
-    if (isDir) return candidate;
-  }
-  return null;
-}
-
-async function ensureOpenCodeSkillsInjected(onLog: AdapterExecutionContext["onLog"]) {
-  const skillsDir = await resolveAbacusSkillsDir();
-  if (!skillsDir) return;
-
+async function ensureOpenCodeSkillsInjected(
+  onLog: AdapterExecutionContext["onLog"],
+  skillsEntries: Array<{ key: string; runtimeName: string; source: string }>,
+  desiredSkillNames?: string[],
+) {
   const skillsHome = claudeSkillsHome();
   await fs.mkdir(skillsHome, { recursive: true });
-  const entries = await fs.readdir(skillsDir, { withFileTypes: true });
-  for (const entry of entries) {
-    if (!entry.isDirectory()) continue;
-    const source = path.join(skillsDir, entry.name);
-    const target = path.join(skillsHome, entry.name);
-    const existing = await fs.lstat(target).catch(() => null);
-    if (existing) continue;
+  const desiredSet = new Set(desiredSkillNames ?? skillsEntries.map((entry) => entry.key));
+  const selectedEntries = skillsEntries.filter((entry) => desiredSet.has(entry.key));
+  const removedSkills = await removeMaintainerOnlySkillSymlinks(
+    skillsHome,
+    selectedEntries.map((entry) => entry.runtimeName),
+  );
+  for (const skillName of removedSkills) {
+    await onLog(
+      "stderr",
+      `[abacus] Removed maintainer-only OpenCode skill "${skillName}" from ${skillsHome}\n`,
+    );
+  }
+  for (const entry of selectedEntries) {
+    const target = path.join(skillsHome, entry.runtimeName);
 
     try {
-      await fs.symlink(source, target);
+      const result = await ensureAbacusSkillSymlink(entry.source, target);
+      if (result === "skipped") continue;
       await onLog(
         "stderr",
-        `[abacus] Injected OpenCode skill "${entry.name}" into ${skillsHome}\n`,
+        `[abacus] ${result === "repaired" ? "Repaired" : "Injected"} OpenCode skill "${entry.key}" into ${skillsHome}\n`,
       );
     } catch (err) {
       await onLog(
         "stderr",
-        `[abacus] Failed to inject OpenCode skill "${entry.name}" into ${skillsHome}: ${err instanceof Error ? err.message : String(err)}\n`,
+        `[abacus] Failed to inject OpenCode skill "${entry.key}" into ${skillsHome}: ${err instanceof Error ? err.message : String(err)}\n`,
       );
     }
   }
@@ -106,15 +108,21 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   const agentHome = asString(workspaceContext.agentHome, "");
   const workspaceHints = Array.isArray(context.abacusWorkspaces)
     ? context.abacusWorkspaces.filter(
-      (value): value is Record<string, unknown> => typeof value === "object" && value !== null,
-    )
+        (value): value is Record<string, unknown> => typeof value === "object" && value !== null,
+      )
     : [];
   const configuredCwd = asString(config.cwd, "");
   const useConfiguredInsteadOfAgentHome = workspaceSource === "agent_home" && configuredCwd.length > 0;
   const effectiveWorkspaceCwd = useConfiguredInsteadOfAgentHome ? "" : workspaceCwd;
   const cwd = effectiveWorkspaceCwd || configuredCwd || process.cwd();
   await ensureAbsoluteDirectory(cwd, { createIfMissing: true });
-  await ensureOpenCodeSkillsInjected(onLog);
+  const openCodeSkillEntries = await readAbacusRuntimeSkillEntries(config, __moduleDir);
+  const desiredOpenCodeSkillNames = resolveAbacusDesiredSkillNames(config, openCodeSkillEntries);
+  await ensureOpenCodeSkillsInjected(
+    onLog,
+    openCodeSkillEntries,
+    desiredOpenCodeSkillNames,
+  );
 
   const envConfig = parseObject(config.env);
   const hasExplicitApiKey =
@@ -239,7 +247,8 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     ];
   })();
 
-  const renderedPrompt = renderTemplate(promptTemplate, {
+  const bootstrapPromptTemplate = asString(config.bootstrapPromptTemplate, "");
+  const templateData = {
     agentId: agent.id,
     companyId: agent.companyId,
     runId,
@@ -247,8 +256,26 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     agent,
     run: { id: runId, source: "on_demand" },
     context,
-  });
-  const prompt = `${instructionsPrefix}${renderedPrompt}`;
+  };
+  const renderedPrompt = renderTemplate(promptTemplate, templateData);
+  const renderedBootstrapPrompt =
+    !sessionId && bootstrapPromptTemplate.trim().length > 0
+      ? renderTemplate(bootstrapPromptTemplate, templateData).trim()
+      : "";
+  const sessionHandoffNote = asString(context.abacusSessionHandoffMarkdown, "").trim();
+  const prompt = joinPromptSections([
+    instructionsPrefix,
+    renderedBootstrapPrompt,
+    sessionHandoffNote,
+    renderedPrompt,
+  ]);
+  const promptMetrics = {
+    promptChars: prompt.length,
+    instructionsChars: instructionsPrefix.length,
+    bootstrapPromptChars: renderedBootstrapPrompt.length,
+    sessionHandoffChars: sessionHandoffNote.length,
+    heartbeatPromptChars: renderedPrompt.length,
+  };
 
   const buildArgs = (resumeSessionId: string | null) => {
     const args = ["run", "--format", "json"];
@@ -270,6 +297,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
         commandArgs: [...args, `<stdin prompt ${prompt.length} chars>`],
         env: redactEnvForLogs(env),
         prompt,
+        promptMetrics,
         context,
       });
     }
@@ -313,12 +341,12 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       (clearSessionOnMissingSession ? null : runtimeSessionId ?? runtime.sessionId ?? null);
     const resolvedSessionParams = resolvedSessionId
       ? ({
-        sessionId: resolvedSessionId,
-        cwd,
-        ...(workspaceId ? { workspaceId } : {}),
-        ...(workspaceRepoUrl ? { repoUrl: workspaceRepoUrl } : {}),
-        ...(workspaceRepoRef ? { repoRef: workspaceRepoRef } : {}),
-      } as Record<string, unknown>)
+          sessionId: resolvedSessionId,
+          cwd,
+          ...(workspaceId ? { workspaceId } : {}),
+          ...(workspaceRepoUrl ? { repoUrl: workspaceRepoUrl } : {}),
+          ...(workspaceRepoRef ? { repoRef: workspaceRepoRef } : {}),
+        } as Record<string, unknown>)
       : null;
 
     const parsedError = typeof attempt.parsed.errorMessage === "string" ? attempt.parsed.errorMessage.trim() : "";

@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Clock3, FlaskConical, Puzzle, Settings } from "lucide-react";
+import { Clock3, FlaskConical, Puzzle, Settings, SlidersHorizontal } from "lucide-react";
 import { NavLink } from "@/lib/router";
 import { pluginsApi } from "@/api/plugins";
 import { queryKeys } from "@/lib/queryKeys";
@@ -7,11 +7,11 @@ import { useI18n } from "../context/I18nContext";
 import { SidebarNavItem } from "./SidebarNavItem";
 
 export function InstanceSidebar() {
-  const { t } = useI18n();
   const { data: plugins } = useQuery({
     queryKey: queryKeys.plugins.all,
     queryFn: () => pluginsApi.list(),
   });
+  const { t } = useI18n();
 
   return (
     <aside className="w-60 h-full min-h-0 border-r border-border bg-background flex flex-col">
@@ -24,6 +24,7 @@ export function InstanceSidebar() {
 
       <nav className="flex-1 min-h-0 overflow-y-auto scrollbar-auto-hide flex flex-col gap-4 px-3 py-2">
         <div className="flex flex-col gap-0.5">
+          <SidebarNavItem to="/instance/settings/general" label={t("General")} icon={SlidersHorizontal} end />
           <SidebarNavItem to="/instance/settings/heartbeats" label={t("Heartbeats")} icon={Clock3} end />
           <SidebarNavItem to="/instance/settings/experimental" label={t("Experimental")} icon={FlaskConical} />
           <SidebarNavItem to="/instance/settings/plugins" label={t("Plugins")} icon={Puzzle} />

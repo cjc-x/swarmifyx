@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { cn } from "../lib/utils";
+import { translateText } from "../lib/i18n";
 import { MarkdownEditor, type MarkdownEditorRef, type MentionOption } from "./MarkdownEditor";
 import { useAutosaveIndicator } from "../hooks/useAutosaveIndicator";
 
@@ -192,12 +193,12 @@ export function InlineEditor({
             )}
           >
             {autosaveState === "saving"
-              ? "Autosaving..."
+              ? translateText("Autosaving...")
               : autosaveState === "saved"
-                ? "Saved"
+                ? translateText("Saved")
                 : autosaveState === "error"
-                  ? "Could not save"
-                  : "Idle"}
+                  ? translateText("Could not save")
+                  : translateText("Idle")}
           </span>
         </div>
       </div>
@@ -241,8 +242,8 @@ export function InlineEditor({
         className,
       )}
       onClick={() => setEditing(true)}
-    >
-      {value || placeholder}
+      >
+      {value || translateText(placeholder)}
     </DisplayTag>
   );
 }

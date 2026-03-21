@@ -6,7 +6,9 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   copyGitHooksToWorktreeGitDir,
   copySeededSecretsKey,
+  readSourceAttachmentBody,
   rebindWorkspaceCwd,
+  resolveSourceConfigPath,
   resolveGitWorktreeAddArgs,
   resolveWorktreeMakeTargetPath,
   worktreeInitCommand,
@@ -16,6 +18,7 @@ import {
   buildWorktreeConfig,
   buildWorktreeEnvEntries,
   formatShellExports,
+  generateWorktreeColor,
   resolveWorktreeSeedPlan,
   resolveWorktreeLocalPaths,
   rewriteLocalUrlPort,
@@ -181,13 +184,57 @@ describe("worktree helpers", () => {
       path.resolve("/tmp/abacus-worktrees", "instances", "feature-worktree-support", "data", "storage"),
     );
 
-    const env = buildWorktreeEnvEntries(paths);
+    const env = buildWorktreeEnvEntries(paths, {
+      name: "feature-worktree-support",
+      color: "#3abf7a",
+    });
     expect(env.ABACUS_HOME).toBe(path.resolve("/tmp/abacus-worktrees"));
     expect(env.ABACUS_INSTANCE_ID).toBe("feature-worktree-support");
     expect(env.ABACUS_IN_WORKTREE).toBe("true");
+    expect(env.ABACUS_WORKTREE_NAME).toBe("feature-worktree-support");
+    expect(env.ABACUS_WORKTREE_COLOR).toBe("#3abf7a");
     expect(formatShellExports(env)).toContain("export ABACUS_INSTANCE_ID='feature-worktree-support'");
-    expect(paths.configPath).toBe(path.resolve("/tmp/abacus-feature", ".abacus", "config.json"));
-    expect(paths.envPath).toBe(path.resolve("/tmp/abacus-feature", ".abacus", ".env"));
+  });
+
+  it("falls back across storage roots before skipping a missing attachment object", async () => {
+    const missingErr = Object.assign(new Error("missing"), { code: "ENOENT" });
+    const expected = Buffer.from("image-bytes");
+    await expect(
+      readSourceAttachmentBody(
+        [
+          {
+            getObject: vi.fn().mockRejectedValue(missingErr),
+          },
+          {
+            getObject: vi.fn().mockResolvedValue(expected),
+          },
+        ],
+        "company-1",
+        "company-1/issues/issue-1/missing.png",
+      ),
+    ).resolves.toEqual(expected);
+  });
+
+  it("returns null when an attachment object is missing from every lookup storage", async () => {
+    const missingErr = Object.assign(new Error("missing"), { code: "ENOENT" });
+    await expect(
+      readSourceAttachmentBody(
+        [
+          {
+            getObject: vi.fn().mockRejectedValue(missingErr),
+          },
+          {
+            getObject: vi.fn().mockRejectedValue(Object.assign(new Error("missing"), { status: 404 })),
+          },
+        ],
+        "company-1",
+        "company-1/issues/issue-1/missing.png",
+      ),
+    ).resolves.toBeNull();
+  });
+
+  it("generates vivid worktree colors as hex", () => {
+    expect(generateWorktreeColor()).toMatch(/^#[0-9a-f]{6}$/);
   });
 
   it("uses minimal seed mode to keep app state but drop heavy runtime history", () => {
@@ -282,13 +329,69 @@ describe("worktree helpers", () => {
       });
 
       const envPath = path.join(repoRoot, ".abacus", ".env");
-      expect(fs.readFileSync(envPath, "utf8")).toContain("ABACUS_AGENT_JWT_SECRET=worktree-shared-secret");
+      const envContents = fs.readFileSync(envPath, "utf8");
+      expect(envContents).toContain("ABACUS_AGENT_JWT_SECRET=worktree-shared-secret");
+      expect(envContents).toContain("ABACUS_WORKTREE_NAME=repo");
+      expect(envContents).toMatch(/ABACUS_WORKTREE_COLOR=\"#[0-9a-f]{6}\"/);
     } finally {
       process.chdir(originalCwd);
       if (originalJwtSecret === undefined) {
         delete process.env.ABACUS_AGENT_JWT_SECRET;
       } else {
         process.env.ABACUS_AGENT_JWT_SECRET = originalJwtSecret;
+      }
+      fs.rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it("defaults the seed source config to the current repo-local Abacus config", () => {
+    const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "abacus-worktree-source-config-"));
+    const repoRoot = path.join(tempRoot, "repo");
+    const localConfigPath = path.join(repoRoot, ".abacus", "config.json");
+    const originalCwd = process.cwd();
+    const originalAbacusConfig = process.env.ABACUS_CONFIG;
+
+    try {
+      fs.mkdirSync(path.dirname(localConfigPath), { recursive: true });
+      fs.writeFileSync(localConfigPath, JSON.stringify(buildSourceConfig()), "utf8");
+      delete process.env.ABACUS_CONFIG;
+      process.chdir(repoRoot);
+
+      expect(fs.realpathSync(resolveSourceConfigPath({}))).toBe(fs.realpathSync(localConfigPath));
+    } finally {
+      process.chdir(originalCwd);
+      if (originalAbacusConfig === undefined) {
+        delete process.env.ABACUS_CONFIG;
+      } else {
+        process.env.ABACUS_CONFIG = originalAbacusConfig;
+      }
+      fs.rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it("preserves the source config path across worktree:make cwd changes", () => {
+    const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "abacus-worktree-source-override-"));
+    const sourceConfigPath = path.join(tempRoot, "source", "config.json");
+    const targetRoot = path.join(tempRoot, "target");
+    const originalCwd = process.cwd();
+    const originalAbacusConfig = process.env.ABACUS_CONFIG;
+
+    try {
+      fs.mkdirSync(path.dirname(sourceConfigPath), { recursive: true });
+      fs.mkdirSync(targetRoot, { recursive: true });
+      fs.writeFileSync(sourceConfigPath, JSON.stringify(buildSourceConfig()), "utf8");
+      delete process.env.ABACUS_CONFIG;
+      process.chdir(targetRoot);
+
+      expect(resolveSourceConfigPath({ sourceConfigPathOverride: sourceConfigPath })).toBe(
+        path.resolve(sourceConfigPath),
+      );
+    } finally {
+      process.chdir(originalCwd);
+      if (originalAbacusConfig === undefined) {
+        delete process.env.ABACUS_CONFIG;
+      } else {
+        process.env.ABACUS_CONFIG = originalAbacusConfig;
       }
       fs.rmSync(tempRoot, { recursive: true, force: true });
     }
@@ -301,7 +404,7 @@ describe("worktree helpers", () => {
         targetRepoRoot: "/Users/example/abacus-pr-432",
         workspaceCwd: "/Users/example/abacus",
       }),
-    ).toBe(path.resolve("/Users/example/abacus-pr-432"));
+    ).toBe("/Users/example/abacus-pr-432");
 
     expect(
       rebindWorkspaceCwd({
@@ -309,7 +412,7 @@ describe("worktree helpers", () => {
         targetRepoRoot: "/Users/example/abacus-pr-432",
         workspaceCwd: "/Users/example/abacus/packages/db",
       }),
-    ).toBe(path.resolve("/Users/example/abacus-pr-432/packages/db"));
+    ).toBe("/Users/example/abacus-pr-432/packages/db");
   });
 
   it("does not rebind paths outside the source repo root", () => {
@@ -362,15 +465,13 @@ describe("worktree helpers", () => {
         copied: true,
       });
       expect(fs.readFileSync(targetHookPath, "utf8")).toBe("#!/usr/bin/env bash\nexit 0\n");
-      if (process.platform !== "win32") {
-        expect(fs.statSync(targetHookPath).mode & 0o111).not.toBe(0);
-      }
+      expect(fs.statSync(targetHookPath).mode & 0o111).not.toBe(0);
       expect(fs.readFileSync(targetTokensPath, "utf8")).toBe("secret-token\n");
     } finally {
       execFileSync("git", ["worktree", "remove", "--force", worktreePath], { cwd: repoRoot, stdio: "ignore" });
       fs.rmSync(tempRoot, { recursive: true, force: true });
     }
-  }, 15_000);
+  });
 
   it("creates and initializes a worktree from the top-level worktree:make command", async () => {
     const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "abacus-worktree-make-"));
@@ -392,7 +493,7 @@ describe("worktree helpers", () => {
 
       process.chdir(repoRoot);
 
-      await worktreeMakeCommand("make-test", {
+      await worktreeMakeCommand("abacus-make-test", {
         seed: false,
         home: path.join(tempRoot, ".abacus-worktrees"),
       });

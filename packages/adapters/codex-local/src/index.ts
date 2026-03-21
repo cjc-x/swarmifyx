@@ -40,7 +40,8 @@ Operational fields:
 
 Notes:
 - Prompts are piped via stdin (Codex receives "-" prompt argument).
-- Abacus auto-injects local skills into Codex personal skills dir ("$CODEX_HOME/skills" or "~/.codex/skills") when missing, so Codex can discover "$abacus" and related skills.
+- Abacus injects desired local skills into the active workspace's ".agents/skills" directory at execution time so Codex can discover "$abacus" and related skills without coupling them to the user's login home.
+- Unless explicitly overridden in adapter config, Abacus runs Codex with a per-company managed CODEX_HOME under the active Abacus instance and seeds auth/config from the shared Codex home (the CODEX_HOME env var, when set, or ~/.codex).
 - Some model/tool combinations reject certain effort levels (for example minimal with web search enabled).
 - When Abacus realizes a workspace/runtime for a run, it injects ABACUS_WORKSPACE_* and ABACUS_RUNTIME_* env vars for agent-side tooling.
 `;

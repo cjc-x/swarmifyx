@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useMemo, useCallback } from "react";
-import { useNavigate } from "@/lib/router";
+import { Link, useNavigate } from "@/lib/router";
 import { useQuery } from "@tanstack/react-query";
 import { agentsApi, type OrgNode } from "../api/agents";
 import { useCompany } from "../context/CompanyContext";
@@ -7,10 +7,11 @@ import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { useI18n } from "../context/I18nContext";
 import { queryKeys } from "../lib/queryKeys";
 import { agentUrl } from "../lib/utils";
+import { Button } from "@/components/ui/button";
 import { EmptyState } from "../components/EmptyState";
 import { PageSkeleton } from "../components/PageSkeleton";
 import { AgentIcon } from "../components/AgentIconPicker";
-import { Network } from "lucide-react";
+import { Download, Network, Upload } from "lucide-react";
 import { AGENT_ROLE_LABELS, type Agent } from "@abacus-lab/shared";
 
 // Layout constants
@@ -116,18 +117,6 @@ function collectEdges(nodes: LayoutNode[]): Array<{ parent: LayoutNode; child: L
 
 // ── Status dot colors (raw hex for SVG) ─────────────────────────────────
 
-const adapterLabels: Record<string, string> = {
-  claude_local: "Claude",
-  codebuddy_local: "CodeBuddy",
-  codex_local: "Codex",
-  gemini_local: "Gemini",
-  opencode_local: "OpenCode",
-  cursor: "Cursor",
-  openclaw_gateway: "OpenClaw Gateway",
-  process: "Process",
-  http: "HTTP",
-};
-
 const statusDotColor: Record<string, string> = {
   running: "#22d3ee",
   active: "#4ade80",
@@ -163,6 +152,31 @@ export function OrgChart() {
     for (const a of agents ?? []) m.set(a.id, a);
     return m;
   }, [agents]);
+
+  const adapterLabels = useMemo(
+    () => ({
+      claude_local: t("Claude"),
+      codebuddy_local: t("CodeBuddy"),
+      codex_local: t("Codex"),
+      hermes_local: t("Hermes"),
+      gemini_local: t("Gemini"),
+      opencode_local: t("OpenCode"),
+      cursor: t("Cursor"),
+      pi_local: t("Pi"),
+      openclaw_gateway: t("OpenClaw Gateway"),
+      process: t("Process"),
+      http: t("HTTP"),
+    }),
+    [t],
+  );
+
+  const roleLabels = useMemo(
+    () =>
+      Object.fromEntries(
+        Object.entries(AGENT_ROLE_LABELS).map(([key, value]) => [key, t(value)]),
+      ) as Record<string, string>,
+    [t],
+  );
 
   useEffect(() => {
     setBreadcrumbs([{ label: t("Org Chart") }]);
@@ -258,7 +272,7 @@ export function OrgChart() {
   }, [zoom, pan]);
 
   if (!selectedCompanyId) {
-    return <EmptyState icon={Network} message="Select a company to view the org chart." />;
+    return <EmptyState icon={Network} message={t("Select a company to view the org chart.")} />;
   }
 
   if (isLoading) {
@@ -266,22 +280,37 @@ export function OrgChart() {
   }
 
   if (orgTree && orgTree.length === 0) {
-    return <EmptyState icon={Network} message="No organizational hierarchy defined." />;
+    return <EmptyState icon={Network} message={t("No organizational hierarchy defined.")} />;
   }
 
   return (
-    <div
-      ref={containerRef}
-      className="w-full h-[calc(100dvh-6rem)] overflow-hidden relative bg-muted/20 border border-border rounded-lg"
-      style={{ cursor: dragging ? "grabbing" : "grab" }}
-      onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseUp}
-      onWheel={handleWheel}
-    >
-      {/* Zoom controls */}
-      <div className="absolute top-3 right-3 z-10 flex flex-col gap-1">
+    <div className="flex flex-col h-full">
+      <div className="mb-2 flex items-center justify-start gap-2 shrink-0">
+        <Link to="/company/import">
+          <Button variant="outline" size="sm">
+            <Upload className="mr-1.5 h-3.5 w-3.5" />
+            {t("Import company")}
+          </Button>
+        </Link>
+        <Link to="/company/export">
+          <Button variant="outline" size="sm">
+            <Download className="mr-1.5 h-3.5 w-3.5" />
+            {t("Export company")}
+          </Button>
+        </Link>
+      </div>
+      <div
+        ref={containerRef}
+        className="w-full flex-1 min-h-0 overflow-hidden relative bg-muted/20 border border-border rounded-lg"
+        style={{ cursor: dragging ? "grabbing" : "grab" }}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+        onWheel={handleWheel}
+      >
+        {/* Zoom controls */}
+        <div className="absolute top-3 right-3 z-10 flex flex-col gap-1">
         <button
           className="w-7 h-7 flex items-center justify-center bg-background border border-border rounded text-sm hover:bg-accent transition-colors"
           onClick={() => {
@@ -335,16 +364,16 @@ export function OrgChart() {
         >
           {t("Fit")}
         </button>
-      </div>
+        </div>
 
-      {/* SVG layer for edges */}
-      <svg
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          width: "100%",
-          height: "100%",
-        }}
-      >
+        {/* SVG layer for edges */}
+        <svg
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            width: "100%",
+            height: "100%",
+          }}
+        >
         <g transform={`translate(${pan.x}, ${pan.y}) scale(${zoom})`}>
           {edges.map(({ parent, child }) => {
             const x1 = parent.x + CARD_W / 2;
@@ -364,16 +393,16 @@ export function OrgChart() {
             );
           })}
         </g>
-      </svg>
+        </svg>
 
-      {/* Card layer */}
-      <div
-        className="absolute inset-0"
-        style={{
-          transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
-          transformOrigin: "0 0",
-        }}
-      >
+        {/* Card layer */}
+        <div
+          className="absolute inset-0"
+          style={{
+            transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+            transformOrigin: "0 0",
+          }}
+        >
         {allNodes.map((node) => {
           const agent = agentMap.get(node.id);
           const dotColor = statusDotColor[node.status] ?? defaultDotColor;
@@ -408,11 +437,11 @@ export function OrgChart() {
                     {node.name}
                   </span>
                   <span className="text-[11px] text-muted-foreground leading-tight mt-0.5">
-                    {agent?.title ?? roleLabel(node.role)}
+                    {agent?.title ?? roleLabels[node.role] ?? node.role}
                   </span>
                   {agent && (
                     <span className="text-[10px] text-muted-foreground/60 font-mono leading-tight mt-1">
-                      {t(adapterLabels[agent.adapterType] ?? agent.adapterType)}
+                      {adapterLabels[agent.adapterType] ?? agent.adapterType}
                     </span>
                   )}
                 </div>
@@ -420,13 +449,8 @@ export function OrgChart() {
             </div>
           );
         })}
+        </div>
       </div>
     </div>
   );
-}
-
-const roleLabels = AGENT_ROLE_LABELS as Record<string, string>;
-
-function roleLabel(role: string): string {
-  return roleLabels[role] ?? role;
 }

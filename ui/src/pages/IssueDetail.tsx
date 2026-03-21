@@ -12,15 +12,14 @@ import { usePanel } from "../context/PanelContext";
 import { useToast } from "../context/ToastContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { useI18n } from "../context/I18nContext";
-import { getPriorityLabel, getStatusLabel, translateText } from "../lib/i18n";
 import { assigneeValueFromSelection, suggestedCommentAssigneeValue } from "../lib/assignees";
 import { queryKeys } from "../lib/queryKeys";
 import { readIssueDetailBreadcrumb } from "../lib/issueDetailBreadcrumb";
 import { useProjectOrder } from "../hooks/useProjectOrder";
 import { relativeTime, cn, formatTokens, visibleRunCostUsd } from "../lib/utils";
+import { getPriorityLabel, getStatusLabel } from "../lib/i18n";
 import { InlineEditor } from "../components/InlineEditor";
 import { CommentThread } from "../components/CommentThread";
-import { approvalLabel } from "../components/ApprovalPayload";
 import { IssueDocumentsSection } from "../components/IssueDocumentsSection";
 import { IssueProperties } from "../components/IssueProperties";
 import { LiveRunWidget } from "../components/LiveRunWidget";
@@ -50,7 +49,8 @@ import {
   ListTree,
   MessageSquare,
   MoreHorizontal,
-  SlidersVertical,
+  Paperclip,
+  Repeat,
   SlidersHorizontal,
   Trash2,
 } from "lucide-react";
@@ -62,29 +62,7 @@ type CommentReassignment = {
   assigneeUserId: string | null;
 };
 
-const ACTION_LABELS: Record<string, string> = {
-  "issue.created": "created the issue",
-  "issue.updated": "updated the issue",
-  "issue.checked_out": "checked out the issue",
-  "issue.released": "released the issue",
-  "issue.comment_added": "added a comment",
-  "issue.attachment_added": "added an attachment",
-  "issue.attachment_removed": "removed an attachment",
-  "issue.document_created": "created a document",
-  "issue.document_updated": "updated a document",
-  "issue.document_deleted": "deleted a document",
-  "issue.deleted": "deleted the issue",
-  "agent.created": "created an agent",
-  "agent.updated": "updated the agent",
-  "agent.paused": "paused the agent",
-  "agent.resumed": "resumed the agent",
-  "agent.terminated": "terminated the agent",
-  "heartbeat.invoked": "invoked a heartbeat",
-  "heartbeat.cancelled": "cancelled a heartbeat",
-  "approval.created": "requested approval",
-  "approval.approved": "approved",
-  "approval.rejected": "rejected",
-};
+type TranslateFn = (text: string, values?: Record<string, string | number>) => string;
 
 function asRecord(value: unknown): Record<string, unknown> | null {
   if (typeof value !== "object" || value === null || Array.isArray(value)) return null;
@@ -135,7 +113,7 @@ function titleizeFilename(input: string) {
     .join(" ");
 }
 
-function formatAction(action: string, details?: Record<string, unknown> | null): string {
+function formatAction(action: string, details: Record<string, unknown> | null | undefined, t: TranslateFn): string {
   if (action === "issue.updated" && details) {
     const previous = (details._previous ?? {}) as Record<string, unknown>;
     const parts: string[] = [];
@@ -144,33 +122,35 @@ function formatAction(action: string, details?: Record<string, unknown> | null):
       const from = previous.status;
       parts.push(
         from
-          ? translateText("changed status from {from} to {to} on", {
-            from: getStatusLabel(String(from)),
-            to: getStatusLabel(String(details.status)),
-          })
-          : translateText("changed status to {to} on", { to: getStatusLabel(String(details.status)) })
+          ? t("changed the status from {from} to {to}", {
+              from: getStatusLabel(String(from)),
+              to: getStatusLabel(String(details.status)),
+            })
+          : t("changed the status to {status}", { status: getStatusLabel(String(details.status)) })
       );
     }
     if (details.priority !== undefined) {
       const from = previous.priority;
       parts.push(
         from
-          ? translateText("changed priority from {from} to {to} on", {
-            from: getPriorityLabel(String(from)),
-            to: getPriorityLabel(String(details.priority)),
-          })
-          : translateText("changed priority to {to} on", { to: getPriorityLabel(String(details.priority)) })
+          ? t("changed the priority from {from} to {to}", {
+              from: getPriorityLabel(String(from)),
+              to: getPriorityLabel(String(details.priority)),
+            })
+          : t("changed the priority to {priority}", {
+              priority: getPriorityLabel(String(details.priority)),
+            })
       );
     }
     if (details.assigneeAgentId !== undefined || details.assigneeUserId !== undefined) {
       parts.push(
         details.assigneeAgentId || details.assigneeUserId
-          ? translateText("assigned the issue")
-          : translateText("unassigned the issue"),
+          ? t("assigned the issue")
+          : t("unassigned the issue"),
       );
     }
-    if (details.title !== undefined) parts.push(translateText("updated the title"));
-    if (details.description !== undefined) parts.push(translateText("updated the description"));
+    if (details.title !== undefined) parts.push(t("updated the title"));
+    if (details.description !== undefined) parts.push(t("updated the description"));
 
     if (parts.length > 0) return parts.join(", ");
   }
@@ -178,22 +158,71 @@ function formatAction(action: string, details?: Record<string, unknown> | null):
     (action === "issue.document_created" || action === "issue.document_updated" || action === "issue.document_deleted") &&
     details
   ) {
-    const key = typeof details.key === "string" ? details.key : "document";
+    const key = typeof details.key === "string" ? details.key : t("document");
     const title = typeof details.title === "string" && details.title ? ` (${details.title})` : "";
-    return `${translateText(ACTION_LABELS[action] ?? action)} ${key}${title}`;
+    const actionLabel =
+      action === "issue.document_created"
+        ? t("created a document")
+        : action === "issue.document_updated"
+          ? t("updated a document")
+          : t("deleted a document");
+    return `${actionLabel} ${key}${title}`;
   }
-  return translateText(ACTION_LABELS[action] ?? action.replace(/[._]/g, " "));
+  const fallbackLabels: Record<string, string> = {
+    "issue.created": t("created the issue"),
+    "issue.updated": t("updated the issue"),
+    "issue.checked_out": t("checked out the issue"),
+    "issue.released": t("released the issue"),
+    "issue.comment_added": t("added a comment"),
+    "issue.attachment_added": t("added an attachment"),
+    "issue.attachment_removed": t("removed an attachment"),
+    "issue.deleted": t("deleted the issue"),
+    "agent.created": t("created an agent"),
+    "agent.updated": t("updated the agent"),
+    "agent.paused": t("paused the agent"),
+    "agent.resumed": t("resumed the agent"),
+    "agent.terminated": t("terminated the agent"),
+    "heartbeat.invoked": t("invoked a heartbeat"),
+    "heartbeat.cancelled": t("cancelled a heartbeat"),
+    "approval.created": t("requested approval"),
+    "approval.approved": t("approved"),
+    "approval.rejected": t("rejected"),
+  };
+  return fallbackLabels[action] ?? action.replace(/[._]/g, " ");
 }
 
-function ActorIdentity({ evt, agentMap }: { evt: ActivityEvent; agentMap: Map<string, Agent> }) {
+function formatApprovalType(type: string, t: TranslateFn): string {
+  switch (type) {
+    case "requested":
+    case "request":
+    case "approval_request":
+      return t("Requested approval");
+    case "approved":
+      return t("Approved");
+    case "rejected":
+      return t("Rejected");
+    default:
+      return type.replace(/_/g, " ");
+  }
+}
+
+function ActorIdentity({
+  evt,
+  agentMap,
+  t,
+}: {
+  evt: ActivityEvent;
+  agentMap: Map<string, Agent>;
+  t: TranslateFn;
+}) {
   const id = evt.actorId;
   if (evt.actorType === "agent") {
     const agent = agentMap.get(id);
     return <Identity name={agent?.name ?? id.slice(0, 8)} size="sm" />;
   }
-  if (evt.actorType === "system") return <Identity name={translateText("System")} size="sm" />;
-  if (evt.actorType === "user") return <Identity name={translateText("Board")} size="sm" />;
-  return <Identity name={id || translateText("Unknown")} size="sm" />;
+  if (evt.actorType === "system") return <Identity name={t("System")} size="sm" />;
+  if (evt.actorType === "user") return <Identity name={t("Board")} size="sm" />;
+  return <Identity name={id || t("Unknown")} size="sm" />;
 }
 
 export function IssueDetail() {
@@ -375,8 +404,7 @@ export function IssueDetail() {
       options.push({ id: `agent:${agent.id}`, label: agent.name });
     }
     if (currentUserId) {
-      const label = currentUserId === "local-board" ? t("Board") : t("Me (Board)");
-      options.push({ id: `user:${currentUserId}`, label });
+      options.push({ id: `user:${currentUserId}`, label: t("Me") });
     }
     return options;
   }, [agents, currentUserId, t]);
@@ -674,7 +702,7 @@ export function IssueDetail() {
           attachmentDragActive && "border-primary bg-primary/5",
         )}
       >
-        <SlidersVertical className="h-3.5 w-3.5 mr-1.5" />
+        <Paperclip className="h-3.5 w-3.5 mr-1.5" />
         {uploadAttachment.isPending || importMarkdownDocument.isPending ? t("Uploading...") : t("Upload attachment")}
       </Button>
     </>
@@ -730,6 +758,16 @@ export function IssueDetail() {
               </span>
               {t("Live")}
             </span>
+          )}
+
+          {issue.originKind === "routine_execution" && issue.originId && (
+            <Link
+              to={`/routines/${issue.originId}`}
+              className="inline-flex items-center gap-1 rounded-full bg-violet-500/10 border border-violet-500/30 px-2 py-0.5 text-[10px] font-medium text-violet-600 dark:text-violet-400 shrink-0 hover:bg-violet-500/20 transition-colors"
+            >
+              <Repeat className="h-3 w-3" />
+              {t("Routine")}
+            </Link>
           )}
 
           {issue.projectId ? (
@@ -815,21 +853,21 @@ export function IssueDetail() {
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-44 p-1" align="end">
-                <button
-                  className="flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-accent/50 text-destructive"
-                  onClick={() => {
-                    updateIssue.mutate(
-                      { hiddenAt: new Date().toISOString() },
-                      { onSuccess: () => navigate("/issues/all") },
-                    );
-                    setMoreOpen(false);
-                  }}
-                >
-                  <EyeOff className="h-3 w-3" />
-                  {t("Hide this Issue")}
-                </button>
-              </PopoverContent>
+            <PopoverContent className="w-44 p-1" align="end">
+              <button
+                className="flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-accent/50 text-destructive"
+                onClick={() => {
+                  updateIssue.mutate(
+                    { hiddenAt: new Date().toISOString() },
+                    { onSuccess: () => navigate("/issues/all") },
+                  );
+                  setMoreOpen(false);
+                }}
+              >
+                <EyeOff className="h-3 w-3" />
+                {t("Hide this Issue")}
+              </button>
+            </PopoverContent>
             </Popover>
           </div>
         </div>
@@ -966,7 +1004,7 @@ export function IssueDetail() {
                 <a href={attachment.contentPath} target="_blank" rel="noreferrer">
                   <img
                     src={attachment.contentPath}
-                    alt={attachment.originalFilename ?? t("attachment")}
+                    alt={attachment.originalFilename ?? "attachment"}
                     className="mt-2 max-h-56 rounded border border-border object-contain bg-accent/10"
                     loading="lazy"
                   />
@@ -975,7 +1013,7 @@ export function IssueDetail() {
             </div>
           ))}
         </div>
-      </div>
+        </div>
       ) : null}
 
       <Separator />
@@ -1080,18 +1118,10 @@ export function IssueDetail() {
                   )}
                   {issueCostSummary.hasTokens && (
                     <span>
+                      {t("Tokens")} {formatTokens(issueCostSummary.totalTokens)}
                       {issueCostSummary.cached > 0
-                        ? t("Tokens {total} (in {input}, out {output}, cached {cached})", {
-                          total: formatTokens(issueCostSummary.totalTokens),
-                          input: formatTokens(issueCostSummary.input),
-                          output: formatTokens(issueCostSummary.output),
-                          cached: formatTokens(issueCostSummary.cached),
-                        })
-                        : t("Tokens {total} (in {input}, out {output})", {
-                          total: formatTokens(issueCostSummary.totalTokens),
-                          input: formatTokens(issueCostSummary.input),
-                          output: formatTokens(issueCostSummary.output),
-                        })}
+                        ? ` (in ${formatTokens(issueCostSummary.input)}, out ${formatTokens(issueCostSummary.output)}, cached ${formatTokens(issueCostSummary.cached)})`
+                        : ` (in ${formatTokens(issueCostSummary.input)}, out ${formatTokens(issueCostSummary.output)})`}
                     </span>
                   )}
                 </div>
@@ -1104,8 +1134,8 @@ export function IssueDetail() {
             <div className="space-y-1.5">
               {activity.slice(0, 20).map((evt) => (
                 <div key={evt.id} className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <ActorIdentity evt={evt} agentMap={agentMap} />
-                  <span>{formatAction(evt.action, evt.details)}</span>
+                  <ActorIdentity evt={evt} agentMap={agentMap} t={t} />
+                  <span>{formatAction(evt.action, evt.details, t)}</span>
                   <span className="ml-auto shrink-0">{relativeTime(evt.createdAt)}</span>
                 </div>
               ))}
@@ -1154,7 +1184,7 @@ export function IssueDetail() {
                   <div className="flex items-center gap-2">
                     <StatusBadge status={approval.status} />
                     <span className="font-medium">
-                      {approvalLabel(approval.type, approval.payload as Record<string, unknown> | null, t)}
+                      {formatApprovalType(approval.type, t)}
                     </span>
                     <span className="font-mono text-muted-foreground">{approval.id.slice(0, 8)}</span>
                   </div>
@@ -1165,6 +1195,7 @@ export function IssueDetail() {
           </CollapsibleContent>
         </Collapsible>
       )}
+
 
       {/* Mobile properties drawer */}
       <Sheet open={mobilePropsOpen} onOpenChange={setMobilePropsOpen}>

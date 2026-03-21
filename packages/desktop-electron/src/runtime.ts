@@ -1,3 +1,4 @@
+import fs from "node:fs";
 import path from "node:path";
 
 export type DesktopMode = "development" | "packaged";
@@ -21,17 +22,25 @@ export function resolvePackagedRuntimeRoot(appRoot: string): string {
   return path.resolve(appRoot, "..", "app-runtime");
 }
 
+function resolvePackagedServerEntrypoint(runtimeRoot: string): string {
+  const candidates = [
+    path.resolve(runtimeRoot, "node_modules", "@abacus-lab", "server", "dist", "index.js"),
+    path.resolve(runtimeRoot, "node_modules", "@abacus", "server", "dist", "index.js"),
+  ];
+
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate)) {
+      return candidate;
+    }
+  }
+
+  return candidates[0];
+}
+
 export function resolveServerEntrypoint(input: DesktopRuntimeInput): string {
   return input.mode === "development"
     ? path.resolve(input.repoRoot, "server", "src", "index.ts")
-    : path.resolve(
-        resolvePackagedRuntimeRoot(input.appRoot),
-        "node_modules",
-        "@abacus",
-        "server",
-        "dist",
-        "index.js",
-      );
+    : resolvePackagedServerEntrypoint(resolvePackagedRuntimeRoot(input.appRoot));
 }
 
 export function buildWorkerEnvironment(input: DesktopRuntimeInput): NodeJS.ProcessEnv {

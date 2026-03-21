@@ -88,6 +88,9 @@ Apply the following replacements when upstream code introduces legacy names:
   re-apply Abacus naming on top.
 - Rename obligations include user-visible error messages, helper text, brand
   labels, and product links. Do not stop at import-path fixes.
+- Do not mechanically rename every matching identifier. First verify whether
+  the token is actually Abacus-owned naming or an external/library symbol whose
+  spelling only happens to match upstream branding.
 
 ### `package.json`
 
@@ -140,6 +143,8 @@ The following may keep the upstream name unchanged:
 - historical commit hashes or commit message references
 - upstream changelog or release-note history references
 - third-party dependency names outside the Abacus namespace
+- external package identifiers, binary names, or library symbols that are not
+  owned by Abacus, even if they contain `paperclip` text
 - lockfile entries or package-manager metadata that reflect real third-party
   published package names, including transitive `@paperclipai/*` dependencies
 - comments explicitly marked as `upstream reference`

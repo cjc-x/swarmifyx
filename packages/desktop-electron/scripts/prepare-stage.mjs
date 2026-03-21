@@ -105,7 +105,7 @@ function patchPublishMetadata(packageJsonPath) {
   }
 
   const pkg = readJson(packageJsonPath);
-  if (!pkg.name?.startsWith("@abacus-lab/")) return false;
+  if (!pkg.name?.startsWith("@abacus-lab/") && !pkg.name?.startsWith("@abacus/")) return false;
 
   let changed = false;
   if (pkg.publishConfig?.exports) {
@@ -161,7 +161,10 @@ runPnpm(
 );
 
 console.log("[desktop-stage] Patching deployed workspace package metadata...");
-const packageJsons = collectScopedPackageJsons(stageNodeModules, "@abacus");
+const packageJsons = [
+  ...collectScopedPackageJsons(stageNodeModules, "@abacus-lab"),
+  ...collectScopedPackageJsons(stageNodeModules, "@abacus"),
+];
 let patchedCount = 0;
 for (const packageJsonPath of packageJsons) {
   if (patchPublishMetadata(packageJsonPath)) {

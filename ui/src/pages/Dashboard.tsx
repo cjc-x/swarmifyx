@@ -167,17 +167,17 @@ export function Dashboard() {
 
   if (!selectedCompanyId) {
     if (companies.length === 0) {
-      return (
-        <EmptyState
-          icon={LayoutDashboard}
-          message="Welcome to Abacus. Set up your first company and agent to get started."
-          action="Get Started"
-          onAction={openOnboarding}
-        />
-      );
-    }
+        return (
+          <EmptyState
+            icon={LayoutDashboard}
+            message={t("Welcome to Abacus. Set up your first company and agent to get started.")}
+            action={t("Get Started")}
+            onAction={openOnboarding}
+          />
+        );
+      }
     return (
-      <EmptyState icon={LayoutDashboard} message="Create or select a company to view the dashboard." />
+      <EmptyState icon={LayoutDashboard} message={t("Create or select a company to view the dashboard.")} />
     );
   }
 

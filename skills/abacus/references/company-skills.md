@@ -80,6 +80,12 @@ curl -sS -X POST "$ABACUS_API_URL/api/companies/$ABACUS_COMPANY_ID/skills/import
   }'
 ```
 
+You can also use source strings such as:
+
+- `google-labs-code/stitch-skills/design-md`
+- `vercel-labs/agent-browser/agent-browser`
+- `npx skills add https://github.com/vercel-labs/agent-browser --skill agent-browser`
+
 If the task is to discover skills from the company project workspaces first:
 
 ```sh

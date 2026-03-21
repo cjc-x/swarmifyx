@@ -6,8 +6,12 @@
 - `GET /llms/agent-configuration/:adapterType.txt`
 - `GET /llms/agent-icons.txt`
 - `GET /api/companies/:companyId/agent-configurations`
+- `GET /api/companies/:companyId/skills`
+- `POST /api/companies/:companyId/skills/import`
 - `GET /api/agents/:agentId/configuration`
+- `POST /api/agents/:agentId/skills/sync`
 - `POST /api/companies/:companyId/agent-hires`
+- `POST /api/companies/:companyId/agents`
 - `GET /api/agents/:agentId/config-revisions`
 - `POST /api/agents/:agentId/config-revisions/:revisionId/rollback`
 - `POST /api/issues/:issueId/approvals`
@@ -34,11 +38,11 @@ Request body matches agent create shape:
   "icon": "crown",
   "reportsTo": "uuid-or-null",
   "capabilities": "Owns architecture and engineering execution",
-  "adapterType": "codex_local",
+  "desiredSkills": ["vercel-labs/agent-browser/agent-browser"],
+  "adapterType": "claude_local",
   "adapterConfig": {
     "cwd": "/absolute/path",
-    "model": "gpt-5",
-    "instructionsFilePath": "/absolute/path/to/AGENTS.md",
+    "model": "claude-sonnet-4-5-20250929",
     "promptTemplate": "You are CTO..."
   },
   "runtimeConfig": {
@@ -65,14 +69,17 @@ Response:
   "approval": {
     "id": "uuid",
     "type": "hire_agent",
-    "status": "pending"
+    "status": "pending",
+    "payload": {
+      "desiredSkills": ["vercel-labs/agent-browser/agent-browser"]
+    }
   }
 }
 ```
 
 If company setting disables required approval, `approval` is `null` and the agent is created as `idle`.
 
-Supported local CLI adapter types include `claude_local`, `codebuddy_local`, `codex_local`, `cursor`, `gemini_local`, `opencode_local`, and `pi_local`.
+`desiredSkills` accepts company skill ids, canonical keys, or a unique slug. The server resolves and stores canonical company skill keys.
 
 ## Approval Lifecycle
 

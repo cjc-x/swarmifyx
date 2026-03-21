@@ -121,6 +121,8 @@ When adding translation keys:
 
 - keep English source strings as keys
 - avoid duplicate keys
+- search the existing dictionary before adding a new key; duplicate entries in
+  `ui/src/lib/i18n.ts` break typecheck and make translation ownership unclear
 - preserve English fallback behavior
 - prefer interpolation for variable strings, such as:
   - `Resets {time}`
@@ -134,6 +136,8 @@ When upstream introduces structured labels plus free-form detail:
 - do not change the server contract solely to force translated strings
 - build locale-sensitive option arrays and label maps inside a component or a
   locale-aware helper, not in module top-level constants
+- if a nested component or helper starts calling `t(...)`, it must either call
+  `useI18n()` in that scope or receive `t` explicitly via props
 
 ## Common Pitfalls
 
@@ -152,6 +156,9 @@ When upstream introduces structured labels plus free-form detail:
   filter options, workspace options, adapter config enums, summary builders,
   and status-label maps. Build them inside the component, hook, or a
   locale-aware helper.
+- Nested page-local subcomponents are a common merge hazard. It is easy to add
+  `t(...)` calls in a nested renderer and forget to wire `useI18n()` or pass
+  `t`, which turns a localization change into a typecheck failure.
 - After merging upstream UI, do a dedicated scan for user-visible brand names
   and GitHub links. Do not assume new upstream UI already matches Abacus
   naming rules.

@@ -1,4 +1,4 @@
-import { test, expect, type Page } from "@playwright/test";
+import { test, expect } from "@playwright/test";
 
 /**
  * E2E: Onboarding wizard flow (skip_llm mode).
@@ -6,8 +6,8 @@ import { test, expect, type Page } from "@playwright/test";
  * Walks through the 4-step OnboardingWizard:
  *   Step 1 — Name your company
  *   Step 2 — Create your first agent (adapter selection + config)
- *   Step 3 — Give it something to do (task draft)
- *   Step 4 — Ready to launch (summary + create/open issue)
+ *   Step 3 — Give it something to do (task creation)
+ *   Step 4 — Ready to launch (summary + open issue)
  *
  * By default this runs in skip_llm mode: we do NOT assert that an LLM
  * heartbeat fires. Set ABACUS_E2E_SKIP_LLM=false to enable LLM-dependent
@@ -19,156 +19,65 @@ const SKIP_LLM = process.env.ABACUS_E2E_SKIP_LLM !== "false";
 const COMPANY_NAME = `E2E-Test-${Date.now()}`;
 const AGENT_NAME = "CEO";
 const TASK_TITLE = "E2E test task";
-const NEXT_BUTTON = /^(Next|下一步)$/;
-const LANGUAGE_BUTTON = /^(Language|语言)$/;
-const ADD_COMPANY_BUTTON = /^(Add company|添加公司)$/;
-const START_ONBOARDING_BUTTON = /^(Start Onboarding|开始引导)$/;
-const WORKDIR_PLACEHOLDER = "/path/to/project";
-const TASK_TITLE_PLACEHOLDER = /^(e\.g\. Research competitor pricing|例如：调研竞品定价)$/;
-const TASK_DESCRIPTION_PLACEHOLDER =
-  /^(Add more detail about what the agent should do\.\.\.|补充更多关于代理要做什么的细节\.\.\.)$/;
-const CREATE_AND_OPEN_ISSUE_BUTTON = /^(Create & Open Issue|创建并打开任务)$/;
-const THEME_TOGGLE_BUTTON = /^(Switch to light mode|Switch to dark mode|切换到浅色模式|切换到深色模式)$/;
-
-async function openOnboarding(page: Page) {
-  await page.goto("/");
-
-  const wizardHeading = page.locator("h3", { hasText: /Name your company|为你的公司命名/ });
-  const newCompanyBtn = page.getByRole("button", { name: /New Company|新建公司/ });
-  const addCompanyBtn = page.getByRole("button", { name: ADD_COMPANY_BUTTON });
-  const startOnboardingBtn = page.getByRole("button", { name: START_ONBOARDING_BUTTON });
-  const createAnotherCompanyHeading = page.locator("h1", {
-    hasText: /Create another company|创建另一家公司/,
-  });
-
-  await Promise.any([
-    wizardHeading.waitFor({ state: "visible", timeout: 15_000 }),
-    newCompanyBtn.waitFor({ state: "visible", timeout: 15_000 }),
-    addCompanyBtn.waitFor({ state: "visible", timeout: 15_000 }),
-    startOnboardingBtn.waitFor({ state: "visible", timeout: 15_000 }),
-    createAnotherCompanyHeading.waitFor({ state: "visible", timeout: 15_000 }),
-  ]);
-
-  if (await wizardHeading.isVisible()) {
-    return { wizardHeading };
-  }
-
-  if (await newCompanyBtn.isVisible()) {
-    await newCompanyBtn.click();
-  }
-  if (!(await wizardHeading.isVisible()) && (await addCompanyBtn.isVisible())) {
-    await addCompanyBtn.click();
-  }
-  if (!(await wizardHeading.isVisible()) && (await startOnboardingBtn.isVisible())) {
-    await startOnboardingBtn.click();
-  }
-
-  await expect(wizardHeading).toBeVisible({ timeout: 15_000 });
-
-  return { wizardHeading };
-}
-
-async function configureCodexAgent(page: Page) {
-  await page.getByRole("button", { name: /Codex/ }).click();
-
-  const workdirInput = page.locator(`input[placeholder="${WORKDIR_PLACEHOLDER}"]`);
-  await workdirInput.fill(process.cwd());
-}
-
-async function completeOnboardingToIssue(page: Page, companyName: string, taskTitle: string) {
-  const { wizardHeading } = await openOnboarding(page);
-
-  await expect(wizardHeading).toBeVisible({ timeout: 5_000 });
-
-  const companyNameInput = page.locator('input[placeholder="Acme Corp"]');
-  await companyNameInput.fill(companyName);
-
-  await page.getByRole("button", { name: NEXT_BUTTON }).click();
-
-  await expect(
-    page.locator("h3", { hasText: "Create your first agent" }),
-  ).toBeVisible({ timeout: 10_000 });
-
-  await expect(page.locator('input[placeholder="CEO"]')).toHaveValue(AGENT_NAME);
-  await expect(page.getByRole("button", { name: /Codex/ })).toBeVisible();
-  await configureCodexAgent(page);
-
-  await page.getByRole("button", { name: NEXT_BUTTON }).click();
-
-  await expect(
-    page.locator("h3", { hasText: "Give it something to do" }),
-  ).toBeVisible({ timeout: 60_000 });
-
-  const titleInput = taskTitleInput(page);
-  await expect(titleInput).toBeVisible({ timeout: 10_000 });
-  await titleInput.clear();
-  await titleInput.fill(taskTitle);
-
-  await page.getByRole("button", { name: NEXT_BUTTON }).click();
-
-  await expect(
-    page.locator("h3", { hasText: "Ready to launch" }),
-  ).toBeVisible({ timeout: 10_000 });
-
-  await page.getByRole("button", { name: CREATE_AND_OPEN_ISSUE_BUTTON }).click();
-  await expect(page).toHaveURL(/\/issues\//, { timeout: 10_000 });
-}
-
-function onboardingLanguageButton(page: Page) {
-  return page.getByRole("button", { name: LANGUAGE_BUTTON }).last();
-}
-
-function taskTitleInput(page: Page) {
-  return page.getByPlaceholder(TASK_TITLE_PLACEHOLDER);
-}
-
-function taskDescriptionInput(page: Page) {
-  return page.getByPlaceholder(TASK_DESCRIPTION_PLACEHOLDER);
-}
 
 test.describe("Onboarding wizard", () => {
   test("completes full wizard flow", async ({ page }) => {
-    test.setTimeout(180_000);
+    await page.goto("/");
 
-    const { wizardHeading } = await openOnboarding(page);
+    const wizardHeading = page.locator("h3", { hasText: "Name your company" });
+    const newCompanyBtn = page.getByRole("button", { name: "New Company" });
+
+    await expect(
+      wizardHeading.or(newCompanyBtn)
+    ).toBeVisible({ timeout: 15_000 });
+
+    if (await newCompanyBtn.isVisible()) {
+      await newCompanyBtn.click();
+    }
 
     await expect(wizardHeading).toBeVisible({ timeout: 5_000 });
 
     const companyNameInput = page.locator('input[placeholder="Acme Corp"]');
     await companyNameInput.fill(COMPANY_NAME);
 
-    await page.getByRole("button", { name: NEXT_BUTTON }).click();
+    const nextButton = page.getByRole("button", { name: "Next" });
+    await nextButton.click();
 
     await expect(
-      page.locator("h3", { hasText: "Create your first agent" }),
+      page.locator("h3", { hasText: "Create your first agent" })
     ).toBeVisible({ timeout: 10_000 });
 
     const agentNameInput = page.locator('input[placeholder="CEO"]');
     await expect(agentNameInput).toHaveValue(AGENT_NAME);
 
-    await expect(page.getByRole("button", { name: /Codex/ })).toBeVisible();
-    await configureCodexAgent(page);
+    await expect(
+      page.locator("button", { hasText: "Claude Code" }).locator("..")
+    ).toBeVisible();
 
-    await page.getByRole("button", { name: NEXT_BUTTON }).click();
+    await page.getByRole("button", { name: "More Agent Adapter Types" }).click();
+    await expect(page.getByRole("button", { name: "Process" })).toHaveCount(0);
+
+    await page.getByRole("button", { name: "Next" }).click();
 
     await expect(
-      page.locator("h3", { hasText: "Give it something to do" }),
-    ).toBeVisible({ timeout: 60_000 });
-
-    const titleInput = taskTitleInput(page);
-    await expect(titleInput).toBeVisible({ timeout: 10_000 });
-    await titleInput.clear();
-    await titleInput.fill(TASK_TITLE);
-
-    await page.getByRole("button", { name: NEXT_BUTTON }).click();
-
-    await expect(
-      page.locator("h3", { hasText: "Ready to launch" }),
+      page.locator("h3", { hasText: "Give it something to do" })
     ).toBeVisible({ timeout: 10_000 });
 
-    await expect(page.locator(`text=${COMPANY_NAME}`)).toBeVisible();
-    await expect(page.locator(`text=${AGENT_NAME}`)).toBeVisible();
-    await expect(page.locator(`text=${TASK_TITLE}`)).toBeVisible();
+    const taskTitleInput = page.locator(
+      'input[placeholder="e.g. Research competitor pricing"]'
+    );
+    await taskTitleInput.clear();
+    await taskTitleInput.fill(TASK_TITLE);
+
+    await page.getByRole("button", { name: "Next" }).click();
+
+    await expect(
+      page.locator("h3", { hasText: "Ready to launch" })
+    ).toBeVisible({ timeout: 10_000 });
+
+    await expect(page.locator("text=" + COMPANY_NAME)).toBeVisible();
+    await expect(page.locator("text=" + AGENT_NAME)).toBeVisible();
+    await expect(page.locator("text=" + TASK_TITLE)).toBeVisible();
 
     await page.getByRole("button", { name: "Create & Open Issue" }).click();
 
@@ -179,116 +88,55 @@ test.describe("Onboarding wizard", () => {
     const companiesRes = await page.request.get(`${baseUrl}/api/companies`);
     expect(companiesRes.ok()).toBe(true);
     const companies = await companiesRes.json();
-    const company = companies.find((c: { name: string }) => c.name === COMPANY_NAME);
+    const company = companies.find(
+      (c: { name: string }) => c.name === COMPANY_NAME
+    );
     expect(company).toBeTruthy();
 
-    const agentsRes = await page.request.get(`${baseUrl}/api/companies/${company.id}/agents`);
+    const agentsRes = await page.request.get(
+      `${baseUrl}/api/companies/${company.id}/agents`
+    );
     expect(agentsRes.ok()).toBe(true);
     const agents = await agentsRes.json();
-    const ceoAgent = agents.find((a: { name: string }) => a.name === AGENT_NAME);
+    const ceoAgent = agents.find(
+      (a: { name: string }) => a.name === AGENT_NAME
+    );
     expect(ceoAgent).toBeTruthy();
     expect(ceoAgent.role).toBe("ceo");
-    expect(ceoAgent.adapterType).toBe("codex_local");
+    expect(ceoAgent.adapterType).not.toBe("process");
 
-    const issuesRes = await page.request.get(`${baseUrl}/api/companies/${company.id}/issues`);
+    const instructionsBundleRes = await page.request.get(
+      `${baseUrl}/api/agents/${ceoAgent.id}/instructions-bundle?companyId=${company.id}`
+    );
+    expect(instructionsBundleRes.ok()).toBe(true);
+    const instructionsBundle = await instructionsBundleRes.json();
+    expect(
+      instructionsBundle.files.map((file: { path: string }) => file.path).sort()
+    ).toEqual(["AGENTS.md", "HEARTBEAT.md", "SOUL.md", "TOOLS.md"]);
+
+    const issuesRes = await page.request.get(
+      `${baseUrl}/api/companies/${company.id}/issues`
+    );
     expect(issuesRes.ok()).toBe(true);
     const issues = await issuesRes.json();
-    const task = issues.find((i: { title: string }) => i.title === TASK_TITLE);
+    const task = issues.find(
+      (i: { title: string }) => i.title === TASK_TITLE
+    );
     expect(task).toBeTruthy();
     expect(task.assigneeAgentId).toBe(ceoAgent.id);
+    expect(task.description).toContain(
+      "You are the CEO. You set the direction for the company."
+    );
+    expect(task.description).not.toContain("github.com/abacus-lab/companies");
 
     if (!SKIP_LLM) {
       await expect(async () => {
-        const res = await page.request.get(`${baseUrl}/api/issues/${task.id}`);
+        const res = await page.request.get(
+          `${baseUrl}/api/issues/${task.id}`
+        );
         const issue = await res.json();
         expect(["in_progress", "done"]).toContain(issue.status);
       }).toPass({ timeout: 120_000, intervals: [5_000] });
     }
-  });
-
-  test("switches onboarding language, persists it, and keeps edited defaults intact", async ({ page }) => {
-    test.setTimeout(180_000);
-
-    await openOnboarding(page);
-
-    await onboardingLanguageButton(page).click();
-    await page.getByRole("button", { name: "简体中文" }).click();
-    await expect(page.locator("h3", { hasText: "为你的公司命名" })).toBeVisible();
-
-    await page.reload();
-    await expect(page.getByRole("button", { name: /^(语言|Language)$/ }).first()).toBeVisible({
-      timeout: 15_000,
-    });
-
-    await openOnboarding(page);
-    await expect(page.locator("h3", { hasText: "为你的公司命名" })).toBeVisible({ timeout: 15_000 });
-
-    await page.locator('input[placeholder="Acme 公司"]').fill(`${COMPANY_NAME}-zh`);
-    await page.getByRole("button", { name: NEXT_BUTTON }).click();
-
-    await expect(page.locator("h3", { hasText: "创建你的第一个代理" })).toBeVisible({ timeout: 10_000 });
-    await configureCodexAgent(page);
-    await page.getByRole("button", { name: NEXT_BUTTON }).click();
-
-    const titleInput = taskTitleInput(page);
-    const descriptionInput = taskDescriptionInput(page);
-    await expect(page.locator("h3", { hasText: "给它一个任务" })).toBeVisible({ timeout: 60_000 });
-    await expect(titleInput).toHaveValue("创建你的 CEO HEARTBEAT.md", { timeout: 60_000 });
-    await expect(descriptionInput).toContainText("https://github.com/abacus-lab/companies/blob/main/default/ceo/AGENTS.md");
-
-    await onboardingLanguageButton(page).click();
-    await page.getByRole("button", { name: "English" }).click();
-    await expect(titleInput).toHaveValue("Create your CEO HEARTBEAT.md");
-
-    await titleInput.fill("custom onboarding task");
-
-    await onboardingLanguageButton(page).click();
-    await page.getByRole("button", { name: "简体中文" }).click();
-    await expect(titleInput).toHaveValue("custom onboarding task");
-  });
-
-  test("switches layout language beside the theme toggle and persists after refresh", async ({ page }) => {
-    test.setTimeout(180_000);
-
-    await completeOnboardingToIssue(page, `${COMPANY_NAME}-shell`, `${TASK_TITLE} shell`);
-    await page.goto("/dashboard");
-
-    const languageButton = page.getByRole("button", { name: LANGUAGE_BUTTON }).first();
-    const themeButton = page.getByRole("button", { name: THEME_TOGGLE_BUTTON }).first();
-
-    await expect(languageButton).toBeVisible({ timeout: 15_000 });
-    await expect(themeButton).toBeVisible({ timeout: 15_000 });
-
-    const footerButtonsAreAdjacent = await page.evaluate(() => {
-      const buttons = Array.from(document.querySelectorAll("button"));
-      const language = buttons.find((button) => /^(Language|语言)$/.test(button.textContent?.trim() ?? ""));
-      const theme = buttons.find((button) =>
-        /^(Switch to light mode|Switch to dark mode|切换到浅色模式|切换到深色模式)$/.test(
-          button.getAttribute("aria-label") ?? "",
-        ),
-      );
-      if (!language || !theme || language.parentElement == null || language.parentElement !== theme.parentElement) {
-        return false;
-      }
-      const siblings = Array.from(language.parentElement.children);
-      return Math.abs(siblings.indexOf(language) - siblings.indexOf(theme)) === 1;
-    });
-    expect(footerButtonsAreAdjacent).toBe(true);
-
-    await languageButton.click();
-    await page.getByRole("button", { name: "简体中文" }).click();
-    await expect(page.getByText("仪表盘").first()).toBeVisible({ timeout: 15_000 });
-    await expect(page.getByText("项目").first()).toBeVisible({ timeout: 15_000 });
-
-    await page.reload();
-    await expect(page.getByRole("button", { name: /^(语言|Language)$/ }).first()).toBeVisible({
-      timeout: 15_000,
-    });
-    await expect(page.getByText("仪表盘").first()).toBeVisible({ timeout: 15_000 });
-    await expect(page.getByText("项目").first()).toBeVisible({ timeout: 15_000 });
-
-    await page.getByRole("button", { name: /^(语言|Language)$/ }).first().click();
-    await page.getByRole("button", { name: "English" }).click();
-    await expect(page.getByText("Dashboard").first()).toBeVisible({ timeout: 15_000 });
   });
 });

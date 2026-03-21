@@ -28,7 +28,7 @@ export default defineConfig({
   webServer: {
     command: "pnpm dev:once",
     url: `${BASE_URL}/api/health`,
-    reuseExistingServer: !!process.env.CI,
+    reuseExistingServer: !process.env.CI,
     timeout: 120_000,
     stdout: "pipe",
     stderr: "pipe",
