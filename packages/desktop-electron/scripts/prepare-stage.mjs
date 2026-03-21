@@ -137,7 +137,7 @@ runNodeScript(path.resolve(repoRoot, "scripts", "prepare-server-ui-dist.mjs"), [
 });
 
 console.log("[desktop-stage] Building Electron shell...");
-runPnpm(["--dir", repoRoot, "--filter", "@abacus/desktop-electron", "build"], {
+runPnpm(["--dir", repoRoot, "--filter", "@abacus/desktop-electron", "build:release"], {
   cwd: repoRoot,
 });
 

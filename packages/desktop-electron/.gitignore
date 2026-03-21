@@ -2,3 +2,5 @@ dist/
 release/
 .stage/
 node_modules/
+.copy-test/
+packages/
